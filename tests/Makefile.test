@@ -1,0 +1,19 @@
+.PHONY:	all clean
+
+CROSS_COMPILE := oldland-elf-
+AS := $(CROSS_COMPILE)as
+LD := $(CROSS_COMPILE)ld
+OBJCOPY := $(CROSS_COMPILE)objcopy
+
+include Makefile
+
+all:	$(TESTNAME)
+
+%.o:	%.S
+	$(AS) $< -o $@
+
+$(TESTNAME):	$(OBJS)
+	$(LD) $< -o $@ -x $(PWD)/target/sim.x
+
+clean:
+	rm -rf $(OBJS) $(TESTNAME)

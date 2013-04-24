@@ -1,0 +1,1 @@
+OBJS := hello.o
