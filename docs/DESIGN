@@ -37,15 +37,15 @@ Example assembly:
   ldr		$r1, dataval
   movhi		$r2, $hi(vtable)
   add		$r2, r2, $lo(vtable)
-  call		$r2, #0x10
+  call		0x100
   call		myfunc
 
 dataval:
   .word		0xdeadbeef
 
 myfunc:
-  str8		$r2, [$r0]
-  str		$r1, [$r0 + #0x4]
+  str8		$r2, [$r0, 0x0]
+  str		$r1, [$r0, 0x4]
   ret
 
 ENCODING
@@ -71,14 +71,14 @@ XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd r
 BIC	 0  0  1  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 OR 	 0  0  1  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 MOVHI	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x rd rd rd  x  x  x  x  x  x
-                                                                      
+
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 RET	 0  1  0  0  0  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
 B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-                                                                      
+
 LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
 LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
 LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
