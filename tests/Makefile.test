@@ -7,13 +7,16 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 
 include Makefile
 
-all:	$(TESTNAME)
+all:	$(TESTNAME).bin
 
 %.o:	%.S
 	$(AS) $< -o $@
+
+%.bin:	%
+	$(OBJCOPY) $< $@ -O binary
 
 $(TESTNAME):	$(OBJS)
 	$(LD) $< -o $@ -x $(PWD)/target/sim.x
 
 clean:
-	rm -rf $(OBJS) $(TESTNAME)
+	rm -rf $(OBJS) $(TESTNAME) $(TESTNAME).bin

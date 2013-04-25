@@ -16,13 +16,9 @@ copy_loop:
 	b	copy_loop
 
 done:
-	b	done
-	ldr32	$r5, done_data
+	.long	0xffffffff # Trap to test env
 
 .section .rodata
 hello_start:
 	.ascii	"Hello, world!"
 hello_end:
-
-done_data:
-	.long	0xdefaced0
