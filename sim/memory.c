@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -6,6 +8,7 @@
 
 #include <sys/mman.h>
 
+#include "internal.h"
 #include "io.h"
 
 static int ram_write(unsigned int offs, uint32_t val, size_t nr_bits,
@@ -64,7 +67,8 @@ static const struct io_ops rom_io_ops = {
 	.read = ram_read,
 };
 
-int ram_init(struct mem_map *mem, physaddr_t base, size_t len)
+int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
+	     const char *init_contents)
 {
 	struct region *r;
 	void *ram;
@@ -76,6 +80,18 @@ int ram_init(struct mem_map *mem, physaddr_t base, size_t len)
 	assert(ram != MAP_FAILED);
 	r = mem_map_region_add(mem, base, len, &ram_io_ops, ram);
 	assert(r != NULL);
+
+	if (init_contents) {
+		ssize_t br;
+		int fd = open(init_contents, O_RDONLY);
+		assert(fd >= 0);
+
+		br = read(fd, ram, len);
+		assert(br >= 0);
+		debug("read %zd bytes into RAM @%08x from %s\n", br, base,
+		      init_contents);
+		close(fd);
+	}
 
 	return 0;
 }

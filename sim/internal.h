@@ -1,7 +1,9 @@
 #ifndef __INTERNAL_H__
 #define __INTERNAL_H__
 
+#include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 static inline ssize_t no_printf(const char *fmt, ...) { return 0; }
 
@@ -17,5 +19,18 @@ static inline ssize_t no_printf(const char *fmt, ...) { return 0; }
 #define container_of(ptr, type, member) ({ \
 	(type *)(((char *)(ptr)) - offsetof(type, member)); \
 })
+
+static inline void __die(const char *file, unsigned int line, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	fprintf(stderr, "[sim] died at %s:%u: ", file, line);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	abort();
+}
+#define die(fmt, ...) __die(__FILE__, __LINE__, (fmt), ##__VA_ARGS__)
 
 #endif /* __INTERNAL_H__ */

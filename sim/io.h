@@ -44,7 +44,8 @@ int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
  * Devices.
  */
 int debug_uart_init(struct mem_map *mem, physaddr_t base, size_t len);
-int ram_init(struct mem_map *mem, physaddr_t base, size_t len);
+int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
+	     const char *init_contents);
 int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 	     const char *filename);
 
