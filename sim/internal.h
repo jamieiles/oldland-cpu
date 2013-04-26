@@ -15,7 +15,9 @@ static inline ssize_t no_printf(const char *fmt, ...) { return 0; }
 
 #define ARRAY_SIZE(_a) (sizeof((_a)) / sizeof((_a)[0]))
 
+#ifndef offsetof
 #define offsetof(type, member) __builtin_offsetof(type, member)
+#endif /* offsetof */
 #define container_of(ptr, type, member) ({ \
 	(type *)(((char *)(ptr)) - offsetof(type, member)); \
 })
