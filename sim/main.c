@@ -14,82 +14,15 @@
 #include <lua5.2/lauxlib.h>
 #include <lua5.2/lualib.h>
 
+#include "cpu.h"
 #include "internal.h"
 #include "io.h"
+#include "trace.h"
 
 enum sim_status {
 	SIM_SUCCESS = 0xffffffff,
 	SIM_FAIL = 0xfffffffe,
 	SIM_CONTINUE = 0x00000000,
-};
-
-struct cpu {
-	uint32_t pc;
-	uint32_t next_pc;
-	uint32_t regs[8];
-	unsigned z:1;
-	unsigned c:1;
-
-	struct mem_map *mem;
-	lua_State *lua_interp;
-	FILE *trace_file;
-	unsigned long long cycle_count;
-};
-
-enum trace_points {
-	TRACE_PC,
-	TRACE_INSTR,
-	TRACE_R0,
-	TRACE_R1,
-	TRACE_R2,
-	TRACE_R3,
-	TRACE_R4,
-	TRACE_R5,
-	TRACE_R6,
-	TRACE_R7,
-	TRACE_DADDR,
-	TRACE_DIN,
-	TRACE_DOUT,
-	TRACE_FLAGS,
-};
-
-struct {
-	int id;
-	int width;
-	const char *name;
-} trace_defs[] = {
-	[TRACE_PC]	= { '!', 32, "pc" },
-	[TRACE_INSTR]	= { '$', 32, "instr" },
-	[TRACE_DADDR]	= { '%', 32, "daddr" },
-	[TRACE_DIN]	= { '(', 32, "din" },
-	[TRACE_DOUT]	= { ')', 32, "dout" },
-	[TRACE_FLAGS]	= { '/', 32, "flags" },
-	[TRACE_R0]	= { '0', 32, "R0" },
-	[TRACE_R1]	= { '1', 32, "R1" },
-	[TRACE_R2]	= { '2', 32, "R2" },
-	[TRACE_R3]	= { '3', 32, "R3" },
-	[TRACE_R4]	= { '4', 32, "R4" },
-	[TRACE_R5]	= { '5', 32, "R5" },
-	[TRACE_R6]	= { '6', 32, "R6" },
-	[TRACE_R7]	= { '7', 32, "R7" },
-};
-
-static void trace(struct cpu *c, enum trace_points tp, uint32_t val)
-{
-	if (trace_defs[tp].width == 1) {
-		fprintf(c->trace_file, "%d%c\n", !!val, trace_defs[tp].id);
-	} else {
-		int i;
-
-		fprintf(c->trace_file, "b");
-		for (i = trace_defs[tp].width - 1; i >= 0; --i)
-			fprintf(c->trace_file, "%d", !!(val & (1 << i)));
-		fprintf(c->trace_file, " %c\n", trace_defs[tp].id);
-	}
-}
-
-enum regs {
-	R0, R1, R2, R3, R4, R5, FP, SP, PC
 };
 
 enum instruction_class {
@@ -238,7 +171,7 @@ static lua_State *init_test_script(const char *test_file)
 
 static struct cpu *new_cpu(const char *test_file)
 {
-	int i, err;
+	int err;
 	const char *binary;
 	struct cpu *c;
 
@@ -257,20 +190,6 @@ static struct cpu *new_cpu(const char *test_file)
 
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
 	assert(!err);
-
-	c->trace_file = fopen("oldland.vcd", "w");
-	assert(c->trace_file);
-	fprintf(c->trace_file, "$timescale 1ns $end\n");
-	fprintf(c->trace_file, "$scope module cpu $end\n");
-	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
-		fprintf(c->trace_file, "$var wire %u %c %s $end\n",
-			trace_defs[i].width, trace_defs[i].id,
-			trace_defs[i].name);
-	fprintf(c->trace_file, "$upscope $end\n");
-	fprintf(c->trace_file, "$enddefinitions $end\n");
-	fprintf(c->trace_file, "$dumpvars\n");
-	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
-		trace(c, i, 0);
 
 	return c;
 }
@@ -320,8 +239,10 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		    instr);
 	}
 
-	if (arith_opc(instr) != ARITH_MOVHI)
-		c->z = !c->regs[rd];
+	if (arith_opc(instr) != ARITH_MOVHI) {
+		c->flagsbf.z = !c->regs[rd];
+		trace(c, TRACE_FLAGS, c->flagsw);
+	}
 }
 
 static void emul_branch(struct cpu *c, uint32_t instr)
@@ -341,7 +262,7 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		cpu_set_next_pc(c, target);
 		break;
 	case BRANCH_BEQ:
-		if (c->z)
+		if (c->flagsbf.z)
 			cpu_set_next_pc(c, target);
 		break;
 	default:
