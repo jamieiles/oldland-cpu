@@ -1,10 +1,14 @@
 #define DEBUG
 
+#define _GNU_SOURCE
 #include <assert.h>
+#include <libgen.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <lua5.2/lua.h>
 #include <lua5.2/lauxlib.h>
@@ -129,33 +133,88 @@ static inline uint32_t instr_imm24(uint32_t instr)
 
 static void cpu_wr_reg(struct cpu *c, enum regs r, uint32_t v)
 {
-	trace(c, "[%08x] R%d := %08x\n", c->pc, r, v);
+	trace(c, "R%d := %08x\n", r, v);
 	c->regs[r] = v;
 }
 
 static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 {
-	trace(c, "[%08x] PC := %08x\n", c->pc, v);
+	trace(c, "PC := %08x\n", v);
 	c->next_pc = v;
 }
 
-static struct cpu *new_cpu(const char *romfile,
-			   lua_State *lua_interp)
+static const char *test_get_bin(const char *test_file, struct cpu *c)
+{
+	char *ret = NULL;
+
+	lua_getglobal(c->lua_interp, "BINARY");
+	if (!lua_isnil(c->lua_interp, -1)) {
+		char *tmp = strdup(test_file);
+
+		assert(tmp != NULL);
+		if (asprintf(&ret, "%s/%s", dirname(tmp),
+			     lua_tolstring(c->lua_interp, -1, NULL)) < 0)
+			die("failed to allocate binary path\n");
+		free(tmp);
+	}
+
+	lua_pop(c->lua_interp, 1);
+
+	return ret;
+}
+
+static int lua_sim_err(lua_State *L)
+{
+	const char *msg = lua_tolstring(L, -1, NULL);
+
+	die("%s\n", msg);
+
+	return 0;
+}
+
+static const struct luaL_Reg sim_funcs[] = {
+	{ "err", lua_sim_err },
+	{}
+};
+
+static lua_State *init_test_script(const char *test_file)
+{
+	lua_State *L = luaL_newstate();
+
+	assert(L);
+	luaL_openlibs(L);
+	luaL_newlib(L, sim_funcs);
+	lua_setglobal(L, "sim");
+
+	if (luaL_dofile(L, test_file))
+		die("failed to load test %s (%s)\n", test_file,
+		    lua_tostring(L, -1));
+
+	return L;
+}
+
+static struct cpu *new_cpu(const char *test_file)
 {
 	int err;
-	struct cpu *c = calloc(1, sizeof(*c));
+	const char *binary;
+	struct cpu *c;
 
+	c = calloc(1, sizeof(*c));
 	assert(c);
+
+	c->lua_interp = init_test_script(test_file);
+	assert(c->lua_interp);
+
 	c->mem = mem_map_new();
 	assert(c->mem);
 
-	err = ram_init(c->mem, 0x00000000, 0x10000, romfile);
+	binary = test_get_bin(test_file, c);
+	err = ram_init(c->mem, 0x00000000, 0x10000, binary);
 	assert(!err);
 
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
 	assert(!err);
 
-	c->lua_interp = lua_interp;
 	c->trace_file = fopen("oldland.trace", "w");
 	assert(c->trace_file);
 
@@ -244,6 +303,8 @@ static void validate_result(struct cpu *c)
 	lua_getglobal(c->lua_interp, "validate_result");
 	if (!lua_isnil(c->lua_interp, -1))
 		lua_call(c->lua_interp, 0, 0);
+	else
+		lua_pop(c->lua_interp, 1);
 }
 
 static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
@@ -321,7 +382,7 @@ static uint32_t cpu_cycle(struct cpu *c)
 	uint32_t instr;
 	int err;
 
-	trace(c, "------------------------------------------------------------------------\n");
+	trace(c, "[%08x]--------------------------------------------------------------\n", c->pc);
 
 	c->next_pc = c->pc + 4;
 
@@ -338,48 +399,14 @@ static uint32_t cpu_cycle(struct cpu *c)
 	return SIM_CONTINUE;
 }
 
-static int lua_sim_err(lua_State *L)
-{
-	const char *msg = lua_tolstring(L, -1, NULL);
-
-	die("%s\n", msg);
-
-	return 0;
-}
-
-static const struct luaL_Reg sim_funcs[] = {
-	{ "err", lua_sim_err },
-	{}
-};
-
-static lua_State *init_test_script(const char *test_file)
-{
-	lua_State *L = luaL_newstate();
-
-	assert(L);
-	luaL_openlibs(L);
-	luaL_newlib(L, sim_funcs);
-	lua_setglobal(L, "sim");
-
-	if (luaL_dofile(L, test_file))
-		die("failed to load test %s (%s)\n", test_file,
-		    lua_tostring(L, -1));
-
-	return L;
-}
-
 int main(int argc, char *argv[])
 {
 	struct cpu *c;
 	int err;
-	lua_State *L;
-
 	if (argc < 2)
 		die("usage: %s TEST_FILE\n", argv[0]);
 
-	L = init_test_script(argv[1]);
-
-	c = new_cpu("rom.bin", L);
+	c = new_cpu(argv[1]);
 	printf("Oldland CPU simulator\n");
 
 	do {
@@ -390,7 +417,7 @@ int main(int argc, char *argv[])
 	if (err == SIM_SUCCESS)
 		validate_result(c);
 
-	lua_close(L);
+	lua_close(c->lua_interp);
 
 	return err == SIM_SUCCESS ? EXIT_SUCCESS : EXIT_FAILURE;
 }

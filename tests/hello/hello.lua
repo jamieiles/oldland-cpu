@@ -1,7 +1,7 @@
 require "bit32"
 
 CYCLE_LIMIT = 1000
-BINARY = "rom.bin"
+BINARY = "hello.bin"
 
 uart_data = ""
 
