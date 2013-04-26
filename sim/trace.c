@@ -28,7 +28,6 @@ struct {
 	[TRACE_R7]	= { '7', 32, "R7" },
 };
 
-
 void trace(struct cpu *c, enum trace_points tp, uint32_t val)
 {
 	if (trace_defs[tp].width == 1) {
