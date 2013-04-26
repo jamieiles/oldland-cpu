@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include "cpu.h"
-
 enum trace_points {
 	TRACE_PC,
 	TRACE_INSTR,
@@ -22,7 +20,7 @@ enum trace_points {
 	TRACE_FLAGS,
 };
 
-void trace(struct cpu *c, enum trace_points tp, uint32_t val);
-void init_trace_file(struct cpu *c);
+void trace(FILE *trace_file, enum trace_points tp, uint32_t val);
+FILE *init_trace_file(void);
 
 #endif /* __TRACE_H__ */

@@ -13,6 +13,23 @@
 #include "io.h"
 #include "trace.h"
 
+struct cpu {
+	uint32_t pc;
+	uint32_t next_pc;
+	uint32_t regs[8];
+	union {
+		uint32_t flagsw;
+		struct {
+			unsigned z:1;
+			unsigned c:1;
+		} flagsbf;
+	};
+
+	struct mem_map *mem;
+	FILE *trace_file;
+	unsigned long long cycle_count;
+};
+
 enum instruction_class {
 	INSTR_ARITHMETIC,
 	INSTR_BRANCH,
@@ -98,7 +115,7 @@ static inline uint32_t instr_imm24(uint32_t instr)
 
 static void cpu_wr_reg(struct cpu *c, enum regs r, uint32_t v)
 {
-	trace(c, TRACE_R0 + r, v);
+	trace(c->trace_file, TRACE_R0 + r, v);
 	c->regs[r] = v;
 }
 
@@ -114,7 +131,7 @@ struct cpu *new_cpu(const char *test_file, const char *binary)
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
-	init_trace_file(c);
+	c->trace_file = init_trace_file();
 
 	c->mem = mem_map_new();
 	assert(c->mem);
@@ -175,7 +192,7 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 
 	if (arith_opc(instr) != ARITH_MOVHI) {
 		c->flagsbf.z = !c->regs[rd];
-		trace(c, TRACE_FLAGS, c->flagsw);
+		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
 	}
 }
 
@@ -211,8 +228,8 @@ extern void cpu_mem_write_hook(struct cpu *c, physaddr_t addr,
 static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 			     unsigned int nr_bits, uint32_t val)
 {
-	trace(c, TRACE_DADDR, addr);
-	trace(c, TRACE_DOUT, val);
+	trace(c->trace_file, TRACE_DADDR, addr);
+	trace(c->trace_file, TRACE_DOUT, val);
 
 	cpu_mem_write_hook(c, addr, nr_bits, val);
 
@@ -281,10 +298,10 @@ uint32_t cpu_cycle(struct cpu *c)
 	c->next_pc = c->pc + 4;
 
 	fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
-	trace(c, TRACE_PC, c->pc);
+	trace(c->trace_file, TRACE_PC, c->pc);
 	err = mem_map_read(c->mem, c->pc, 32, &instr);
 	assert(!err);
-	trace(c, TRACE_INSTR, instr);
+	trace(c->trace_file, TRACE_INSTR, instr);
 
 	if (instr == SIM_SUCCESS || instr == SIM_FAIL)
 		return instr;

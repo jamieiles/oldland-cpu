@@ -28,35 +28,38 @@ struct {
 	[TRACE_R7]	= { '7', 32, "R7" },
 };
 
-void trace(struct cpu *c, enum trace_points tp, uint32_t val)
+void trace(FILE *trace_file, enum trace_points tp, uint32_t val)
 {
 	if (trace_defs[tp].width == 1) {
-		fprintf(c->trace_file, "%d%c\n", !!val, trace_defs[tp].id);
+		fprintf(trace_file, "%d%c\n", !!val, trace_defs[tp].id);
 	} else {
 		int i;
 
-		fprintf(c->trace_file, "b");
+		fprintf(trace_file, "b");
 		for (i = trace_defs[tp].width - 1; i >= 0; --i)
-			fprintf(c->trace_file, "%d", !!(val & (1 << i)));
-		fprintf(c->trace_file, " %c\n", trace_defs[tp].id);
+			fprintf(trace_file, "%d", !!(val & (1 << i)));
+		fprintf(trace_file, " %c\n", trace_defs[tp].id);
 	}
 }
 
-void init_trace_file(struct cpu *c)
+FILE *init_trace_file(void)
 {
+	FILE *trace_file;
 	int i;
 
-	c->trace_file = fopen("oldland.vcd", "w");
-	assert(c->trace_file);
-	fprintf(c->trace_file, "$timescale 1ns $end\n");
-	fprintf(c->trace_file, "$scope module cpu $end\n");
+	trace_file = fopen("oldland.vcd", "w");
+	assert(trace_file);
+	fprintf(trace_file, "$timescale 1ns $end\n");
+	fprintf(trace_file, "$scope module cpu $end\n");
 	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
-		fprintf(c->trace_file, "$var wire %u %c %s $end\n",
+		fprintf(trace_file, "$var wire %u %c %s $end\n",
 			trace_defs[i].width, trace_defs[i].id,
 			trace_defs[i].name);
-	fprintf(c->trace_file, "$upscope $end\n");
-	fprintf(c->trace_file, "$enddefinitions $end\n");
-	fprintf(c->trace_file, "$dumpvars\n");
+	fprintf(trace_file, "$upscope $end\n");
+	fprintf(trace_file, "$enddefinitions $end\n");
+	fprintf(trace_file, "$dumpvars\n");
 	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
-		trace(c, i, 0);
+		trace(trace_file, i, 0);
+
+	return trace_file;
 }
