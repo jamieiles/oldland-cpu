@@ -33,15 +33,59 @@ struct cpu {
 	struct mem_map *mem;
 	lua_State *lua_interp;
 	FILE *trace_file;
+	unsigned long long cycle_count;
 };
 
-static void trace(struct cpu *c, const char *fmt, ...)
-{
-	va_list ap;
+enum trace_points {
+	TRACE_PC,
+	TRACE_INSTR,
+	TRACE_R0,
+	TRACE_R1,
+	TRACE_R2,
+	TRACE_R3,
+	TRACE_R4,
+	TRACE_R5,
+	TRACE_R6,
+	TRACE_R7,
+	TRACE_DADDR,
+	TRACE_DIN,
+	TRACE_DOUT,
+	TRACE_FLAGS,
+};
 
-	va_start(ap, fmt);
-	vfprintf(c->trace_file, fmt, ap);
-	va_end(ap);
+struct {
+	int id;
+	int width;
+	const char *name;
+} trace_defs[] = {
+	[TRACE_PC]	= { '!', 32, "pc" },
+	[TRACE_INSTR]	= { '$', 32, "instr" },
+	[TRACE_DADDR]	= { '%', 32, "daddr" },
+	[TRACE_DIN]	= { '(', 32, "din" },
+	[TRACE_DOUT]	= { ')', 32, "dout" },
+	[TRACE_FLAGS]	= { '/', 32, "flags" },
+	[TRACE_R0]	= { '0', 32, "R0" },
+	[TRACE_R1]	= { '1', 32, "R1" },
+	[TRACE_R2]	= { '2', 32, "R2" },
+	[TRACE_R3]	= { '3', 32, "R3" },
+	[TRACE_R4]	= { '4', 32, "R4" },
+	[TRACE_R5]	= { '5', 32, "R5" },
+	[TRACE_R6]	= { '6', 32, "R6" },
+	[TRACE_R7]	= { '7', 32, "R7" },
+};
+
+static void trace(struct cpu *c, enum trace_points tp, uint32_t val)
+{
+	if (trace_defs[tp].width == 1) {
+		fprintf(c->trace_file, "%d%c\n", !!val, trace_defs[tp].id);
+	} else {
+		int i;
+
+		fprintf(c->trace_file, "b");
+		for (i = trace_defs[tp].width - 1; i >= 0; --i)
+			fprintf(c->trace_file, "%d", !!(val & (1 << i)));
+		fprintf(c->trace_file, " %c\n", trace_defs[tp].id);
+	}
 }
 
 enum regs {
@@ -133,13 +177,12 @@ static inline uint32_t instr_imm24(uint32_t instr)
 
 static void cpu_wr_reg(struct cpu *c, enum regs r, uint32_t v)
 {
-	trace(c, "R%d := %08x\n", r, v);
+	trace(c, TRACE_R0 + r, v);
 	c->regs[r] = v;
 }
 
 static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 {
-	trace(c, "PC := %08x\n", v);
 	c->next_pc = v;
 }
 
@@ -195,7 +238,7 @@ static lua_State *init_test_script(const char *test_file)
 
 static struct cpu *new_cpu(const char *test_file)
 {
-	int err;
+	int i, err;
 	const char *binary;
 	struct cpu *c;
 
@@ -215,8 +258,19 @@ static struct cpu *new_cpu(const char *test_file)
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
 	assert(!err);
 
-	c->trace_file = fopen("oldland.trace", "w");
+	c->trace_file = fopen("oldland.vcd", "w");
 	assert(c->trace_file);
+	fprintf(c->trace_file, "$timescale 1ns $end\n");
+	fprintf(c->trace_file, "$scope module cpu $end\n");
+	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
+		fprintf(c->trace_file, "$var wire %u %c %s $end\n",
+			trace_defs[i].width, trace_defs[i].id,
+			trace_defs[i].name);
+	fprintf(c->trace_file, "$upscope $end\n");
+	fprintf(c->trace_file, "$enddefinitions $end\n");
+	fprintf(c->trace_file, "$dumpvars\n");
+	for (i = 0; i < ARRAY_SIZE(trace_defs); ++i)
+		trace(c, i, 0);
 
 	return c;
 }
@@ -284,11 +338,9 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 
 	switch (branch_opc(instr)) {
 	case BRANCH_B:
-		trace(c, "b\t%08x\n", target);
 		cpu_set_next_pc(c, target);
 		break;
 	case BRANCH_BEQ:
-		trace(c, "beq\t%08x\n", target);
 		if (c->z)
 			cpu_set_next_pc(c, target);
 		break;
@@ -310,6 +362,9 @@ static void validate_result(struct cpu *c)
 static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 			     unsigned int nr_bits, uint32_t val)
 {
+	trace(c, TRACE_DADDR, addr);
+	trace(c, TRACE_DOUT, val);
+
 	lua_getglobal(c->lua_interp, "data_write_hook");
 	if (!lua_isnil(c->lua_interp, -1)) {
 		lua_pushinteger(c->lua_interp, addr);
@@ -382,12 +437,13 @@ static uint32_t cpu_cycle(struct cpu *c)
 	uint32_t instr;
 	int err;
 
-	trace(c, "[%08x]--------------------------------------------------------------\n", c->pc);
-
 	c->next_pc = c->pc + 4;
 
+	fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
+	trace(c, TRACE_PC, c->pc);
 	err = mem_map_read(c->mem, c->pc, 32, &instr);
 	assert(!err);
+	trace(c, TRACE_INSTR, instr);
 
 	if (instr == SIM_SUCCESS || instr == SIM_FAIL)
 		return instr;
