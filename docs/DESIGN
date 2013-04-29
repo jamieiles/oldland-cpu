@@ -10,6 +10,8 @@ Architecture
 1x32-bit status register:
   - Zero flag
 
+Everything is little endian.
+
 Arithmetic/bitwise instructions:
   - ADD, SUB,
   - LSL, LSR, ORR, AND, XOR, BIC
