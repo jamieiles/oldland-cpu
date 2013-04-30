@@ -244,7 +244,7 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	int err;
 
 	/* PC relative addressing. */
-	if (instr & (1 << 9)) {
+	if (!(instr & (1 << 9))) {
 		/* Sign extend. */
 		imm16 <<= 16;
 		imm16 >>= 16;

@@ -1,13 +1,13 @@
 .globl _start
 _start:
 	movhi	$r0, %hi(hello_start)
-	mov	$r1, $r0
+	add	$r1, $r0, 0
 	or	$r0, $r0, %lo(hello_start)
 	or	$r1, $r1, %lo(hello_end)
 	movhi	$r2, 0x8000 # UART at 0x80000000
 
 copy_loop:
-	sub	$r4, $r1, $r0
+	cmp	$r1, $r0
 	beq	done
 	ldr8	$r4, [$r0, 0x0]
 	str8	$r4, [$r2, 0x0]

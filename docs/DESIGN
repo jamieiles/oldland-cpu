@@ -18,6 +18,8 @@ Arithmetic/bitwise instructions:
   - Rd := Ra OP Rb or:
   - Rd := Ra OP #imm
 
+  - CMP Ra, Rb
+
 Branch instructions
   - B #offs := PC += #offs
   - BEQ #offs := if Z: PC += #offs
@@ -54,9 +56,9 @@ ENCODING
 --------
 
 For ALU operations, if R is set then rd := ra OP Rb else rd := ra OP I
-For branch operations, if R is set then PC += Ra else PC += I
-For load, if !P, Rd := M[Ra + I] else Rd := M[PC + I]
-For store, if !p, M[Ra + I] := rb, else M[PC + I] := rb
+For branch operations, if R is set then PC := Ra else PC += I
+For load, if R, Rd := M[Ra + I] else Rd := M[PC + I]
+For store, if R, M[Ra + I] := rb, else M[PC + I] := rb
 
 Encoding:
 
@@ -71,8 +73,12 @@ LSR	 0  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd r
 AND	 0  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 BIC	 0  0  1  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-OR 	 0  0  1  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-MOVHI	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x rd rd rd  x  x  x  x  x  x
+BST	 0  0  1  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+MOVHI	 0  0  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0 rd rd rd  x  x  x  x  x  x
+CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
+ASL 	 0  0  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 RET	 0  1  0  0  0  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
@@ -81,15 +87,17 @@ BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 
-LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
-LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
-LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P rd rd rd ra ra ra  x  x  x
+LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
+LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
+LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
 
-STR	 1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P  x  x  x ra ra ra rb rb rb
-STR16	 1  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P  x  x  x ra ra ra rb rb rb
-STR8	 1  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  P  x  x  x ra ra ra rb rb rb
+STR	 1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
+STR16	 1  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
+STR8	 1  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
 
-NOP is encoded as OR R0, R0
+BKP	 1  1  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x
+
+NOP is encoded as OR R0, R0, R0
 
 RELOCATIONS
 -----------
@@ -106,3 +114,13 @@ R_OLDLAND_HI16:
   - 16-bit absolute relocation for MOVHI.
 R_OLDLAND_LO16:
   - 16-bit absolute relocation for ADD/OR.
+
+ALU operations
+--------------
+
+- ra OP rb
+- ra OP imm16
+- pc OP imm24
+- pc OP imm16
+
+How to handle movhi?  Bypass the ALU or have imm16 LSL 16?
