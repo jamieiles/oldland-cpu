@@ -12,6 +12,7 @@
 #include "internal.h"
 #include "io.h"
 #include "trace.h"
+#include "oldland-types.h"
 
 struct cpu {
 	uint32_t pc;
@@ -34,38 +35,7 @@ enum instruction_class {
 	INSTR_ARITHMETIC,
 	INSTR_BRANCH,
 	INSTR_LDR_STR,
-};
-
-enum arith_opcode {
-	ARITH_ADD	= 0x0,
-	ARITH_ADDC	= 0x1,
-	ARITH_SUB	= 0x2,
-	ARITH_SUBC	= 0x3,
-	ARITH_LSL	= 0x4,
-	ARITH_LSR	= 0x5,
-	ARITH_AND	= 0x6,
-	ARITH_XOR	= 0x7,
-	ARITH_BIC	= 0x8,
-	ARITH_OR	= 0x9,
-	ARITH_MOVHI	= 0xa,
-};
-
-enum branch_opcode {
-	BRANCH_CALL	= 0x0,
-	BRANCH_RET	= 0x1,
-	BRANCH_B	= 0x4,
-	BRANCH_BNE	= 0x5,
-	BRANCH_BEQ	= 0x6,
-	BRANCH_BGT	= 0x7,
-};
-
-enum ls_opcode {
-	LS_LDR32	= 0x0,
-	LS_LDR16	= 0x1,
-	LS_LDR8		= 0x2,
-	LS_STR32	= 0x4,
-	LS_STR16	= 0x5,
-	LS_STR8		= 0x6,
+	INSTR_MISC,
 };
 
 static inline enum instruction_class instr_class(uint32_t instr)
@@ -73,17 +43,7 @@ static inline enum instruction_class instr_class(uint32_t instr)
 	return (instr >> 30) & 0x3;
 }
 
-static inline enum arith_opcode arith_opc(uint32_t instr)
-{
-	return (instr >> 26) & 0xf;
-}
-
-static inline enum branch_opcode branch_opc(uint32_t instr)
-{
-	return (instr >> 26) & 0xf;
-}
-
-static inline enum ls_opcode ls_opc(uint32_t instr)
+static inline unsigned instr_opc(uint32_t instr)
 {
 	return (instr >> 26) & 0xf;
 }
@@ -157,40 +117,45 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 	imm16 = instr_imm16(instr);
 	op2 = (instr & (1 << 9)) ? c->regs[rb] : imm16;
 
-	switch (arith_opc(instr)) {
-	case ARITH_ADD:
+	switch (instr_opc(instr)) {
+	case OPCODE_ADD:
 		cpu_wr_reg(c, rd, c->regs[ra] + op2);
 		break;
-	case ARITH_SUB:
+	case OPCODE_SUB:
 		cpu_wr_reg(c, rd, c->regs[ra] - op2);
 		break;
-	case ARITH_LSL:
+	case OPCODE_LSL:
 		cpu_wr_reg(c, rd, c->regs[ra] << op2);
 		break;
-	case ARITH_LSR:
+	case OPCODE_LSR:
 		cpu_wr_reg(c, rd, c->regs[ra] >> op2);
 		break;
-	case ARITH_AND:
+	case OPCODE_AND:
 		cpu_wr_reg(c, rd, c->regs[ra] & op2);
 		break;
-	case ARITH_XOR:
+	case OPCODE_XOR:
 		cpu_wr_reg(c, rd, c->regs[ra] ^ op2);
 		break;
-	case ARITH_BIC:
+	case OPCODE_BIC:
 		cpu_wr_reg(c, rd, c->regs[ra] & ~(1 << op2));
 		break;
-	case ARITH_OR:
+	case OPCODE_OR:
 		cpu_wr_reg(c, rd, c->regs[ra] | op2);
 		break;
-	case ARITH_MOVHI:
+	case OPCODE_MOVHI:
 		cpu_wr_reg(c, rd, op2 << 16);
 		break;
+	case OPCODE_CMP:
+		c->flagsbf.z = !(c->regs[ra] - op2);
+		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
+		break;
 	default:
-		die("invalid arithmetic opcode %u (%08x)\n", arith_opc(instr),
+		die("invalid arithmetic opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
 
-	if (arith_opc(instr) != ARITH_MOVHI) {
+	if (instr_opc(instr) != OPCODE_MOVHI &&
+	    instr_opc(instr) != OPCODE_CMP) {
 		c->flagsbf.z = !c->regs[rd];
 		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
 	}
@@ -208,16 +173,16 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 
 	target = (instr & (1 << 25)) ? rb : c->pc + (imm24 << 2);
 
-	switch (branch_opc(instr)) {
-	case BRANCH_B:
+	switch (instr_opc(instr)) {
+	case OPCODE_B:
 		cpu_set_next_pc(c, target);
 		break;
-	case BRANCH_BEQ:
+	case OPCODE_BEQ:
 		if (c->flagsbf.z)
 			cpu_set_next_pc(c, target);
 		break;
 	default:
-		die("invalid branch opcode %u (%08x)\n", branch_opc(instr),
+		die("invalid branch opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
 }
@@ -253,21 +218,21 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 		addr = c->regs[ra] + imm16;
 	}
 
-	switch (ls_opc(instr)) {
-	case LS_LDR8:
+	switch (instr_opc(instr)) {
+	case OPCODE_LDR8:
 		err = mem_map_read(c->mem, addr, 8, &v);
 		if (err)
 			die("failed to read 8 bits @%08x\n", addr);
 		cpu_wr_reg(c, rd, v & 0xff);
 		break;
-	case LS_STR8:
+	case OPCODE_STR8:
 		v = c->regs[rb] & 0xff;
 		err = cpu_mem_map_write(c, addr, 8, v);
 		if (err)
 			die("failed to write 8 bits @%08x\n", addr);
 		break;
 	default:
-		die("invalid load/store opcode %u (%08x)\n", ls_opc(instr),
+		die("invalid load/store opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
 }
