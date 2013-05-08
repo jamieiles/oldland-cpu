@@ -37,7 +37,7 @@ assign branch_condition = instr[28:26];
 
 /* Sign extended immediates. */
 wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
-wire [31:0] imm24 = {{8{instr[23]}}, instr[23:0]};
+wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
 
 /*
  * The output immediate - either one of the sign extended immediates or
