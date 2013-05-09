@@ -4,7 +4,8 @@ Oldland CPU
 Architecture
 ------------
 
-7x32-bit GPR's.
+6x32-bit GPR's.
+1x32-bit link register, addressable as R6.
 1x32-bit stack pointer, addressable as R7.
 
 1x32-bit status register:
@@ -25,7 +26,7 @@ Branch instructions
   - BEQ #offs := if Z: PC += #offs
   - BNE #offs := if Z: PC += #offs
   - BGT #offs := if !Z: PC += #offs
-  - CALL #offs # Like branch, but pushes the return address.
+  - CALL #offs # Like branch, but stores the return address in R6.
   - RET # return from CALL
 
 Load/Store instructions:
