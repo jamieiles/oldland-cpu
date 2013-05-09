@@ -73,8 +73,8 @@ LSL	 0  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd r
 LSR	 0  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 AND	 0  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-BIC	 0  0  1  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-BST	 0  0  1  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+BIC	 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+BST	 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 MOVHI	 0  0  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0 rd rd rd  x  x  x  x  x  x
 CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
@@ -82,7 +82,7 @@ ASL 	 0  0  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd 
 ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-RET	 0  1  0  0  0  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
+RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  0
 B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
@@ -123,5 +123,4 @@ ALU operations
 - ra OP imm16
 - pc OP imm24
 - pc OP imm16
-
-How to handle movhi?  Bypass the ALU or have imm16 LSL 16?
+- pc OP rb
