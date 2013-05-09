@@ -124,3 +124,12 @@ ALU operations
 - pc OP imm24
 - pc OP imm16
 - pc OP rb
+
+Stalling
+--------
+
+Branch target doesn't get resolved until execute stage.  Stall until PC is
+updated with branch target.
+
+Memory accesses can take a variable number of cycles (cache misses/peripherals
+etc).  Stall until access completed.
