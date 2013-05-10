@@ -196,6 +196,25 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		if (c->flagsbf.z)
 			cpu_set_next_pc(c, target);
 		break;
+	case OPCODE_BNE:
+		if (!c->flagsbf.z)
+			cpu_set_next_pc(c, target);
+		break;
+	case OPCODE_BGT:
+		if (!c->flagsbf.c && !c->flagsbf.z)
+			cpu_set_next_pc(c, target);
+		break;
+	case OPCODE_BLT:
+		if (c->flagsbf.c && !c->flagsbf.z)
+			cpu_set_next_pc(c, target);
+		break;
+	case OPCODE_CALL:
+		cpu_wr_reg(c, 6, c->pc + 4);
+		cpu_set_next_pc(c, target);
+		break;
+	case OPCODE_RET:
+		cpu_set_next_pc(c, c->regs[6]);
+		break;
 	default:
 		die("invalid branch opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
@@ -240,11 +259,35 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 			die("failed to read 8 bits @%08x\n", addr);
 		cpu_wr_reg(c, rd, v & 0xff);
 		break;
+	case OPCODE_LDR16:
+		err = mem_map_read(c->mem, addr, 16, &v);
+		if (err)
+			die("failed to read 16 bits @%08x\n", addr);
+		cpu_wr_reg(c, rd, v & 0xffff);
+		break;
+	case OPCODE_LDR32:
+		err = mem_map_read(c->mem, addr, 32, &v);
+		if (err)
+			die("failed to read 32 bits @%08x\n", addr);
+		cpu_wr_reg(c, rd, v);
+		break;
 	case OPCODE_STR8:
 		v = c->regs[rb] & 0xff;
 		err = cpu_mem_map_write(c, addr, 8, v);
 		if (err)
 			die("failed to write 8 bits @%08x\n", addr);
+		break;
+	case OPCODE_STR16:
+		v = c->regs[rb] & 0xffff;
+		err = cpu_mem_map_write(c, addr, 16, v);
+		if (err)
+			die("failed to write 16 bits @%08x\n", addr);
+		break;
+	case OPCODE_STR32:
+		v = c->regs[rb];
+		err = cpu_mem_map_write(c, addr, 32, v);
+		if (err)
+			die("failed to write 32 bits @%08x\n", addr);
 		break;
 	default:
 		die("invalid load/store opcode %u (%08x)\n", instr_opc(instr),
