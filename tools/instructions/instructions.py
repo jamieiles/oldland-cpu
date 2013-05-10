@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from string import Template
 import json
+import os
 
-with open('instructions.json', 'r') as itab:
+with open(os.path.join(os.path.dirname(__file__), 'instructions.json'),
+          'r') as itab:
     data = json.loads(itab.read())
     instructions = data['instructions']
     operands = data['operands']
@@ -136,5 +138,6 @@ def gen_instructions(instrlist, operands):
         with open('oldland-instructions.c', 'w') as instructionsc:
             instructionsc.write(out)
 
-gen_types(instructions, operands)
-gen_instructions(instructions, operands)
+if __name__ == '__main__':
+    gen_types(instructions, operands)
+    gen_instructions(instructions, operands)

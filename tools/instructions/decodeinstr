@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+from bitstring import BitArray
+import instructions
+import sys
+
+def find_instr(cls, opcode):
+    for name, instr_def in instructions.instructions.items():
+        if instr_def['class'] == cls and instr_def['opcode'] == opcode:
+            return name, instr_def
+    raise Exception('Invalid instruction')
+
+def decode_operand(fmt, instr):
+    opdef = instructions.operands[fmt]
+    if fmt in ['ra', 'rb', 'rd']:
+        return '$r' + str(((instr >> opdef['bitpos']) & 0x7))
+    if fmt == 'imm16':
+        return '0x{0:04x}'.format(
+            ((instr >> opdef['bitpos']) & (1 << opdef['length']) - 1))
+    if fmt in ['imm16pc', 'imm24']:
+        imm = BitArray(uint = ((instr >> opdef['bitpos']) & ((1 << opdef['length']) - 1)) << 2,
+                       length = opdef['length'] + 2)
+        return '$pc + {0}'.format(imm.int)
+    if fmt == 'index':
+        return '[{0}, {1}]'.format(decode_operand('ra', instr),
+                                   decode_operand('imm16', instr))
+
+def decode(instr):
+    cls = (instr >> 30) & 0x3
+    opcode = (instr >> 26) & 0xf
+    name, instr_def = find_instr(cls, opcode)
+
+    opcodes = []
+    for o in instr_def['format']:
+        fmt = o[0]
+        if len(o) != 1:
+            if (instr & (1 << instr_def['formatsel'])):
+                fmt = o[1]
+            else:
+                fmt = o[0]
+        opcodes.append(decode_operand(fmt, instr))
+    print '{0:08x}: {1} {2}'.format(instr, name, ', '.join(opcodes))
+
+if __name__ == '__main__':
+    while True:
+        data = sys.stdin.read(9)
+        if not data:
+            sys.exit(0)
+        try:
+            decode(int(data, 16))
+        except:
+            print 'undef'
+        sys.stdout.flush()
