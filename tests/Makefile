@@ -1,4 +1,5 @@
-TESTS := hello
+TESTS := hello \
+	 echo
 
 .PHONY:	all clean $(TESTS)
 
