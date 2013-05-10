@@ -10,7 +10,7 @@ copy_loop:
 	cmp	$r1, $r0
 	beq	done
 	ldr8	$r4, [$r0, 0x0]
-	str8	$r4, [$r2, 0x0]
+	str32	$r4, [$r2, 0x0]
 	add	$r0, $r0, 1
 	b	copy_loop
 
