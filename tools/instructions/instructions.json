@@ -210,8 +210,8 @@
             "formatsel": 9
         },
         "str16": {
-            "class": 5,
-            "opcode": 1,
+            "class": 2,
+            "opcode": 5,
             "format": [["rb"], ["imm16", "index"]],
             "formatsel": 9
         },
