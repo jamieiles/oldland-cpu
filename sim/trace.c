@@ -40,6 +40,7 @@ void trace(FILE *trace_file, enum trace_points tp, uint32_t val)
 			fprintf(trace_file, "%d", !!(val & (1 << i)));
 		fprintf(trace_file, " %c\n", trace_defs[tp].id);
 	}
+	fflush(trace_file);
 }
 
 FILE *init_trace_file(void)
