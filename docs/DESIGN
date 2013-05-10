@@ -78,7 +78,6 @@ BST	 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  I  I  I  I  I  R rd rd r
 OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 MOVHI	 0  0  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0 rd rd rd  x  x  x  x  x  x
 CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
-ASL 	 0  0  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
 
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR

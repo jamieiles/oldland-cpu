@@ -123,8 +123,8 @@ def gen_instruction(name, definition):
 def gen_instructions(instrlist, operands):
     instrs = ''
 
-    for cls in range(0, 3):
-        instrs += 'const struct oldland_instruction instructions_{0}[] = {{'.format(cls)
+    for cls in range(0, 4):
+        instrs += 'const struct oldland_instruction oldland_instructions_{0}[16] = {{'.format(cls)
         for name, definition in instrlist.items():
             if int(definition['class']) != cls:
                 continue

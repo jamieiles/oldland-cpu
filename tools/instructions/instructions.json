@@ -141,14 +141,6 @@
             "description": "Ra - OP2, OP2 may either be a register or a 16-bit signed immediate.  The result is discarded.",
             "flags_updated": ["Z", "C", "O"]
         },
-        "asl": {
-            "class": 0,
-            "opcode": 13,
-            "format": [["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
-            "description": "Rd := Ra ASL OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C", "O"]
-        },
         "asr": {
             "class": 0,
             "opcode": 14,

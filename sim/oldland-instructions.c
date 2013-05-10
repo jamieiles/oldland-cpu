@@ -76,7 +76,7 @@ static const struct oldland_operand operands[] = {
         },
 };
 
-const struct oldland_instruction instructions_0[] = {
+const struct oldland_instruction oldland_instructions_0[16] = {
         [OPCODE_AND] = {
                 .name = "and",
                 .class = 0,
@@ -187,16 +187,6 @@ const struct oldland_instruction instructions_0[] = {
                 .op3 = {&operands[OPERAND_IMM16], &operands[OPERAND_RB]},
                 .formatsel = 9,
         }, 
-        [OPCODE_ASL] = {
-                .name = "asl",
-                .class = 0,
-                .opcode = OPCODE_ASL,
-                .nr_operands = 2,
-                .op1 = {&operands[OPERAND_RA]},
-                .op2 = {&operands[OPERAND_IMM16], &operands[OPERAND_RB]},
-                .op3 = {},
-                .formatsel = 9,
-        }, 
         [OPCODE_MOVHI] = {
                 .name = "movhi",
                 .class = 0,
@@ -229,7 +219,7 @@ const struct oldland_instruction instructions_0[] = {
         }, 
 };
 
-const struct oldland_instruction instructions_1[] = {
+const struct oldland_instruction oldland_instructions_1[16] = {
         [OPCODE_RET] = {
                 .name = "ret",
                 .class = 1,
@@ -292,7 +282,7 @@ const struct oldland_instruction instructions_1[] = {
         }, 
 };
 
-const struct oldland_instruction instructions_2[] = {
+const struct oldland_instruction oldland_instructions_2[16] = {
         [OPCODE_STR8] = {
                 .name = "str8",
                 .class = 2,
@@ -342,6 +332,19 @@ const struct oldland_instruction instructions_2[] = {
                 .op2 = {&operands[OPERAND_IMM16], &operands[OPERAND_INDEX]},
                 .op3 = {},
                 .formatsel = 9,
+        }, 
+};
+
+const struct oldland_instruction oldland_instructions_3[16] = {
+        [OPCODE_BKP] = {
+                .name = "bkp",
+                .class = 3,
+                .opcode = OPCODE_BKP,
+                .nr_operands = 0,
+                .op1 = {},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = -1,
         }, 
 };
 

@@ -36,7 +36,6 @@ enum { OPCODE_BST = 9 };
 enum { OPCODE_BIC = 8 };
 enum { OPCODE_BKP = 0 };
 enum { OPCODE_STR16 = 1 };
-enum { OPCODE_ASL = 13 };
 enum { OPCODE_B = 4 };
 enum { OPCODE_LDR16 = 1 };
 enum { OPCODE_MOVHI = 11 };
@@ -85,5 +84,10 @@ struct oldland_instruction {
 	const struct oldland_operand	*op2[MAX_OP_TYPES];
 	const struct oldland_operand	*op3[MAX_OP_TYPES];
 };
+
+extern const struct oldland_instruction oldland_instructions_0[16];
+extern const struct oldland_instruction oldland_instructions_1[16];
+extern const struct oldland_instruction oldland_instructions_2[16];
+extern const struct oldland_instruction oldland_instructions_3[16];
 
 #endif /* __OLDLAND_TYPES_H__ */
