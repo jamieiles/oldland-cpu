@@ -86,6 +86,7 @@ B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I 
 BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
+BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
 
 LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
 LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x

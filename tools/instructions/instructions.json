@@ -185,6 +185,12 @@
             "format": [["imm24", "rb"]],
             "formatsel": 25
 	},
+	"blt": {
+            "class": 1,
+            "opcode": 8,
+            "format": [["imm24", "rb"]],
+            "formatsel": 25
+	},
         "ldr32": {
             "class": 2,
             "opcode": 0,
