@@ -109,7 +109,8 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 {
 	enum regs ra, rb, rd;
 	uint16_t imm16;
-	uint32_t op2;
+	uint64_t op2;
+	uint64_t result = 0;
 
 	ra = instr_ra(instr);
 	rb = instr_rb(instr);
@@ -119,46 +120,60 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 
 	switch (instr_opc(instr)) {
 	case OPCODE_ADD:
-		cpu_wr_reg(c, rd, c->regs[ra] + op2);
+		result = (uint64_t)c->regs[ra] + op2;
 		break;
-	case OPCODE_SUB:
-		cpu_wr_reg(c, rd, c->regs[ra] - op2);
-		break;
-	case OPCODE_LSL:
-		cpu_wr_reg(c, rd, c->regs[ra] << op2);
-		break;
-	case OPCODE_LSR:
-		cpu_wr_reg(c, rd, c->regs[ra] >> op2);
-		break;
-	case OPCODE_AND:
-		cpu_wr_reg(c, rd, c->regs[ra] & op2);
-		break;
-	case OPCODE_XOR:
-		cpu_wr_reg(c, rd, c->regs[ra] ^ op2);
-		break;
-	case OPCODE_BIC:
-		cpu_wr_reg(c, rd, c->regs[ra] & ~(1 << op2));
-		break;
-	case OPCODE_OR:
-		cpu_wr_reg(c, rd, c->regs[ra] | op2);
-		break;
-	case OPCODE_MOVHI:
-		cpu_wr_reg(c, rd, op2 << 16);
+	case OPCODE_ADDC:
+		result = (uint64_t)c->regs[ra] + op2 + c->flagsbf.c;
 		break;
 	case OPCODE_CMP:
-		c->flagsbf.z = !(c->regs[ra] - op2);
-		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
+		result = (uint64_t)c->regs[ra] - op2;
+		break;
+	case OPCODE_SUB:
+		result = (uint64_t)c->regs[ra] - op2;
+		break;
+	case OPCODE_SUBC:
+		result = (uint64_t)c->regs[ra] - op2 - !c->flagsbf.c;
+		break;
+	case OPCODE_LSL:
+		result = (uint64_t)c->regs[ra] << op2;
+		break;
+	case OPCODE_ASR:
+		result = (uint64_t)(int32_t)c->regs[ra] >> op2;
+		break;
+	case OPCODE_LSR:
+		result = (uint64_t)c->regs[ra] >> op2;
+		break;
+	case OPCODE_AND:
+		result = (uint64_t)c->regs[ra] & op2;
+		break;
+	case OPCODE_XOR:
+		result = (uint64_t)c->regs[ra] ^ op2;
+		break;
+	case OPCODE_BIC:
+		result = (uint64_t)c->regs[ra] & ~(1 << (op2 % 32));
+		break;
+	case OPCODE_BST:
+		result = (uint64_t)c->regs[ra] | (1 << (op2 % 32));
+		break;
+	case OPCODE_OR:
+		result = (uint64_t)c->regs[ra] | op2;
+		break;
+	case OPCODE_MOVHI:
+		result = op2 << 16;
 		break;
 	default:
 		die("invalid arithmetic opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
 
-	if (instr_opc(instr) != OPCODE_MOVHI &&
-	    instr_opc(instr) != OPCODE_CMP) {
-		c->flagsbf.z = !c->regs[rd];
+	if (instr_opc(instr) != OPCODE_MOVHI) {
+		c->flagsbf.z = !result;
+		c->flagsbf.c = !!(result & (1LLU << 32));
 		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
 	}
+
+	if (instr_opc(instr) != OPCODE_CMP)
+		cpu_wr_reg(c, rd, result & 0xffffffff);
 }
 
 static void emul_branch(struct cpu *c, uint32_t instr)
