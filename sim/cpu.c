@@ -84,7 +84,7 @@ static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 	c->next_pc = v;
 }
 
-struct cpu *new_cpu(const char *test_file, const char *binary)
+struct cpu *new_cpu(const char *binary)
 {
 	int err;
 	struct cpu *c;

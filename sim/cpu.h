@@ -15,7 +15,7 @@ enum sim_status {
 	SIM_CONTINUE = 0x00000000,
 };
 
-struct cpu *new_cpu(const char *test_file, const char *binary);
+struct cpu *new_cpu(const char *binary);
 uint32_t cpu_cycle(struct cpu *c);
 
 #endif /* __CPU_H__ */

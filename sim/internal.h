@@ -2,6 +2,7 @@
 #define __INTERNAL_H__
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -34,5 +35,7 @@ static inline void __die(const char *file, unsigned int line, const char *fmt, .
 	exit(EXIT_FAILURE);
 }
 #define die(fmt, ...) __die(__FILE__, __LINE__, (fmt), ##__VA_ARGS__)
+
+extern bool interactive_mode;
 
 #endif /* __INTERNAL_H__ */
