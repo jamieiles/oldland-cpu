@@ -1,6 +1,3 @@
-- Complete ISS instruction emulation.
-- Add appropriate flags to UART model.
-- Add nop + cmp instructions.
 - verilog JTAG controller + PLI interface.
 - non-pipelined verilog model.
 - pipelining.
