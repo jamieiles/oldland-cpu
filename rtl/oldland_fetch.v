@@ -25,8 +25,8 @@ module oldland_fetch(input wire clk,
 initial pc		= 32'hfffffffc;
 
 /* Next PC calculation logic. */
-wire [31:0] next_pc	= branch_taken ? branch_pc : pc + 32'd4;
 assign pc_plus_4	= pc + 32'd4;
+wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
 
 /*
  * Load/store or branches cause stalling.  This means a class of 01 or 10.
@@ -42,13 +42,14 @@ sim_instr_rom rom(.clk(clk),
 		  .addr(stalling ? pc : next_pc),
 		  .data(fetch_instr));
 
-always @(posedge clk) begin
+always @(posedge clk)
 	if (!stalling)
 		pc <= next_pc;
-	else
-		stalled <= 1'b1;
 
-	if (stall_clear)
+always @(posedge clk) begin
+	if (stalling)
+		stalled <= 1'b1;
+	else if (stall_clear)
 		stalled <= 1'b0;
 end
 
