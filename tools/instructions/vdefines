@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+import instructions
+
+def write_defines():
+    classes = {
+        'ARITH': 0,
+        'BRANCH': 1,
+        'MEM': 2,
+        'MISC': 3,
+    }
+    with open('oldland_defines.v', 'w') as defines:
+        defines.write("`define INSTR_NOP 32'b00101000000000000000001000000000\n")
+        for k, v in classes.items():
+            defines.write("`define CLASS_{0}\t2'h{1:x}\n".format(k.upper(), v))
+        for name, instr_def in instructions.instructions.items():
+            defines.write("`define OPCODE_{0}\t4'h{1:x}\n".format(name.upper(),
+                instr_def['opcode']))
+
+if __name__ == '__main__':
+    write_defines()
