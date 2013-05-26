@@ -6,7 +6,7 @@ BINARY = "hello.bin"
 uart_data = ""
 
 function data_write_hook(addr, width, value)
-	if addr == 0x80000000 and width == 8 then
+	if addr == 0x80000000 and width == 32 then
 		uart_data = uart_data .. string.format("%c", bit32.band(value, 0xff))
 	end
 end
