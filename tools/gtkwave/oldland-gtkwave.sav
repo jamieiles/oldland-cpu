@@ -1,0 +1,85 @@
+[*]
+[*] GTKWave Analyzer v3.3.45 (w)1999-2012 BSI
+[*] Mon May 27 18:34:55 2013
+[*]
+[dumpfile] "/home/jamie/src/oldland/cpu.vcd"
+[dumpfile_mtime] "Mon May 27 15:09:17 2013"
+[dumpfile_size] 14905
+[savefile] "/home/jamie/src/oldland/tools/gtkwave/oldland-gtkwave.sav"
+[timestart] 0
+[size] 2560 1518
+[pos] -1 -1
+*-2.411076 3 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] cpu_tb.
+[treeopen] cpu_tb.cpu.
+[sst_width] 271
+[signals_width] 264
+[sst_expanded] 1
+[sst_vpaned_height] 454
+@28
+cpu_tb.cpu.clk
+@c00200
+-Decode
+@2022
+^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+cpu_tb.cpu.d_ra_sel[2:0]
+^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+cpu_tb.cpu.d_rb_sel[2:0]
+@28
+cpu_tb.cpu.de_alu_op1_ra
+cpu_tb.cpu.de_alu_op2_rb
+@22
+cpu_tb.cpu.de_alu_opc[3:0]
+@28
+cpu_tb.cpu.de_branch_condition[2:0]
+cpu_tb.cpu.de_branch_ra
+cpu_tb.cpu.de_class[1:0]
+@22
+cpu_tb.cpu.de_imm32[31:0]
+@28
+cpu_tb.cpu.de_is_call
+cpu_tb.cpu.de_mem_load
+cpu_tb.cpu.de_mem_store
+@22
+cpu_tb.cpu.de_pc_plus_4[31:0]
+cpu_tb.cpu.de_ra[31:0]
+cpu_tb.cpu.de_rb[31:0]
+@2022
+^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+cpu_tb.cpu.de_rd_sel[2:0]
+@28
+cpu_tb.cpu.de_update_rd
+@1401200
+-Decode
+@800201
+-Execute
+@23
+cpu_tb.cpu.ef_branch_pc[31:0]
+@29
+cpu_tb.cpu.ef_branch_taken
+@23
+cpu_tb.cpu.em_alu_out[31:0]
+@29
+cpu_tb.cpu.em_mem_load
+cpu_tb.cpu.em_mem_store
+@2023
+^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+cpu_tb.cpu.em_rd_sel[2:0]
+@29
+cpu_tb.cpu.em_update_rd
+@23
+cpu_tb.cpu.em_wr_val[31:0]
+@1000201
+-Execute
+@c00200
+-Fetch
+@4022
+^>1 /tmp/../home/jamie/src/oldland/tools/instructions/decodeinstr
+cpu_tb.cpu.fd_instr[31:0]
+@22
+cpu_tb.cpu.fd_pc[31:0]
+cpu_tb.cpu.fd_pc_plus_4[31:0]
+@1401200
+-Fetch
+[pattern_trace] 1
+[pattern_trace] 0
