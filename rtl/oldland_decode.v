@@ -62,7 +62,7 @@ always @(posedge clk) begin
 	* a special case for movhi - the 16 bit immediate shifted left 16 bits.
 	*/
 	imm32 <= (class == `CLASS_BRANCH) ? imm24 :
-		(instr[31:26] == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
+		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
 
 	branch_ra <= class == `CLASS_BRANCH && instr[25];
 
