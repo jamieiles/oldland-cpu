@@ -1,0 +1,8 @@
+rtl/oldland_defines.v
+-y rtl
+verif/cpu_tb.v
+rtl/oldland_cpu.v
+rtl/oldland_fetch.v
+rtl/oldland_decode.v
+rtl/oldland_execute.v
+rtl/oldland_regfile.v
