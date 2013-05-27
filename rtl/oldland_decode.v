@@ -23,7 +23,8 @@ module oldland_decode(input wire clk,
 		      output reg branch_ra,
 		      input wire [31:0] pc_plus_4,
 		      output reg [31:0] pc_plus_4_out,
-		      output reg [1:0] instr_class);
+		      output reg [1:0] instr_class,
+		      output reg is_call);
 
 wire [1:0] class = instr[31:30];
 wire [3:0] opcode = instr[29:26];
@@ -32,7 +33,8 @@ wire [3:0] opcode = instr[29:26];
 wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
 wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
 
-assign ra_sel = instr[5:3];
+/* For RET, we need to move the link register into the PC. */
+assign ra_sel = class == `CLASS_BRANCH && opcode == `OPCODE_RET ? 3'd6 : instr[5:3];
 assign rb_sel = instr[2:0];
 
 initial begin
@@ -47,10 +49,26 @@ initial begin
 	mem_store = 1'b0;
 	rd_sel = 3'b0;
 	pc_plus_4_out = 32'b0;
+	is_call = 1'b0;
+	instr_class = 2'b00;
 end
 
 always @(posedge clk) begin
-	alu_opc <= class == `CLASS_ARITH ? opcode : 4'b0;
+	branch_condition <= 3'b0;
+
+	if (class == `CLASS_BRANCH) begin
+		case (opcode)
+		`OPCODE_BNE: branch_condition <= 3'b001;
+		`OPCODE_BEQ: branch_condition <= 3'b010;
+		`OPCODE_BGT: branch_condition <= 3'b011;
+		`OPCODE_BLT: branch_condition <= 3'b100;
+		default: branch_condition <= 3'b111;
+		endcase
+	end
+end
+
+always @(posedge clk) begin
+	alu_opc <= class == `CLASS_ARITH ? opcode : 4'b0000;
 	/*
 	* Whether we store the result of the ALU operation in the destination
 	* register or not.  This is almost all arithmetic operations apart from cmp
@@ -58,8 +76,6 @@ always @(posedge clk) begin
 	* register is update by the LSU later.
 	*/
 	update_rd <= class == `CLASS_ARITH && opcode != `OPCODE_CMP;
-
-	branch_condition <= instr[28:26];
 
 	/*
 	* The output immediate - either one of the sign extended immediates or
@@ -78,6 +94,8 @@ always @(posedge clk) begin
 
 	rd_sel <= instr[8:6];
 	instr_class <= class;
+
+	is_call <= class == `CLASS_BRANCH && opcode == `OPCODE_CALL;
 end
 
 /* Register the PC + 4 for PC relative accesses in the execute stage. */

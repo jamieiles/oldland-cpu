@@ -13,10 +13,12 @@ module oldland_exec(input wire clk,
 		    input wire branch_ra,
 		    input wire [2:0] branch_condition,
 		    input wire [1:0] instr_class,
+		    input wire is_call,
 		    output reg branch_taken,
 		    output reg [31:0] alu_out,
 		    output reg mem_load_out,
 		    output reg mem_store_out,
+		    output reg [31:0] wr_val,
 		    output reg wr_result,
 		    output reg [2:0] rd_sel_out);
 
@@ -27,6 +29,7 @@ initial begin
 	mem_store_out = 1'b0;
 	wr_result = 1'b0;
 	rd_sel_out = 3'b0;
+	wr_val = 32'b0;
 end
 
 wire [31:0] op1 = alu_op1_ra ? ra : pc_plus_4;
@@ -58,17 +61,18 @@ always @(*) begin
 	4'b1011: alu_q = {imm32[15:0], 16'b0};
 	4'b1100: alu_q = 32'b0;
 	4'b1110: alu_q = op1 >>> op2;
+	4'b1111: alu_q = op1;
 	default: alu_q = 32'b0;
 	endcase
 end
 
 always @(*) begin
 	case (branch_condition)
-	3'b100: branch_condition_met = 1'b1;
-	3'b101: branch_condition_met = !z_flag;
-	3'b110: branch_condition_met = z_flag;
-	3'b111: branch_condition_met = !c_flag;
-	3'b000: branch_condition_met = c_flag;
+	3'b111: branch_condition_met = 1'b1;
+	3'b001: branch_condition_met = !z_flag;
+	3'b010: branch_condition_met = z_flag;
+	3'b011: branch_condition_met = !c_flag;
+	3'b100: branch_condition_met = c_flag;
 	default: branch_condition_met = 1'b0;
 	endcase
 end
@@ -85,8 +89,9 @@ always @(posedge clk) begin
 		c_flag <= alu_c;
 	end
 
-	if (instr_class == `CLASS_BRANCH)
-		branch_taken <= branch_condition_met;
+	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
+
+	wr_val <= is_call ? pc_plus_4 : alu_q;
 end
 
 endmodule
