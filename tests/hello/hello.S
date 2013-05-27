@@ -15,6 +15,17 @@ copy_loop:
 	b	copy_loop
 
 done:
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
+	or	$r3, $r3, $r3
 	.long	0xffffffff # Trap to test env
 
 .section .rodata
