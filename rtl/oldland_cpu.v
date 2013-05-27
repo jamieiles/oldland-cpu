@@ -35,6 +35,7 @@ wire [31:0] de_rb;
 wire [31:0] de_pc_plus_4;
 wire [1:0] de_class;
 wire de_is_call;
+wire [1:0] de_mem_width;
 
 /* Execute -> memory signals. */
 wire [31:0] em_alu_out;
@@ -43,6 +44,7 @@ wire em_mem_store;
 wire em_update_rd;
 wire [2:0] em_rd_sel;
 wire [31:0] em_wr_val;
+wire [1:0] em_mem_width;
 
 /* Writeback signals. */
 wire [2:0] w_rd_sel = 3'b0;
@@ -74,7 +76,8 @@ oldland_decode	decode(.clk(clk),
 		       .pc_plus_4(fd_pc_plus_4),
 		       .pc_plus_4_out(de_pc_plus_4),
 		       .instr_class(de_class),
-		       .is_call(de_is_call));
+		       .is_call(de_is_call),
+		       .mem_width(de_mem_width));
 
 oldland_exec	execute(.clk(clk),
 			.ra(de_ra),
@@ -89,11 +92,13 @@ oldland_exec	execute(.clk(clk),
 			.alu_op2_rb(de_alu_op2_rb),
 			.mem_load(de_mem_load),
 			.mem_store(de_mem_store),
+			.mem_width(de_mem_width),
 			.branch_ra(de_branch_ra),
 			.branch_taken(ef_branch_taken),
 			.alu_out(em_alu_out),
 			.mem_load_out(em_mem_load),
 			.mem_store_out(em_mem_store),
+			.mem_width_out(em_mem_width),
 			.wr_val(em_wr_val),
 			.wr_result(em_update_rd),
 			.rd_sel_out(em_rd_sel),

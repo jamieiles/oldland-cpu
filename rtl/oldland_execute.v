@@ -10,6 +10,7 @@ module oldland_exec(input wire clk,
 		    input wire alu_op2_rb,
 		    input wire mem_load,
 		    input wire mem_store,
+		    input wire [1:0] mem_width,
 		    input wire branch_ra,
 		    input wire [2:0] branch_condition,
 		    input wire [1:0] instr_class,
@@ -18,6 +19,7 @@ module oldland_exec(input wire clk,
 		    output reg [31:0] alu_out,
 		    output reg mem_load_out,
 		    output reg mem_store_out,
+		    output reg [1:0] mem_width_out,
 		    output reg [31:0] wr_val,
 		    output reg wr_result,
 		    output reg [2:0] rd_sel_out);
@@ -30,6 +32,7 @@ initial begin
 	wr_result = 1'b0;
 	rd_sel_out = 3'b0;
 	wr_val = 32'b0;
+	mem_width_out = 2'b00;
 end
 
 wire [31:0] op1 = alu_op1_ra ? ra : pc_plus_4;
@@ -81,6 +84,7 @@ always @(posedge clk) begin
 	alu_out <= alu_q;
 	mem_load_out <= mem_load;
 	mem_store_out <= mem_store;
+	mem_width_out <= mem_width;
 	wr_result <= update_rd;
 	rd_sel_out <= rd_sel;
 
