@@ -95,7 +95,8 @@ always @(posedge clk) begin
 
 	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
 
-	wr_val <= is_call ? pc_plus_4 : alu_q;
+	wr_val <= is_call ? pc_plus_4 :
+		  mem_store ? rb : alu_q;
 end
 
 endmodule
