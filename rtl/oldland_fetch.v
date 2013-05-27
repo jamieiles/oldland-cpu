@@ -15,7 +15,9 @@ module oldland_fetch(input wire clk,
 		     input wire branch_taken,
 		     output reg [31:0] pc,
 		     output wire [31:0] pc_plus_4,
-		     output wire [31:0] instr);
+		     output wire [31:0] instr,
+		     output wire [31:0] fetch_addr,
+		     input wire [31:0] fetch_data);
 
 /*
  * Instructions are fetched from the next_pc on reset, so we need the initial
@@ -34,12 +36,9 @@ wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
  */
 wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
 reg stalled		= 1'b0;
-assign instr		= stalled ? `INSTR_NOP : fetch_instr;
-wire [31:0] fetch_instr;
+assign instr		= stalled ? `INSTR_NOP : fetch_data;
 
-sim_instr_rom rom(.clk(clk),
-		  .addr(stalling ? pc : next_pc),
-		  .data(fetch_instr));
+assign fetch_addr = stalling ? pc : next_pc;
 
 always @(posedge clk)
 	if (!stalling)

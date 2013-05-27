@@ -1,5 +1,6 @@
 rtl/oldland_defines.v
 -y rtl
+-y verif
 verif/cpu_tb.v
 rtl/oldland_cpu.v
 rtl/oldland_fetch.v

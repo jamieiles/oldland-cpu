@@ -4,7 +4,16 @@ reg clk = 1'b0;
 
 always #1 clk = ~clk;
 
-oldland_cpu cpu(.clk(clk));
+wire [31:0] i_addr;
+wire [31:0] i_data;
+
+sim_dp_ram	ram(.clk(clk),
+		    .i_addr(i_addr),
+		    .i_data(i_data));
+
+oldland_cpu	cpu(.clk(clk),
+		    .i_addr(i_addr),
+		    .i_data(i_data));
 
 initial begin
 	$dumpfile("cpu.vcd");
