@@ -1,6 +1,12 @@
 module oldland_cpu(input wire clk,
 		   output wire [31:0] i_addr,
-		   input wire [31:0] i_data);
+		   input wire [31:0] i_data,
+		   output wire [31:0] d_addr,
+		   output wire [3:0] d_bytesel,
+		   output wire d_wr_en,
+		   output wire [31:0] d_wr_val,
+		   input wire [31:0] d_data,
+		   output wire d_access);
 
 /* Fetch -> decode signals. */
 wire [31:0] fd_pc;
@@ -12,7 +18,7 @@ wire [31:0] ef_branch_pc = em_alu_out;
 wire ef_branch_taken;
 
 /* Fetch stalling signals. */
-wire stall_clear = ef_branch_taken;
+wire stall_clear = ef_branch_taken | mf_complete;
 wire stalling;
 
 /* Decode signals. */
@@ -46,8 +52,11 @@ wire [2:0] em_rd_sel;
 wire [31:0] em_wr_val;
 wire [1:0] em_mem_width;
 
-/* Writeback signals. */
-wire [2:0] w_rd_sel = 3'b0;
+/* Memory -> writeback signals. */
+wire [31:0] mw_wr_val;
+wire mw_update_rd;
+wire [2:0] mw_rd_sel;
+wire mf_complete;
 
 oldland_fetch	fetch(.clk(clk),
 		      .stall_clear(stall_clear),
@@ -105,12 +114,31 @@ oldland_exec	execute(.clk(clk),
 			.instr_class(de_class),
 			.is_call(de_is_call));
 
+oldland_memory	mem(.clk(clk),
+		    .load(em_mem_load),
+		    .store(em_mem_store),
+		    .addr(em_alu_out),
+		    .width(em_mem_width),
+		    .wr_val(em_wr_val),
+		    .update_rd(em_update_rd),
+		    .rd_sel(em_rd_sel),
+		    .reg_wr_val(mw_wr_val),
+		    .update_rd_out(mw_update_rd),
+		    .rd_sel_out(mw_rd_sel),
+		    .d_addr(d_addr),
+		    .d_bytesel(d_bytesel),
+		    .d_wr_en(d_wr_en),
+		    .d_wr_val(d_wr_val),
+		    .d_data(d_data),
+		    .d_access(d_access),
+		    .complete(mf_complete));
+
 oldland_regfile	regfile(.clk(clk),
 			.ra_sel(d_ra_sel),
 			.rb_sel(d_rb_sel),
-			.rd_sel(w_rd_sel),
-			.wr_en(0), /* Not until the writeback stage is implemented. */
-			.wr_val(0),
+			.rd_sel(mw_rd_sel),
+			.wr_en(mw_update_rd),
+			.wr_val(mw_wr_val),
 			.ra(de_ra),
 			.rb(de_rb));
 

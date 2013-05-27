@@ -45,6 +45,7 @@ reg branch_condition_met = 1'b0;
 /* Status registers, not accessible by the programmer interface. */
 reg c_flag = 1'b0;
 reg z_flag = 1'b0;
+reg [31:0] alu_discard = 32'b0;
 
 always @(*) begin
 	alu_c = 1'b0;
@@ -61,8 +62,8 @@ always @(*) begin
 	4'b1000: alu_q = op1 & ~(1 << op2[4:0]);
 	4'b1001: alu_q = op1 | (1 << op2[4:0]);
 	4'b1010: alu_q = op1 | op2;
-	4'b1011: alu_q = {imm32[15:0], 16'b0};
-	4'b1100: alu_q = 32'b0;
+	4'b1011: alu_q = op2;
+	4'b1100: {alu_c, alu_discard} = op1 - op2;
 	4'b1110: alu_q = op1 >>> op2;
 	4'b1111: alu_q = op1;
 	default: alu_q = 32'b0;
