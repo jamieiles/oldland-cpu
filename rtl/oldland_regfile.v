@@ -12,7 +12,7 @@ reg [3:0] regno = 4'b0;
 
 initial begin
 	for (regno = 0; regno < 8; regno = regno + 1)
-		registers[regno] = 32'b0;
+		registers[regno[2:0]] = 32'b0;
 	ra = 32'b0;
 	rb = 32'b0;
 end

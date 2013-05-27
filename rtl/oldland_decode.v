@@ -20,7 +20,10 @@ module oldland_decode(input wire clk,
 		      output reg alu_op2_rb,
 		      output reg mem_load,
 		      output reg mem_store,
-		      output reg branch_ra);
+		      output reg branch_ra,
+		      input wire [31:0] pc_plus_4,
+		      output reg [31:0] pc_plus_4_out,
+		      output reg [1:0] instr_class);
 
 wire [1:0] class = instr[31:30];
 wire [3:0] opcode = instr[29:26];
@@ -43,6 +46,7 @@ initial begin
 	mem_load = 1'b0;
 	mem_store = 1'b0;
 	rd_sel = 3'b0;
+	pc_plus_4_out = 32'b0;
 end
 
 always @(posedge clk) begin
@@ -73,6 +77,10 @@ always @(posedge clk) begin
 	mem_store <= class == `CLASS_MEM && instr[28] == 1'b1;
 
 	rd_sel <= instr[8:6];
+	instr_class <= class;
 end
+
+/* Register the PC + 4 for PC relative accesses in the execute stage. */
+always @(posedge clk) pc_plus_4_out <= pc_plus_4;
 
 endmodule

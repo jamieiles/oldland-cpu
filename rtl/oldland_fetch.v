@@ -11,7 +11,6 @@
  */
 module oldland_fetch(input wire clk,
 		     input wire stall_clear,
-		     output wire stalling,
 		     input wire [31:0] branch_pc,
 		     input wire branch_taken,
 		     output reg [31:0] pc,
@@ -33,7 +32,7 @@ wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
  *
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
-assign stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
+wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
 reg stalled		= 1'b0;
 assign instr		= stalled ? `INSTR_NOP : fetch_instr;
 wire [31:0] fetch_instr;

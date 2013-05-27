@@ -6,11 +6,11 @@ wire [31:0] fd_pc_plus_4;
 wire [31:0] fd_instr;
 
 /* Execute -> fetch signals. */
-reg [31:0] ef_branch_pc = 32'b0;
-reg ef_branch_taken = 1'b0;
+wire [31:0] ef_branch_pc = em_alu_out;
+wire ef_branch_taken;
 
 /* Fetch stalling signals. */
-reg stall_clear = 1'b1;
+wire stall_clear = ef_branch_taken;
 wire stalling;
 
 /* Decode signals. */
@@ -30,6 +30,15 @@ wire de_mem_store;
 wire de_branch_ra;
 wire [31:0] de_ra;
 wire [31:0] de_rb;
+wire [31:0] de_pc_plus_4;
+wire [1:0] de_class;
+
+/* Execute -> memory signals. */
+wire [31:0] em_alu_out;
+wire em_mem_load;
+wire em_mem_store;
+wire em_update_rd;
+wire [2:0] em_rd_sel;
 
 /* Writeback signals. */
 wire [2:0] w_rd_sel = 3'b0;
@@ -55,7 +64,32 @@ oldland_decode	decode(.clk(clk),
 		       .alu_op2_rb(de_alu_op2_rb),
 		       .mem_load(de_mem_load),
 		       .mem_store(de_mem_store),
-		       .branch_ra(de_branch_ra));
+		       .branch_ra(de_branch_ra),
+		       .pc_plus_4(fd_pc_plus_4),
+		       .pc_plus_4_out(de_pc_plus_4),
+		       .instr_class(de_class));
+
+oldland_exec	execute(.clk(clk),
+			.ra(de_ra),
+			.rb(de_rb),
+			.imm32(de_imm32),
+			.pc_plus_4(de_pc_plus_4),
+			.rd_sel(de_rd_sel),
+			.update_rd(de_update_rd),
+			.alu_opc(de_alu_opc),
+			.branch_condition(de_branch_condition),
+			.alu_op1_ra(de_alu_op1_ra),
+			.alu_op2_rb(de_alu_op2_rb),
+			.mem_load(de_mem_load),
+			.mem_store(de_mem_store),
+			.branch_ra(de_branch_ra),
+			.branch_taken(ef_branch_taken),
+			.alu_out(em_alu_out),
+			.mem_load_out(em_mem_load),
+			.mem_store_out(em_mem_store),
+			.wr_result(em_update_rd),
+			.rd_sel_out(em_rd_sel),
+			.instr_class(de_class));
 
 oldland_regfile	regfile(.clk(clk),
 			.ra_sel(d_ra_sel),
