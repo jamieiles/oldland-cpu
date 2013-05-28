@@ -39,7 +39,7 @@ wire [31:0] op1 = alu_op1_ra ? ra : pc_plus_4;
 wire [31:0] op2 = alu_op2_rb ? rb : imm32;
 reg [31:0] alu_q = 32'b0;
 reg alu_c = 1'b0;
-wire alu_z = op1 ^ op2 == 32'b0;
+wire alu_z = (op1 ^ op2) == 32'b0;
 reg branch_condition_met = 1'b0;
 
 /* Status registers, not accessible by the programmer interface. */

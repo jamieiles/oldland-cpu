@@ -48,7 +48,7 @@ initial begin
 	alu_op2_rb = 1'b0;
 	mem_load = 1'b0;
 	mem_store = 1'b0;
-	mem_width = 1'b0;
+	mem_width = 2'b0;
 	rd_sel = 3'b0;
 	pc_plus_4_out = 32'b0;
 	is_call = 1'b0;
