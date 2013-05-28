@@ -14,7 +14,6 @@ wire [31:0] fd_pc_plus_4;
 wire [31:0] fd_instr;
 
 /* Execute -> fetch signals. */
-wire [31:0] ef_branch_pc = em_alu_out;
 wire ef_branch_taken;
 
 /* Fetch stalling signals. */
@@ -60,7 +59,7 @@ wire mf_complete;
 
 oldland_fetch	fetch(.clk(clk),
 		      .stall_clear(stall_clear),
-		      .branch_pc(ef_branch_pc),
+		      .branch_pc(em_alu_out),
 		      .branch_taken(ef_branch_taken),
 		      .pc(fd_pc),
 		      .pc_plus_4(fd_pc_plus_4),
