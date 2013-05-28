@@ -15,14 +15,23 @@ wire [31:0] fd_instr;
 
 /* Execute -> fetch signals. */
 wire ef_branch_taken;
+wire ef_stall_clear;
 
 /* Fetch stalling signals. */
-wire stall_clear = ef_branch_taken | mf_complete;
+wire stall_clear = ef_stall_clear | mf_complete;
 wire stalling;
 
 /* Decode signals. */
 wire [2:0] d_ra_sel;
 wire [2:0] d_rb_sel;
+
+reg [2:0] e_ra_sel = 3'b0;
+reg [2:0] e_rb_sel = 3'b0;
+
+always @(posedge clk) begin
+	e_ra_sel <= d_ra_sel;
+	e_rb_sel <= d_rb_sel;
+end
 
 /* Decode -> execute signals. */
 wire [2:0] de_rd_sel;
@@ -35,12 +44,35 @@ wire de_alu_op2_rb;
 wire de_mem_load;
 wire de_mem_store;
 wire de_branch_ra;
-wire [31:0] de_ra;
-wire [31:0] de_rb;
+wire [31:0] ra;
+wire [31:0] rb;
 wire [31:0] de_pc_plus_4;
 wire [1:0] de_class;
 wire de_is_call;
 wire [1:0] de_mem_width;
+
+/* 
+ * Forwarding logic.  We need to forward results from the end of the execute
+ * stage back to the input of the ALU.
+ */
+reg [31:0] de_ra = 32'b0;
+reg [31:0] de_rb = 32'b0;
+
+always @(*) begin
+	if (em_rd_sel == e_ra_sel && em_update_rd)
+		de_ra = em_alu_out;
+	else if (mw_rd_sel == e_ra_sel && mw_update_rd)
+		de_ra = mw_wr_val;
+	else
+		de_ra = ra;
+
+	if (em_rd_sel == e_rb_sel && em_update_rd)
+		de_rb = em_alu_out;
+	else if (mw_rd_sel == e_rb_sel && mw_update_rd)
+		de_rb = mw_wr_val;
+	else
+		de_rb = rb;
+end
 
 /* Execute -> memory signals. */
 wire [31:0] em_alu_out;
@@ -103,6 +135,7 @@ oldland_exec	execute(.clk(clk),
 			.mem_width(de_mem_width),
 			.branch_ra(de_branch_ra),
 			.branch_taken(ef_branch_taken),
+			.stall_clear(ef_stall_clear),
 			.alu_out(em_alu_out),
 			.mem_load_out(em_mem_load),
 			.mem_store_out(em_mem_store),
@@ -138,7 +171,7 @@ oldland_regfile	regfile(.clk(clk),
 			.rd_sel(mw_rd_sel),
 			.wr_en(mw_update_rd),
 			.wr_val(mw_wr_val),
-			.ra(de_ra),
-			.rb(de_rb));
+			.ra(ra),
+			.rb(rb));
 
 endmodule

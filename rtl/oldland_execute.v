@@ -22,7 +22,8 @@ module oldland_exec(input wire clk,
 		    output reg [1:0] mem_width_out,
 		    output reg [31:0] wr_val,
 		    output reg wr_result,
-		    output reg [2:0] rd_sel_out);
+		    output reg [2:0] rd_sel_out,
+		    output reg stall_clear);
 
 initial begin
 	branch_taken = 1'b0;
@@ -95,6 +96,7 @@ always @(posedge clk) begin
 	end
 
 	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
+	stall_clear <= instr_class == `CLASS_BRANCH;
 
 	wr_val <= is_call ? pc_plus_4 :
 		  mem_store ? rb : alu_q;
