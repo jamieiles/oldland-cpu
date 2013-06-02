@@ -8,6 +8,7 @@ wire [31:0] i_addr;
 wire [31:0] i_data;
 wire [31:0] d_addr;
 wire [31:0] d_data;
+wire [31:0] d_wr_val;
 wire [3:0] d_bytesel;
 wire d_wr_en;
 wire d_access;
@@ -28,12 +29,18 @@ oldland_cpu	cpu(.clk(clk),
 		    .d_data(d_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_en(d_wr_en),
+		    .d_wr_val(d_wr_val),
 		    .d_access(d_access));
 
 initial begin
 	$dumpfile("cpu.vcd");
 	$dumpvars(0, cpu_tb);
-	#256 $finish;
+	#1024 $finish;
+end
+
+always @(posedge clk) begin
+	if (d_wr_en && d_addr == 32'h80000000)
+		$display("uart: writing %c", d_wr_val[7:0]);
 end
 
 endmodule
