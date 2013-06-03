@@ -366,6 +366,16 @@ const struct oldland_instruction oldland_instructions_3[16] = {
                 .op3 = {},
                 .formatsel = -1,
         }, 
+        [OPCODE_NOP] = {
+                .name = "nop",
+                .class = 3,
+                .opcode = OPCODE_NOP,
+                .nr_operands = 0,
+                .op1 = {},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = -1,
+        }, 
 };
 
 

@@ -37,6 +37,7 @@ enum { OPCODE_BST = 9 };
 enum { OPCODE_BIC = 8 };
 enum { OPCODE_BKP = 0 };
 enum { OPCODE_STR16 = 5 };
+enum { OPCODE_NOP = 15 };
 enum { OPCODE_B = 4 };
 enum { OPCODE_LDR16 = 1 };
 enum { OPCODE_MOVHI = 11 };

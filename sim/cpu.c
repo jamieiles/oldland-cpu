@@ -295,6 +295,17 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	}
 }
 
+static void emul_misc(struct cpu *c, uint32_t instr)
+{
+	switch (instr_opc(instr)) {
+	case OPCODE_NOP:
+		break;
+	default:
+		die("invalid misc opcode %u (%08x)\n", instr_opc(instr),
+		    instr);
+	}
+}
+
 static void emul_insn(struct cpu *c, uint32_t instr)
 {
 	switch (instr_class(instr)) {
@@ -306,6 +317,9 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 		break;
 	case INSTR_LDR_STR:
 		emul_ldr_str(c, instr);
+		break;
+	case INSTR_MISC:
+		emul_misc(c, instr);
 		break;
 	default:
 		die("invalid instruction class %u (%08x)\n",

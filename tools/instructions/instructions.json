@@ -231,6 +231,11 @@
             "class": 3,
             "opcode": 0,
             "format": []
+        },
+        "nop": {
+            "class": 3,
+            "opcode": 15,
+            "format": []
         }
     }
 }
