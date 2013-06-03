@@ -50,6 +50,7 @@ wire [31:0] de_pc_plus_4;
 wire [1:0] de_class;
 wire de_is_call;
 wire [1:0] de_mem_width;
+wire de_update_flags;
 
 /* 
  * Forwarding logic.  We need to forward results from the end of the execute
@@ -117,7 +118,8 @@ oldland_decode	decode(.clk(clk),
 		       .pc_plus_4_out(de_pc_plus_4),
 		       .instr_class(de_class),
 		       .is_call(de_is_call),
-		       .mem_width(de_mem_width));
+		       .mem_width(de_mem_width),
+		       .update_flags(de_update_flags));
 
 oldland_exec	execute(.clk(clk),
 			.ra(de_ra),
@@ -144,7 +146,8 @@ oldland_exec	execute(.clk(clk),
 			.wr_result(em_update_rd),
 			.rd_sel_out(em_rd_sel),
 			.instr_class(de_class),
-			.is_call(de_is_call));
+			.is_call(de_is_call),
+			.update_flags(de_update_flags),
 
 oldland_memory	mem(.clk(clk),
 		    .load(em_mem_load),

@@ -25,7 +25,8 @@ module oldland_decode(input wire clk,
 		      input wire [31:0] pc_plus_4,
 		      output reg [31:0] pc_plus_4_out,
 		      output reg [1:0] instr_class,
-		      output reg is_call);
+		      output reg is_call,
+		      output reg update_flags);
 
 wire [1:0] class = instr[31:30];
 wire [3:0] opcode = instr[29:26];
@@ -53,6 +54,7 @@ initial begin
 	pc_plus_4_out = 32'b0;
 	is_call = 1'b0;
 	instr_class = 2'b00;
+	update_flags = 1'b0;
 end
 
 always @(posedge clk) begin
@@ -78,6 +80,7 @@ always @(posedge clk) begin
 	* register is update by the LSU later.
 	*/
 	update_rd <= class == `CLASS_ARITH && opcode != `OPCODE_CMP;
+	update_flags <= class == `CLASS_ARITH && opcode == `OPCODE_CMP;
 
 	/*
 	* The output immediate - either one of the sign extended immediates or

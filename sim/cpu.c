@@ -166,7 +166,7 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		    instr);
 	}
 
-	if (instr_opc(instr) != OPCODE_MOVHI) {
+	if (instr_opc(instr) == OPCODE_CMP) {
 		c->flagsbf.z = !result;
 		c->flagsbf.c = !!(result & (1LLU << 32));
 		trace(c->trace_file, TRACE_FLAGS, c->flagsw);

@@ -15,6 +15,7 @@ module oldland_exec(input wire clk,
 		    input wire [2:0] branch_condition,
 		    input wire [1:0] instr_class,
 		    input wire is_call,
+		    input wire update_flags,
 		    output reg branch_taken,
 		    output reg [31:0] alu_out,
 		    output reg mem_load_out,
@@ -90,7 +91,7 @@ always @(posedge clk) begin
 	wr_result <= update_rd;
 	rd_sel_out <= rd_sel;
 
-	if (instr_class == `CLASS_ARITH) begin
+	if (update_flags) begin
 		z_flag <= alu_z;
 		c_flag <= alu_c;
 	end
