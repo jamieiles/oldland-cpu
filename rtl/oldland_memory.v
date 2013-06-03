@@ -2,6 +2,7 @@ module oldland_memory(input wire clk,
 		      input wire load,
 		      input wire store,
 		      input wire [31:0] addr,
+		      input wire [31:0] mdr,
 		      input wire [1:0] width,
 		      input wire [31:0] wr_val,
 		      input wire update_rd,
@@ -25,6 +26,7 @@ initial begin
 	d_bytesel = 4'b0;
 	d_wr_val = 32'b0;
 	mem_rd_val = 32'b0;
+	complete = 1'b0;
 end
 
 reg [31:0] wr_val_bypass;
@@ -51,22 +53,22 @@ always @(*) begin
 	case (width)
 	2'b10: begin
 		d_bytesel = 4'b1111;
-		d_wr_val = wr_val;
+		d_wr_val = mdr;
 		mem_rd_val = d_data;
 	end
 	2'b01: begin
 		d_bytesel = 4'b0011 << (addr[1] * 2);
-		d_wr_val = wr_val << (addr[1] * 16);
+		d_wr_val = mdr << (addr[1] * 16);
 		mem_rd_val = d_data >> (addr[1] * 16);
 	end
 	2'b00: begin
 		d_bytesel = 4'b0001 << addr[1:0];
-		d_wr_val = wr_val << (addr[1:0] * 8);
+		d_wr_val = mdr << (addr[1:0] * 8);
 		mem_rd_val = d_data >> (addr[1:0] * 8);
 	end
 	default: begin
 		d_bytesel = 4'b1111;
-		d_wr_val = wr_val;
+		d_wr_val = mdr;
 		mem_rd_val = d_data;
 	end
 	endcase

@@ -83,6 +83,8 @@ wire em_update_rd;
 wire [2:0] em_rd_sel;
 wire [31:0] em_wr_val;
 wire [1:0] em_mem_width;
+wire [31:0] em_mar;
+wire [31:0] em_mdr;
 
 /* Memory -> writeback signals. */
 wire [31:0] mw_wr_val;
@@ -148,11 +150,14 @@ oldland_exec	execute(.clk(clk),
 			.instr_class(de_class),
 			.is_call(de_is_call),
 			.update_flags(de_update_flags),
+			.mar(em_mar),
+			.mdr(em_mdr));
 
 oldland_memory	mem(.clk(clk),
 		    .load(em_mem_load),
 		    .store(em_mem_store),
-		    .addr(em_alu_out),
+		    .addr(em_mar),
+		    .mdr(em_mdr),
 		    .width(em_mem_width),
 		    .wr_val(em_wr_val),
 		    .update_rd(em_update_rd),
