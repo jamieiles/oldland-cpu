@@ -1,9 +1,12 @@
 rtl/oldland_defines.v
 -y rtl
 -y verif
+-y rtl/keynsham/uart
 verif/cpu_tb.v
 rtl/oldland_cpu.v
 rtl/oldland_fetch.v
 rtl/oldland_decode.v
 rtl/oldland_execute.v
 rtl/oldland_regfile.v
+rtl/keynsham/keynsham_soc.v
+rtl/keynsham/uart/uart.v

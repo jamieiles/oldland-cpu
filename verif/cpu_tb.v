@@ -1,46 +1,43 @@
 module cpu_tb();
 
 reg clk = 1'b0;
+wire rx;
+wire tx;
+wire rx_rdy;
+reg rx_rdy_clr = 1'b0;
+wire [7:0] uart_rx_data;
 
 always #1 clk = ~clk;
 
-wire [31:0] i_addr;
-wire [31:0] i_data;
-wire [31:0] d_addr;
-wire [31:0] d_data;
-wire [31:0] d_wr_val;
-wire [3:0] d_bytesel;
-wire d_wr_en;
-wire d_access;
+keynsham_soc	soc(.clk(clk),
+		    .uart_rx(rx),
+		    .uart_tx(tx));
 
-sim_dp_ram	ram(.clk(clk),
-		    .i_addr(i_addr),
-		    .i_data(i_data),
-		    .d_cs(d_access),
-		    .d_addr(d_addr),
-		    .d_data(d_data),
-		    .d_bytesel(d_bytesel),
-		    .d_wr_en(d_wr_en));
-
-oldland_cpu	cpu(.clk(clk),
-		    .i_addr(i_addr),
-		    .i_data(i_data),
-		    .d_addr(d_addr),
-		    .d_data(d_data),
-		    .d_bytesel(d_bytesel),
-		    .d_wr_en(d_wr_en),
-		    .d_wr_val(d_wr_val),
-		    .d_access(d_access));
+uart		tb_uart(.clk_50m(clk),
+			.wr_en(0),
+			.din(8'b0),
+			.tx(rx),
+			.rx(tx),
+			.rdy(rx_rdy),
+			.rdy_clr(rx_rdy_clr),
+			.dout(uart_rx_data));
 
 initial begin
 	$dumpfile("cpu.vcd");
 	$dumpvars(0, cpu_tb);
-	#1024 $finish;
+	#150000;
+	$display();
+	$finish;
 end
 
 always @(posedge clk) begin
-	if (d_wr_en && d_addr == 32'h80000000)
-		$display("uart: writing %c", d_wr_val[7:0]);
+	if (rx_rdy && !rx_rdy_clr) begin
+		$write("%c", uart_rx_data);
+		$fflush();
+		rx_rdy_clr <= 1'b1;
+	end else begin
+		rx_rdy_clr <= 1'b0;
+	end
 end
 
 endmodule
