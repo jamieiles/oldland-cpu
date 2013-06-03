@@ -17,6 +17,6 @@ end
 
 function validate_result()
 	if uart_data ~= "Hello, world!" then
-		sim.err("output string does not match - " .. uart_data)
+		sim.err("output string does not match - \"" .. uart_data .. "\"")
 	end
 end

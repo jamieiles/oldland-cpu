@@ -5,12 +5,20 @@ _start:
 	or	$r0, $r0, %lo(hello_start)
 	or	$r1, $r1, %lo(hello_end)
 	movhi	$r2, 0x8000 # UART at 0x80000000
+	add	$r3, $r3, 0x1
 
 copy_loop:
 	cmp	$r1, $r0
 	beq	done
 	ldr8	$r4, [$r0, 0x0]
 	str32	$r4, [$r2, 0x0]
+
+not_empty:
+	ldr32	$r5, [$r2, 0x4]
+	and	$r5, $r5, 0x1
+	cmp	$r5, $r3
+	bne	not_empty
+
 	add	$r0, $r0, 1
 	b	copy_loop
 
