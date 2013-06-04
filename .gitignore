@@ -6,3 +6,11 @@
 *.pyc
 BUILD
 *.hex
+a.out
+tests/output
+tools/instructions/oldland-instructions.c
+tools/instructions/oldland-types.h
+verif/greybox_tmp/
+verif/ram.qip
+tests/echo/echo
+tests/hello/hello
