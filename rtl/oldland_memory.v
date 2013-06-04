@@ -17,7 +17,9 @@ module oldland_memory(input wire clk,
 		      output wire d_wr_en,
 		      output reg [31:0] d_wr_val,
 		      input wire [31:0] d_data,
-		      output wire d_access);
+		      output wire d_access,
+		      input wire d_ack,
+		      input wire d_error);
 
 initial begin
 	update_rd_out = 1'b0;

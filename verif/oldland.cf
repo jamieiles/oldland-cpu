@@ -9,4 +9,5 @@ rtl/oldland_decode.v
 rtl/oldland_execute.v
 rtl/oldland_regfile.v
 rtl/keynsham/keynsham_soc.v
+rtl/keynsham/keynsham_uart.v
 rtl/keynsham/uart/uart.v

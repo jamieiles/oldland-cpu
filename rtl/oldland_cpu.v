@@ -6,7 +6,9 @@ module oldland_cpu(input wire clk,
 		   output wire d_wr_en,
 		   output wire [31:0] d_wr_val,
 		   input wire [31:0] d_data,
-		   output wire d_access);
+		   output wire d_access,
+		   input wire d_ack,
+		   input wire d_error);
 
 /* Fetch -> decode signals. */
 wire [31:0] fd_pc;
@@ -168,6 +170,8 @@ oldland_memory	mem(.clk(clk),
 		    .d_wr_val(d_wr_val),
 		    .d_data(d_data),
 		    .d_access(d_access),
+		    .d_ack(d_ack),
+		    .d_error(d_error),
 		    .complete(mf_complete));
 
 oldland_regfile	regfile(.clk(clk),
