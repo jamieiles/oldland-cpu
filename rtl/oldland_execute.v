@@ -57,10 +57,10 @@ always @(*) begin
 
 	case (alu_opc)
 	4'b0000: {alu_c, alu_q} = op1 + op2;
-	4'b0001: {alu_c, alu_q} = op1 + op2 + c_flag;
+	4'b0001: {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
 	4'b0010: {alu_c, alu_q} = op1 - op2;
-	4'b0011: {alu_c, alu_q} = op1 - op2 + c_flag;
-	4'b0100: {alu_c, alu_q} = op1 << op2[4:0];
+	4'b0011: {alu_c, alu_q} = op1 - op2 + {31'b0, c_flag};
+	4'b0100: {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
 	4'b0101: alu_q = op1 >> op2[4:0];
 	4'b0110: alu_q = op1 & op2;
 	4'b0111: alu_q = op1 ^ op2;
