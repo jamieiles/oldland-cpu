@@ -12,8 +12,9 @@ wire d_wr_en;
 wire d_access;
 
 wire [31:0] ram_data;
-wire [31:0] uart_data;
+wire ram_ack;
 
+wire [31:0] uart_data;
 wire uart_ack;
 wire uart_error;
 
@@ -35,20 +36,23 @@ always @(*) begin
 		d_data = 32'b0;
 end
 
-wire d_ack = uart_ack;
+wire d_ack = uart_ack | ram_ack;
 wire d_error = uart_error;
 
 sim_dp_ram	ram(.clk(clk),
 		    .i_addr(i_addr),
 		    .i_data(i_data),
+		    .d_access(d_access),
 		    .d_cs(ram_cs),
 		    .d_addr(d_addr),
 		    .d_data(ram_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_val(d_wr_val),
-		    .d_wr_en(d_wr_en));
+		    .d_wr_en(d_wr_en),
+		    .d_ack(ram_ack));
 
 keynsham_uart	uart(.clk(clk),
+		     .bus_access(d_access),
 		     .bus_cs(uart_cs),
 		     .bus_addr(d_addr),
 		     .bus_wr_val(d_wr_val),
