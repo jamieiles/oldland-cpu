@@ -1,4 +1,4 @@
 - verilog JTAG controller + PLI interface.
-- non-pipelined verilog model.
-- pipelining.
+- interconnect with multicycle accesses.
+- i+d cache.
 - interrupts.
