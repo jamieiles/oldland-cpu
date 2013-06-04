@@ -43,7 +43,6 @@ wire de_alu_op1_ra;
 wire de_alu_op2_rb;
 wire de_mem_load;
 wire de_mem_store;
-wire de_branch_ra;
 wire [31:0] ra;
 wire [31:0] rb;
 wire [31:0] de_pc_plus_4;
@@ -115,7 +114,6 @@ oldland_decode	decode(.clk(clk),
 		       .alu_op2_rb(de_alu_op2_rb),
 		       .mem_load(de_mem_load),
 		       .mem_store(de_mem_store),
-		       .branch_ra(de_branch_ra),
 		       .pc_plus_4(fd_pc_plus_4),
 		       .pc_plus_4_out(de_pc_plus_4),
 		       .instr_class(de_class),
@@ -137,7 +135,6 @@ oldland_exec	execute(.clk(clk),
 			.mem_load(de_mem_load),
 			.mem_store(de_mem_store),
 			.mem_width(de_mem_width),
-			.branch_ra(de_branch_ra),
 			.branch_taken(ef_branch_taken),
 			.stall_clear(ef_stall_clear),
 			.alu_out(em_alu_out),

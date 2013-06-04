@@ -21,7 +21,6 @@ module oldland_decode(input wire clk,
 		      output reg mem_load,
 		      output reg mem_store,
 		      output reg [1:0] mem_width,
-		      output reg branch_ra,
 		      input wire [31:0] pc_plus_4,
 		      output reg [31:0] pc_plus_4_out,
 		      output reg [1:0] instr_class,
@@ -44,7 +43,6 @@ initial begin
 	update_rd = 1'b0;
 	branch_condition = 3'b0;
 	imm32 = 32'b0;
-	branch_ra = 1'b0;
 	alu_op1_ra = 1'b0;
 	alu_op2_rb = 1'b0;
 	mem_load = 1'b0;
@@ -72,7 +70,9 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	alu_opc <= class == `CLASS_ARITH ? opcode : 4'b0000;
+	/* Branch to Ra is special - just bypass Ra through the ALU. */
+	alu_opc <= class == `CLASS_ARITH ? opcode :
+		(class == `CLASS_BRANCH && instr[25]) ? 4'b1111 : 4'b0000;
 	/*
 	* Whether we store the result of the ALU operation in the destination
 	* register or not.  This is almost all arithmetic operations apart from cmp
@@ -88,8 +88,6 @@ always @(posedge clk) begin
 	*/
 	imm32 <= (class == `CLASS_BRANCH) ? imm24 :
 		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
-
-	branch_ra <= class == `CLASS_BRANCH && instr[25];
 
 	alu_op1_ra <= (class == `CLASS_ARITH || class == `CLASS_MEM);
 	alu_op2_rb <= (class == `CLASS_ARITH && instr[9]);
