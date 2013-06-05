@@ -37,17 +37,19 @@ wire sdram_error;
  * 0x00000000 -- 0x00000fff: On chip memory.
  * 0x20000000 -- 0x2fffffff: SDRAM.
  * 0x80000000 -- 0x80000fff: UART0.
+ * 0x80001000 -- 0x80001fff: SDRAM controller.
  */
-wire ram_cs	= d_addr[31:13] == 19'b0000000000000000000;
-wire sdram_cs	= d_addr[31:13] == 19'b0010000000000000000;
-wire uart_cs	= d_addr[31:13] == 19'b1000000000000000000;
+wire ram_cs		= d_addr[31:12]	 == 20'h00000;
+wire sdram_cs		= d_addr[31:25] == 7'b0010000;
+wire sdram_ctrl_cs	= d_addr[31:12] == 20'h80001;
+wire uart_cs		= d_addr[31:12] == 20'h80000;
 
 always @(*) begin
 	if (ram_cs)
 		d_data = ram_data;
 	else if (uart_cs)
 		d_data = uart_data;
-	else if (sdram_cs)
+	else if (sdram_cs || sdram_ctrl_cs)
 		d_data = sdram_data;
 	else
 		d_data = 32'b0;
@@ -70,7 +72,8 @@ sim_dp_ram	ram(.clk(clk),
 
 keynsham_sdram	sdram(.clk(clk),
 		      .bus_access(d_access),
-		      .bus_cs(sdram_cs),
+		      .sdram_cs(sdram_cs),
+		      .ctrl_cs(sdram_ctrl_cs),
 		      .bus_addr(d_addr),
 		      .bus_wr_val(d_wr_val),
 		      .bus_wr_en(d_wr_en),

@@ -1,6 +1,7 @@
 module keynsham_sdram(input wire clk,
 		      input wire bus_access,
-		      input wire bus_cs,
+		      input wire sdram_cs,
+		      input wire ctrl_cs,
 		      input wire [31:0] bus_addr,
 		      input wire [31:0] bus_wr_val,
 		      input wire bus_wr_en,
@@ -25,18 +26,28 @@ wire bridge_wr_en;
 wire [1:0] bridge_bytesel;
 wire bridge_compl;
 
+wire sdram_ack;
+wire [31:0] sdram_data;
+
+wire config_done;
+reg ctrl_ack = 1'b0;
+reg [31:0] ctrl_data = 32'b0;
+
+assign bus_ack = sdram_ack | ctrl_ack;
+assign bus_data = sdram_cs ? sdram_data : ctrl_data;
+
 initial begin
 	bus_error = 1'b0;
 end
 
 bridge_32_16		br(.clk(clk),
-			   .h_cs(bus_access & bus_cs),
+			   .h_cs(bus_access & sdram_cs),
 			   .h_addr(bus_addr),
 			   .h_wdata(bus_wr_val),
-			   .h_rdata(bus_data),
+			   .h_rdata(sdram_data),
 			   .h_wr_en(bus_wr_en),
 			   .h_bytesel(bus_bytesel),
-			   .h_compl(bus_ack),
+			   .h_compl(sdram_ack),
 			   .b_addr(bridge_addr),
 			   .b_wdata(bridge_wdata),
 			   .b_rdata(bridge_rdata),
@@ -51,6 +62,7 @@ sdram_controller	sdram(.clk(clk),
 			      .h_compl(bridge_compl),
 			      .h_wdata(bridge_wdata),
 			      .h_rdata(bridge_rdata),
+			      .h_config_done(config_done),
 			      .s_ras_n(s_ras_n),
 			      .s_cas_n(s_cas_n),
 			      .s_wr_en(s_wr_en),
@@ -60,5 +72,11 @@ sdram_controller	sdram(.clk(clk),
 			      .s_clken(s_clken),
 			      .s_data(s_data),
 			      .s_banksel(s_banksel));
+
+always @(posedge clk) begin
+	if (ctrl_cs && bus_access && !bus_wr_en)
+		ctrl_data <= {31'b0, config_done};
+	ctrl_ack <= bus_access && ctrl_cs;
+end
 
 endmodule
