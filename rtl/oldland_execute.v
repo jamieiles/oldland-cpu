@@ -93,6 +93,21 @@ always @(posedge clk) begin
 	wr_result <= update_rd;
 	rd_sel_out <= rd_sel;
 
+	if (update_flags) begin
+		z_flag <= alu_z;
+		c_flag <= alu_c;
+	end
+
+	wr_val <= is_call ? pc_plus_4 :
+		  mem_store ? op2 : alu_q;
+end
+
+always @(posedge clk) begin
+	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
+	stall_clear <= instr_class == `CLASS_BRANCH;
+end
+
+always @(posedge clk) begin
 	mem_load_out <= mem_load;
 	mem_store_out <= mem_store;
 	if (mem_store || mem_load) begin
@@ -102,17 +117,6 @@ always @(posedge clk) begin
 			mdr <= rb;
 	end
 	mem_wr_en <= mem_store;
-
-	if (update_flags) begin
-		z_flag <= alu_z;
-		c_flag <= alu_c;
-	end
-
-	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
-	stall_clear <= instr_class == `CLASS_BRANCH;
-
-	wr_val <= is_call ? pc_plus_4 :
-		  mem_store ? op2 : alu_q;
 end
 
 endmodule
