@@ -1,6 +1,15 @@
 module keynsham_soc(input wire clk,
 		    input wire uart_rx,
-		    output wire uart_tx);
+		    output wire uart_tx,
+		    output wire s_ras_n,
+		    output wire s_cas_n,
+		    output wire s_wr_en,
+		    output wire [1:0] s_bytesel,
+		    output wire [12:0] s_addr,
+		    output wire s_cs_n,
+		    output wire s_clken,
+		    inout [15:0] s_data,
+		    output wire [1:0] s_banksel);
 
 wire [31:0] i_addr;
 wire [31:0] i_data;
@@ -18,13 +27,19 @@ wire [31:0] uart_data;
 wire uart_ack;
 wire uart_error;
 
+wire [31:0] sdram_data;
+wire sdram_ack;
+wire sdram_error;
+
 /*
  * Memory map:
  *
  * 0x00000000 -- 0x00000fff: On chip memory.
+ * 0x20000000 -- 0x2fffffff: SDRAM.
  * 0x80000000 -- 0x80000fff: UART0.
  */
 wire ram_cs	= d_addr[31:13] == 19'b0000000000000000000;
+wire sdram_cs	= d_addr[31:13] == 19'b0010000000000000000;
 wire uart_cs	= d_addr[31:13] == 19'b1000000000000000000;
 
 always @(*) begin
@@ -32,12 +47,14 @@ always @(*) begin
 		d_data = ram_data;
 	else if (uart_cs)
 		d_data = uart_data;
+	else if (sdram_cs)
+		d_data = sdram_data;
 	else
 		d_data = 32'b0;
 end
 
-wire d_ack = uart_ack | ram_ack;
-wire d_error = uart_error;
+wire d_ack = uart_ack | ram_ack | sdram_ack;
+wire d_error = uart_error | sdram_error;
 
 sim_dp_ram	ram(.clk(clk),
 		    .i_addr(i_addr),
@@ -50,6 +67,26 @@ sim_dp_ram	ram(.clk(clk),
 		    .d_wr_val(d_wr_val),
 		    .d_wr_en(d_wr_en),
 		    .d_ack(ram_ack));
+
+keynsham_sdram	sdram(.clk(clk),
+		      .bus_access(d_access),
+		      .bus_cs(sdram_cs),
+		      .bus_addr(d_addr),
+		      .bus_wr_val(d_wr_val),
+		      .bus_wr_en(d_wr_en),
+		      .bus_bytesel(d_bytesel),
+		      .bus_error(sdram_error),
+		      .bus_ack(sdram_ack),
+		      .bus_data(sdram_data),
+		      .s_ras_n(s_ras_n),
+		      .s_cas_n(s_cas_n),
+		      .s_wr_en(s_wr_en),
+		      .s_bytesel(s_bytesel),
+		      .s_addr(s_addr),
+		      .s_cs_n(s_cs_n),
+		      .s_clken(s_clken),
+		      .s_data(s_data),
+		      .s_banksel(s_banksel));
 
 keynsham_uart	uart(.clk(clk),
 		     .bus_access(d_access),
