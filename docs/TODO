@@ -1,4 +1,4 @@
 - verilog JTAG controller + PLI interface.
-- interconnect with multicycle accesses.
 - i+d cache.
 - interrupts.
+- add a setlo instruction that doesn't use the 16 bit immediate as signed.
