@@ -27,7 +27,7 @@ module oldland_decode(input wire clk,
 		      output reg is_call,
 		      output reg update_flags);
 
-wire [1:0] class = instr[31:30];
+wire [1:0] _class = instr[31:30];
 wire [3:0] opcode = instr[29:26];
 
 /* Sign extended immediates. */
@@ -35,7 +35,7 @@ wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
 wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
 
 /* For RET, we need to move the link register into the PC. */
-assign ra_sel = class == `CLASS_BRANCH && opcode == `OPCODE_RET ? 3'd6 : instr[5:3];
+assign ra_sel = _class == `CLASS_BRANCH && opcode == `OPCODE_RET ? 3'd6 : instr[5:3];
 assign rb_sel = instr[2:0];
 
 initial begin
@@ -58,7 +58,7 @@ end
 always @(posedge clk) begin
 	branch_condition <= 3'b0;
 
-	if (class == `CLASS_BRANCH) begin
+	if (_class == `CLASS_BRANCH) begin
 		case (opcode)
 		`OPCODE_BNE: branch_condition <= 3'b001;
 		`OPCODE_BEQ: branch_condition <= 3'b010;
@@ -71,34 +71,34 @@ end
 
 always @(posedge clk) begin
 	/* Branch to Ra is special - just bypass Ra through the ALU. */
-	alu_opc <= class == `CLASS_ARITH ? opcode :
-		(class == `CLASS_BRANCH && instr[25]) ? 4'b1111 : 4'b0000;
+	alu_opc <= _class == `CLASS_ARITH ? opcode :
+		(_class == `CLASS_BRANCH && instr[25]) ? 4'b1111 : 4'b0000;
 	/*
 	* Whether we store the result of the ALU operation in the destination
 	* register or not.  This is almost all arithmetic operations apart from cmp
 	* where we intentionally discard the result and load operations where the
 	* register is update by the LSU later.
 	*/
-	update_rd <= class == `CLASS_ARITH && opcode != `OPCODE_CMP;
-	update_flags <= class == `CLASS_ARITH && opcode == `OPCODE_CMP;
+	update_rd <= _class == `CLASS_ARITH && opcode != `OPCODE_CMP;
+	update_flags <= _class == `CLASS_ARITH && opcode == `OPCODE_CMP;
 
 	/*
 	* The output immediate - either one of the sign extended immediates or
 	* a special case for movhi - the 16 bit immediate shifted left 16 bits.
 	*/
-	imm32 <= (class == `CLASS_BRANCH) ? imm24 :
+	imm32 <= (_class == `CLASS_BRANCH) ? imm24 :
 		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
 
-	alu_op1_ra <= (class == `CLASS_ARITH || class == `CLASS_MEM);
-	alu_op2_rb <= (class == `CLASS_ARITH && instr[9]);
+	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM);
+	alu_op2_rb <= (_class == `CLASS_ARITH && instr[9]);
 
-	mem_load <= class == `CLASS_MEM && instr[28] == 1'b0;
-	mem_store <= class == `CLASS_MEM && instr[28] == 1'b1;
+	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
+	mem_store <= _class == `CLASS_MEM && instr[28] == 1'b1;
 
 	rd_sel <= instr[8:6];
-	instr_class <= class;
+	instr_class <= _class;
 
-	is_call <= class == `CLASS_BRANCH && opcode == `OPCODE_CALL;
+	is_call <= _class == `CLASS_BRANCH && opcode == `OPCODE_CALL;
 end
 
 always @(posedge clk) begin
