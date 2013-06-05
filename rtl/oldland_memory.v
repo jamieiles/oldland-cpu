@@ -3,6 +3,7 @@ module oldland_memory(input wire clk,
 		      input wire store,
 		      input wire [31:0] addr,
 		      input wire [31:0] mdr,
+		      input wire mem_wr_en,
 		      input wire [1:0] width,
 		      input wire [31:0] wr_val,
 		      input wire update_rd,
@@ -33,7 +34,7 @@ reg update_rd_bypass = 1'b0;
 reg [31:0] mem_rd_val;
 
 assign d_addr = {addr[31:2], 2'b00};
-assign d_wr_en = store;
+assign d_wr_en = mem_wr_en;
 assign d_access = load | store;
 
 reg [2:0] rd_sel_out_bypass = 3'b0;

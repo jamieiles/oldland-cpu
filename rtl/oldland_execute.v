@@ -25,7 +25,8 @@ module oldland_exec(input wire clk,
 		    output reg [2:0] rd_sel_out,
 		    output reg stall_clear,
 		    output reg [31:0] mar,
-		    output reg [31:0] mdr);
+		    output reg [31:0] mdr,
+		    output reg mem_wr_en);
 
 initial begin
 	branch_taken = 1'b0;
@@ -39,6 +40,7 @@ initial begin
 	stall_clear = 1'b0;
 	mar = 32'b0;
 	mdr = 32'b0;
+	mem_wr_en = 1'b0;
 end
 
 wire [31:0] op1 = alu_op1_ra ? ra : pc_plus_4;
@@ -99,6 +101,7 @@ always @(posedge clk) begin
 		if (mem_store)
 			mdr <= rb;
 	end
+	mem_wr_en <= mem_store;
 
 	if (update_flags) begin
 		z_flag <= alu_z;
