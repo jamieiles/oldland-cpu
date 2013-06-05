@@ -18,8 +18,8 @@ initial begin
 end
 
 always @(posedge clk) begin
-	ra <= registers[ra_sel];
-	rb <= registers[rb_sel];
+	ra <= ra_sel == rd_sel ? wr_val : registers[ra_sel];
+	rb <= rb_sel == rd_sel ? wr_val : registers[rb_sel];
 
 	if (wr_en)
 		registers[rd_sel] <= wr_val;
