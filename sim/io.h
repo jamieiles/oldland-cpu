@@ -48,5 +48,6 @@ int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
 	     const char *init_contents);
 int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 	     const char *filename);
+int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len);
 
 #endif /* __IO_H__ */

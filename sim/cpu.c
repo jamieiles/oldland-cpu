@@ -102,6 +102,9 @@ struct cpu *new_cpu(const char *binary)
 	err = ram_init(c->mem, 0x20000000, 32 * 1024 * 1024, NULL);
 	assert(!err);
 
+	err = sdram_ctrl_init(c->mem, 0x80001000, 4096);
+	assert(!err);
+
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
 	assert(!err);
 

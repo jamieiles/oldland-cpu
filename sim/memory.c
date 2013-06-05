@@ -112,3 +112,31 @@ int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 
 	return 0;
 }
+
+static int sdram_ctrl_write(unsigned int offs, uint32_t val, size_t nr_bits,
+			    void *priv)
+{
+	return 0;
+}
+
+static int sdram_ctrl_read(unsigned int offs, uint32_t *val, size_t nr_bits,
+			   void *priv)
+{
+	*val = 1;
+
+	return 0;
+}
+
+static const struct io_ops sdram_ctrl_ops = {
+	.read = sdram_ctrl_read,
+	.write = sdram_ctrl_write,
+};
+
+int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len)
+{
+	struct region *r = mem_map_region_add(mem, base, len, &sdram_ctrl_ops,
+					      NULL);
+	assert(r != NULL);
+
+	return 0;
+}
