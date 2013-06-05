@@ -9,7 +9,7 @@ module oldland_memory(input wire clk,
 		      input wire [2:0] rd_sel,
 		      output wire [31:0] reg_wr_val,
 		      output wire update_rd_out,
-		      output reg [2:0] rd_sel_out,
+		      output wire [2:0] rd_sel_out,
 		      output wire complete,
 		      /* Signals to data bus */
 		      output wire [31:0] d_addr,
@@ -22,7 +22,6 @@ module oldland_memory(input wire clk,
 		      input wire d_error);
 
 initial begin
-	rd_sel_out = 3'b0;
 	wr_val_bypass = 32'b0;
 	d_bytesel = 4'b0;
 	d_wr_val = 32'b0;
@@ -37,14 +36,21 @@ assign d_addr = {addr[31:2], 2'b00};
 assign d_wr_en = store;
 assign d_access = load | store;
 
+reg [2:0] rd_sel_out_bypass = 3'b0;
+reg [2:0] mem_rd = 3'b0;
+
 assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
 assign complete = d_ack;
 assign update_rd_out = complete ? 1'b1 : update_rd_bypass;
+assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
 
 always @(posedge clk) begin
 	update_rd_bypass <= update_rd;
 	wr_val_bypass <= wr_val;
-	rd_sel_out <= rd_sel;
+	rd_sel_out_bypass <= rd_sel;
+
+	if (load)
+		mem_rd <= rd_sel;
 end
 
 /* Byte enables and rotated data write value. */
