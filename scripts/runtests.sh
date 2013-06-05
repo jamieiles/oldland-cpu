@@ -16,7 +16,7 @@ for T in $TESTS; do
 	echo -n "$T... "
 	mkdir -p $OUTPUT_DIR
 	pushd $OUTPUT_DIR >/dev/null
-	oldland-sim $TEST_PATH >stdout.log 2>stderr.log && (echo SUCCESS; echo $T > ../SUCCESS) || (echo FAIL; echo $T > ../FAILURES)
+	oldland-sim $TEST_PATH >stdout.log 2>stderr.log && (echo SUCCESS; echo $T >> ../SUCCESS) || (echo FAIL; echo $T >> ../FAILURES)
 	popd >/dev/null
 done
 
