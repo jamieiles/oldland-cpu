@@ -1,5 +1,6 @@
 TESTS := hello \
-	 echo
+	 echo \
+	 hellosdram
 
 .PHONY:	all clean $(TESTS)
 
