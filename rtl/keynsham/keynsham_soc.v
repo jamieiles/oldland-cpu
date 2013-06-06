@@ -39,7 +39,7 @@ wire sdram_error;
  * 0x80000000 -- 0x80000fff: UART0.
  * 0x80001000 -- 0x80001fff: SDRAM controller.
  */
-wire ram_cs		= d_addr[31:12]	 == 20'h00000;
+wire ram_cs		= d_addr[31:12]	== 20'h00000;
 wire sdram_cs		= d_addr[31:25] == 7'b0010000;
 wire sdram_ctrl_cs	= d_addr[31:12] == 20'h80001;
 wire uart_cs		= d_addr[31:12] == 20'h80000;
@@ -58,7 +58,7 @@ end
 wire d_ack = uart_ack | ram_ack | sdram_ack;
 wire d_error = uart_error | sdram_error;
 
-sim_dp_ram	ram(.clk(clk),
+keynsham_ram	ram(.clk(clk),
 		    .i_addr(i_addr),
 		    .i_data(i_data),
 		    .d_access(d_access),
