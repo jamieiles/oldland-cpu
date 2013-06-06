@@ -9,5 +9,8 @@ MEMORY {
 
 SECTIONS {
 	.text	: { *.text } > rom
-	.rodata	: { *.rodata } > rom
+	.rodata	: {
+		*.rodata;
+		. = ALIGN(4);
+	} > rom
 }
