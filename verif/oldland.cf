@@ -1,5 +1,6 @@
 +timescale+1ns/1ps
 rtl/oldland_defines.v
++incdir+rtl
 -y rtl
 -y verif
 -y rtl/keynsham/uart

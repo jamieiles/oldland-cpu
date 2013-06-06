@@ -1,3 +1,4 @@
+`include "oldland_defines.v"
 /*
  * Generate a variety of control signals from the input selection.  These
  * control signals include register selection, ALU opcode + operand selection

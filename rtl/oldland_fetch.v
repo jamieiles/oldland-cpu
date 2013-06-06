@@ -1,3 +1,4 @@
+`include "oldland_defines.v"
 /*
  * The fetch unit.  Outputs the instruction to execute, and the PC + 4.  This
  * means that PC relative addresses are actually relative to the PC + 4, but
