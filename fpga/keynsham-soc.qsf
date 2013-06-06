@@ -1,0 +1,125 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2013 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II 32-bit
+# Version 13.0.0 Build 156 04/24/2013 SJ Web Edition
+# Date created = 00:12:05  June 04, 2013
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		keynsham-soc_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE EP4CE22F17C6
+set_global_assignment -name TOP_LEVEL_ENTITY toplevel
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "00:12:05  JUNE 04, 2013"
+set_global_assignment -name LAST_QUARTUS_VERSION 13.0
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
+set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVCMOS"
+set_global_assignment -name VERILOG_FILE toplevel.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_defines.v
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/sdram_controller.v"
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/counter.v"
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/bridge_32_16.v"
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_sdram.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_uart.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/transmitter.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/receiver.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/baud_rate_gen.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/uart.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_soc.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_regfile.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_memory.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_fetch.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_execute.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_decode.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
+set_global_assignment -name QIP_FILE ram.qip
+set_location_assignment PIN_P2 -to s_addr[0]
+set_location_assignment PIN_N5 -to s_addr[1]
+set_location_assignment PIN_N6 -to s_addr[2]
+set_location_assignment PIN_M8 -to s_addr[3]
+set_location_assignment PIN_P8 -to s_addr[4]
+set_location_assignment PIN_T7 -to s_addr[5]
+set_location_assignment PIN_N8 -to s_addr[6]
+set_location_assignment PIN_T6 -to s_addr[7]
+set_location_assignment PIN_R1 -to s_addr[8]
+set_location_assignment PIN_P1 -to s_addr[9]
+set_location_assignment PIN_N2 -to s_addr[10]
+set_location_assignment PIN_N1 -to s_addr[11]
+set_location_assignment PIN_L4 -to s_addr[12]
+set_location_assignment PIN_G2 -to s_data[0]
+set_location_assignment PIN_G1 -to s_data[1]
+set_location_assignment PIN_L8 -to s_data[2]
+set_location_assignment PIN_K5 -to s_data[3]
+set_location_assignment PIN_K2 -to s_data[4]
+set_location_assignment PIN_J2 -to s_data[5]
+set_location_assignment PIN_J1 -to s_data[6]
+set_location_assignment PIN_R7 -to s_data[7]
+set_location_assignment PIN_T4 -to s_data[8]
+set_location_assignment PIN_T2 -to s_data[9]
+set_location_assignment PIN_T3 -to s_data[10]
+set_location_assignment PIN_R3 -to s_data[11]
+set_location_assignment PIN_R5 -to s_data[12]
+set_location_assignment PIN_P3 -to s_data[13]
+set_location_assignment PIN_N3 -to s_data[14]
+set_location_assignment PIN_K1 -to s_data[15]
+set_location_assignment PIN_P6 -to s_cs_n
+set_location_assignment PIN_L7 -to s_clken
+set_location_assignment PIN_L1 -to s_cas_n
+set_location_assignment PIN_R6 -to s_bytesel[0]
+set_location_assignment PIN_T5 -to s_bytesel[1]
+set_location_assignment PIN_L2 -to s_ras_n
+set_location_assignment PIN_C2 -to s_wr_en
+set_location_assignment PIN_R8 -to clk
+set_location_assignment PIN_C3 -to uart_tx
+set_location_assignment PIN_A3 -to uart_rx
+set_location_assignment PIN_M7 -to s_banksel[0]
+set_location_assignment PIN_M6 -to s_banksel[1]
+
+set_global_assignment -name MIF_FILE ../rom.mif
+set_global_assignment -name HEX_FILE ../rom2.hex
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
