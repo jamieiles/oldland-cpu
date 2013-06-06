@@ -55,7 +55,7 @@ uart		tb_uart(.clk_50m(clk),
 			.dout(uart_rx_data));
 
 initial begin
-	$dumpfile("cpu.vcd");
+	$dumpfile("cpu.lxt");
 	$dumpvars(0, cpu_tb);
 	#1500000;
 	$display();

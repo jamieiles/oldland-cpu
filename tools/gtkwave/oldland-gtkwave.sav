@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.45 (w)1999-2012 BSI
-[*] Mon Jun  3 22:04:29 2013
+[*] Thu Jun  6 12:29:51 2013
 [*]
-[dumpfile] "/home/jamie/src/oldland/cpu.vcd"
-[dumpfile_mtime] "Mon Jun  3 22:03:05 2013"
-[dumpfile_size] 149925
+[dumpfile] "/home/jamie/src/oldland/cpu.lxt"
+[dumpfile_mtime] "Thu Jun  6 12:29:11 2013"
+[dumpfile_size] 2118081
 [savefile] "/home/jamie/src/oldland/tools/gtkwave/oldland-gtkwave.sav"
 [timestart] 0
 [size] 2560 1518
 [pos] -1 -1
-*-2.411076 5 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.411076 5 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] cpu_tb.
 [treeopen] cpu_tb.soc.
 [treeopen] cpu_tb.soc.cpu.
@@ -22,51 +22,51 @@
 @22
 cpu_tb.soc.cpu.fetch.fetch_addr[31:0]
 @4022
-^>1 /home/jamie/src/oldland/tools/instructions/decodeinstr
+^>1 /tmp/../home/jamie/src/oldland/tools/gtkwave/../instructions/decodeinstr
 cpu_tb.soc.cpu.fetch.instr[31:0]
 @28
-cpu_tb.soc.cpu.fetch.stall_clear
-cpu_tb.soc.cpu.fetch.stalling
-cpu_tb.soc.cpu.fetch.stalled
-cpu_tb.soc.cpu.fetch.branch_taken
+cpu_tb.soc.cpu.fetch.stall_clear[0]
+cpu_tb.soc.cpu.fetch.stalling[0]
+cpu_tb.soc.cpu.fetch.stalled[0]
+cpu_tb.soc.cpu.fetch.branch_taken[0]
 @1000200
 -Fetch
-@800201
+@800200
 -Decode
 @29
-cpu_tb.soc.cpu.decode.alu_op1_ra
-cpu_tb.soc.cpu.decode.alu_op2_rb
+cpu_tb.soc.cpu.decode.alu_op1_ra[0]
+cpu_tb.soc.cpu.decode.alu_op2_rb[0]
 cpu_tb.soc.cpu.decode.branch_condition[2:0]
 @23
 cpu_tb.soc.cpu.decode.imm32[31:0]
 @29
-cpu_tb.soc.cpu.decode.is_call
+cpu_tb.soc.cpu.decode.is_call[0]
 @23
 cpu_tb.soc.cpu.decode.opcode[3:0]
 @2023
-^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+^1 /tmp/../home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
 cpu_tb.soc.cpu.decode.ra_sel[2:0]
-^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+^1 /tmp/../home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
 cpu_tb.soc.cpu.decode.rb_sel[2:0]
-^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+^1 /tmp/../home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
 cpu_tb.soc.cpu.decode.rd_sel[2:0]
 @29
-cpu_tb.soc.cpu.decode.update_rd
-@1000201
+cpu_tb.soc.cpu.decode.update_rd[0]
+@1000200
 -Decode
 @800200
 -Execute
 @22
 cpu_tb.soc.cpu.execute.alu_q[31:0]
 @28
-cpu_tb.soc.cpu.execute.branch_condition_met
-cpu_tb.soc.cpu.execute.c_flag
+cpu_tb.soc.cpu.execute.branch_condition_met[0]
+cpu_tb.soc.cpu.execute.c_flag[0]
 @22
 cpu_tb.soc.cpu.execute.op1[31:0]
 cpu_tb.soc.cpu.execute.op2[31:0]
 @28
-cpu_tb.soc.cpu.execute.stall_clear
-cpu_tb.soc.cpu.execute.z_flag
+cpu_tb.soc.cpu.execute.stall_clear[0]
+cpu_tb.soc.cpu.execute.z_flag[0]
 @1000200
 -Execute
 @800200
@@ -74,24 +74,24 @@ cpu_tb.soc.cpu.execute.z_flag
 @22
 cpu_tb.soc.cpu.mem.addr[31:0]
 @28
-cpu_tb.soc.cpu.mem.complete
-cpu_tb.soc.cpu.mem.d_wr_en
+cpu_tb.soc.cpu.mem.complete[0]
+cpu_tb.soc.cpu.mem.d_wr_en[0]
 @22
 cpu_tb.soc.cpu.mem.d_wr_val[31:0]
 cpu_tb.soc.cpu.mem.mem_rd_val[31:0]
 @28
-cpu_tb.soc.cpu.mem.update_rd_out
+cpu_tb.soc.cpu.mem.update_rd_out[0]
 cpu_tb.soc.cpu.mem.width[1:0]
 @1000200
 -Memory
 @800200
 -Writeback
 @28
-cpu_tb.soc.cpu.regfile.wr_en
+cpu_tb.soc.cpu.regfile.wr_en[0]
 @22
 cpu_tb.soc.cpu.regfile.wr_val[31:0]
 @2022
-^1 /home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
+^1 /tmp/../home/jamie/src/oldland/tools/gtkwave/oldland-regs.txt
 cpu_tb.soc.cpu.regfile.rd_sel[2:0]
 @1000200
 -Writeback
