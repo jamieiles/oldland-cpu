@@ -34,8 +34,8 @@ wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
  *
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
-wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
 reg stalled		= 1'b0;
+wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
 assign instr		= stalled ? `INSTR_NOP : fetch_data;
 
 assign fetch_addr = stalling ? pc : next_pc;

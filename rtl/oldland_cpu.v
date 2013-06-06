@@ -19,10 +19,6 @@ wire [31:0] fd_instr;
 wire ef_branch_taken;
 wire ef_stall_clear;
 
-/* Fetch stalling signals. */
-wire stall_clear = ef_stall_clear | mf_complete;
-wire stalling;
-
 /* Decode signals. */
 wire [2:0] d_ra_sel;
 wire [2:0] d_rb_sel;
@@ -53,6 +49,28 @@ wire de_is_call;
 wire [1:0] de_mem_width;
 wire de_update_flags;
 
+/* Execute -> memory signals. */
+wire [31:0] em_alu_out;
+wire em_mem_load;
+wire em_mem_store;
+wire em_update_rd;
+wire [2:0] em_rd_sel;
+wire [31:0] em_wr_val;
+wire [1:0] em_mem_width;
+wire [31:0] em_mar;
+wire [31:0] em_mdr;
+wire em_mem_wr_en;
+
+/* Memory -> writeback signals. */
+wire [31:0] mw_wr_val;
+wire mw_update_rd;
+wire [2:0] mw_rd_sel;
+wire mf_complete;
+
+/* Fetch stalling signals. */
+wire stall_clear = ef_stall_clear | mf_complete;
+wire stalling;
+
 /* 
  * Forwarding logic.  We need to forward results from the end of the execute
  * stage back to the input of the ALU.
@@ -75,24 +93,6 @@ always @(*) begin
 	else
 		de_rb = rb;
 end
-
-/* Execute -> memory signals. */
-wire [31:0] em_alu_out;
-wire em_mem_load;
-wire em_mem_store;
-wire em_update_rd;
-wire [2:0] em_rd_sel;
-wire [31:0] em_wr_val;
-wire [1:0] em_mem_width;
-wire [31:0] em_mar;
-wire [31:0] em_mdr;
-wire em_mem_wr_en;
-
-/* Memory -> writeback signals. */
-wire [31:0] mw_wr_val;
-wire mw_update_rd;
-wire [2:0] mw_rd_sel;
-wire mf_complete;
 
 oldland_fetch	fetch(.clk(clk),
 		      .stall_clear(stall_clear),

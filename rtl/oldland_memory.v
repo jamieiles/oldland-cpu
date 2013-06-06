@@ -22,13 +22,6 @@ module oldland_memory(input wire clk,
 		      input wire d_ack,
 		      input wire d_error);
 
-initial begin
-	wr_val_bypass = 32'b0;
-	d_bytesel = 4'b0;
-	d_wr_val = 32'b0;
-	mem_rd_val = 32'b0;
-end
-
 reg [31:0] wr_val_bypass;
 reg update_rd_bypass = 1'b0;
 reg [31:0] mem_rd_val;
@@ -44,6 +37,13 @@ assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
 assign complete = d_ack;
 assign update_rd_out = complete ? 1'b1 : update_rd_bypass;
 assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
+
+initial begin
+	wr_val_bypass = 32'b0;
+	d_bytesel = 4'b0;
+	d_wr_val = 32'b0;
+	mem_rd_val = 32'b0;
+end
 
 always @(posedge clk) begin
 	update_rd_bypass <= update_rd;
