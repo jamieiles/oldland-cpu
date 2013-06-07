@@ -73,14 +73,17 @@ end
 always @(posedge clk) begin
 	/* Branch to Ra is special - just bypass Ra through the ALU. */
 	alu_opc <= _class == `CLASS_ARITH ? opcode :
-		(_class == `CLASS_BRANCH && instr[25]) ? 4'b1111 : 4'b0000;
+		(_class == `CLASS_BRANCH && instr[25]) ? 4'b1111 :
+		(_class == `CLASS_BRANCH && opcode == `OPCODE_RET) ? 4'b1111 :
+		4'b0000;
 	/*
 	* Whether we store the result of the ALU operation in the destination
 	* register or not.  This is almost all arithmetic operations apart from cmp
 	* where we intentionally discard the result and load operations where the
 	* register is update by the LSU later.
 	*/
-	update_rd <= _class == `CLASS_ARITH && opcode != `OPCODE_CMP;
+	update_rd <= (_class == `CLASS_ARITH && opcode != `OPCODE_CMP) ||
+		(_class == `CLASS_BRANCH && opcode == `OPCODE_CALL);
 	update_flags <= _class == `CLASS_ARITH && opcode == `OPCODE_CMP;
 
 	/*
@@ -90,13 +93,15 @@ always @(posedge clk) begin
 	imm32 <= (_class == `CLASS_BRANCH) ? imm24 :
 		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
 
-	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM);
+	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM ||
+		       (_class == `CLASS_BRANCH && opcode == `OPCODE_RET));
 	alu_op2_rb <= (_class == `CLASS_ARITH && instr[9]);
 
 	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
 	mem_store <= _class == `CLASS_MEM && instr[28] == 1'b1;
 
-	rd_sel <= instr[8:6];
+	rd_sel <= (_class == `CLASS_BRANCH && opcode == `OPCODE_CALL) ?
+		3'h6 : instr[8:6];
 	instr_class <= _class;
 
 	is_call <= _class == `CLASS_BRANCH && opcode == `OPCODE_CALL;
