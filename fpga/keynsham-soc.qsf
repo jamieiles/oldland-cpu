@@ -59,25 +59,6 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVCMOS"
-set_global_assignment -name VERILOG_FILE toplevel.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_defines.v
-set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/sdram_controller.v"
-set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/counter.v"
-set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/bridge_32_16.v"
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_sdram.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_uart.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/transmitter.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/receiver.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/baud_rate_gen.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/uart.v
-set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_soc.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_regfile.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_memory.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_fetch.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_execute.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_decode.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
-set_global_assignment -name QIP_FILE ram.qip
 set_location_assignment PIN_P2 -to s_addr[0]
 set_location_assignment PIN_N5 -to s_addr[1]
 set_location_assignment PIN_N6 -to s_addr[2]
@@ -120,6 +101,28 @@ set_location_assignment PIN_A3 -to uart_rx
 set_location_assignment PIN_M7 -to s_banksel[0]
 set_location_assignment PIN_M6 -to s_banksel[1]
 
+set_global_assignment -name VERILOG_FILE toplevel.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_defines.v
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/sdram_controller.v"
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/counter.v"
+set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/bridge_32_16.v"
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_sdram.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_uart.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_ram.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/transmitter.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/receiver.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/baud_rate_gen.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/uart.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_soc.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_regfile.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_memory.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_fetch.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_execute.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_decode.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
+set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name MIF_FILE ../rom.mif
 set_global_assignment -name HEX_FILE ../rom2.hex
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to uart_tx
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to uart_rx
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
