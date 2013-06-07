@@ -8,6 +8,9 @@ wire tx;
 wire rx_rdy;
 reg rx_rdy_clr = 1'b0;
 wire [7:0] uart_rx_data;
+reg [7:0] uart_tx_data = 8'b0;
+reg uart_tx_en = 1'b0;
+wire uart_tx_busy;
 
 wire s_ras_n;
 wire s_cas_n;
@@ -46,8 +49,9 @@ keynsham_soc	soc(.clk(clk),
 		    .s_banksel(s_banksel));
 
 uart		tb_uart(.clk_50m(clk),
-			.wr_en(0),
-			.din(8'b0),
+			.wr_en(uart_tx_en),
+			.din(uart_tx_data),
+			.tx_busy(uart_tx_busy),
 			.tx(rx),
 			.rx(tx),
 			.rdy(rx_rdy),
@@ -57,18 +61,35 @@ uart		tb_uart(.clk_50m(clk),
 initial begin
 	$dumpfile("cpu.lxt");
 	$dumpvars(0, cpu_tb);
-	#1500000;
-	$display();
-	$finish;
+	if (!$test$plusargs("interactive")) begin
+		#1500000;
+		$display();
+		$finish;
+	end
 end
+
+reg [8:0] uart_buf = 9'b0;
 
 always @(posedge clk) begin
 	if (rx_rdy && !rx_rdy_clr) begin
-		$write("%c", uart_rx_data);
-		$fflush();
+		if (!$test$plusargs("interactive")) begin
+			$write("%c", uart_rx_data);
+			$fflush();
+		end else
+			$uart_put(uart_rx_data);
 		rx_rdy_clr <= 1'b1;
 	end else begin
 		rx_rdy_clr <= 1'b0;
+	end
+
+	if (!uart_tx_busy) begin
+		$uart_get(uart_buf);
+		if (uart_buf[8]) begin
+			uart_tx_data <= uart_buf[7:0];
+			uart_tx_en <= 1'b1;
+		end
+	end else begin
+		uart_tx_en <= 1'b0;
 	end
 end
 

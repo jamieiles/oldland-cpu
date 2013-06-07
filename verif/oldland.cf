@@ -1,19 +1,19 @@
 +timescale+1ns/1ps
-rtl/oldland_defines.v
-+incdir+rtl
--y rtl
--y verif
--y rtl/keynsham/uart
--y rtl/keynsham/oldland-sdram/rtl
--y rtl/keynsham/oldland-sdram/verif
-verif/cpu_tb.v
-rtl/oldland_cpu.v
-rtl/oldland_fetch.v
-rtl/oldland_decode.v
-rtl/oldland_execute.v
-rtl/oldland_regfile.v
-rtl/keynsham/keynsham_soc.v
-rtl/keynsham/keynsham_uart.v
-rtl/keynsham/keynsham_sdram.v
-rtl/keynsham/keynsham_ram.v
-rtl/keynsham/uart/uart.v
+../rtl/oldland_defines.v
++incdir+../rtl
+-y ../rtl
+-y .
+-y ../rtl/keynsham/uart
+-y ../rtl/keynsham/oldland-sdram/rtl
+-y ../rtl/keynsham/oldland-sdram/verif
+cpu_tb.v
+../rtl/oldland_cpu.v
+../rtl/oldland_fetch.v
+../rtl/oldland_decode.v
+../rtl/oldland_execute.v
+../rtl/oldland_regfile.v
+../rtl/keynsham/keynsham_soc.v
+../rtl/keynsham/keynsham_uart.v
+../rtl/keynsham/keynsham_sdram.v
+../rtl/keynsham/keynsham_ram.v
+../rtl/keynsham/uart/uart.v

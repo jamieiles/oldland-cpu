@@ -1,0 +1,12 @@
+Build the simulation:
+  cd verif
+  make
+
+Generate the rom file to use as verilog:
+  oldland-elf-objcopy ELF_FILE rom.hex -O verilog
+
+Run the simulation:
+  vvp -n -Mverif -mvpi_uart verif/keynsham.vvp -lxt2 +ramfile=rom.hex +interactive
+
+Attach minicom to the uart:
+  minicom -p PTS_FILE
