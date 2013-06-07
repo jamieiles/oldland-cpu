@@ -35,12 +35,12 @@ ram		mem(.clock(clk),
 		    .data_b(d_wr_val),
 		    .byteena_b(d_bytesel),
 		    .wren_b(d_wr_en),
-		    .q_b(ram_data));
+		    .q_b(d_data));
 
 reg ram_ack = 1'b0;
 
 always @(posedge clk)
-	ram_ack <= d_access && ram_cs;
+	ram_ack <= d_access && d_cs;
 assign d_ack = ram_ack;
 
 `endif /* __ICARUS__ */
