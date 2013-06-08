@@ -94,7 +94,8 @@ always @(posedge clk) begin
 		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
 
 	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM ||
-		       (_class == `CLASS_BRANCH && opcode == `OPCODE_RET));
+		       (_class == `CLASS_BRANCH && (opcode == `OPCODE_RET ||
+                                                    instr[25])));
 	alu_op2_rb <= (_class == `CLASS_ARITH && instr[9]);
 
 	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
