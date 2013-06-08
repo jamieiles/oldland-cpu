@@ -14,12 +14,9 @@ reg [7:0] ram [255:0];
 reg [8 * 128:0] ram_filename;
 
 initial begin
-	if (!$value$plusargs("ramfile=%s", ram_filename) ||
-	    ram_filename == 0) begin
-		$display("+ramfile=PATH_TO_ram.hex required");
-		$finish;
-	end
-	$readmemh(ram_filename, ram);
+	if ($value$plusargs("ramfile=%s", ram_filename) &&
+	    ram_filename != 0)
+		$readmemh(ram_filename, ram);
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;
 	d_ack = 1'b0;
