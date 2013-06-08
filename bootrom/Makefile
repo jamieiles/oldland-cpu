@@ -4,7 +4,11 @@ AS := $(CROSS_COMPILE)as
 LD := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
+ifeq ($(SIM),y)
+OBJS := sim.o
+else
 OBJS := bootrom.o
+endif
 
 .PHONY:	all clean
 
