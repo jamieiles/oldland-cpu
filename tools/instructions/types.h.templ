@@ -37,6 +37,11 @@ struct oldland_instruction {
 	unsigned int			opcode;
 	unsigned int			nr_operands;
 	/*
+	 * Constant bits that are always set in the instruction to optimize the
+	 * hardware decoding.
+	 */
+	unsigned int			constbits;
+	/*
 	 * Some instructions may have multiple encodings (maximum of 2 right
 	 * now) - for example the arithmetic instructions can take either 2
 	 * source registers or one register and an immediate.

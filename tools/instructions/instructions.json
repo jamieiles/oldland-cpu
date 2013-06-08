@@ -149,6 +149,12 @@
             "description": "Rd := Ra ASR OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
         },
+        "orlo": {
+            "class": 0,
+            "opcode": 13,
+            "format": [["rd"], ["ra"], ["imm16"]],
+            "description": "Rd := Ra | imm16."
+        },
         "call": {
             "class": 1,
             "opcode": 0,
@@ -160,7 +166,7 @@
             "class": 1,
             "opcode": 1,
             "format": [],
-            "constbits": "0x02000006"
+            "constbits": "0x02000030"
         },
 	"b": {
             "class": 1,

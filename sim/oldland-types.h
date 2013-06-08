@@ -37,6 +37,7 @@ enum { OPCODE_BST = 9 };
 enum { OPCODE_BIC = 8 };
 enum { OPCODE_BKP = 0 };
 enum { OPCODE_STR16 = 5 };
+enum { OPCODE_ORLO = 13 };
 enum { OPCODE_NOP = 15 };
 enum { OPCODE_B = 4 };
 enum { OPCODE_LDR16 = 1 };
@@ -73,6 +74,11 @@ struct oldland_instruction {
 	unsigned int			class;
 	unsigned int			opcode;
 	unsigned int			nr_operands;
+	/*
+	 * Constant bits that are always set in the instruction to optimize the
+	 * hardware decoding.
+	 */
+	unsigned int			constbits;
 	/*
 	 * Some instructions may have multiple encodings (maximum of 2 right
 	 * now) - for example the arithmetic instructions can take either 2

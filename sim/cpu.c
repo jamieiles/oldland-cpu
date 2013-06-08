@@ -146,6 +146,9 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 	case OPCODE_ASR:
 		result = (uint64_t)(int32_t)c->regs[ra] >> op2;
 		break;
+	case OPCODE_ORLO:
+		result = (uint64_t)c->regs[ra] | (op2 & 0xffff);
+		break;
 	case OPCODE_LSR:
 		result = (uint64_t)c->regs[ra] >> op2;
 		break;

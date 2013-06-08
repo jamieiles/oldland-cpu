@@ -72,6 +72,7 @@ always @(*) begin
 	4'b1010: alu_q = op1 | op2;
 	4'b1011: alu_q = op2;
 	4'b1100: {alu_c, alu_q} = op1 - op2;
+	4'b1101: alu_q = op1 | {16'b0, op2[15:0]};
 	4'b1110: alu_q = op1 >>> op2;
 	4'b1111: alu_q = op1;
 	default: alu_q = 32'b0;
