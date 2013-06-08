@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+#
+# Boot a Keynsham SoC device using the onchip bootrom and open a minicom
+# instance for interacting with it.
+import os
+from progressbar import ProgressBar, Percentage, Bar
+import select
+import struct
+import subprocess
+import sys
+
+ACK_TIMEOUT = 2500 # 2.5 seconds should cover slow simulations.
+
+class BootFailure(IOError):
+    pass
+
+def wait_for_ack(poll, fd, allow_miss = False):
+    """Wait for the acknowledgement packet.  If allow_miss = True, then we can
+       skip the acknowledgement packet.  This can be useful when the
+       simulation/device has already been booted and we don't attach quickly
+       enough to see the awake packet.
+    """
+    fds = poll.poll(ACK_TIMEOUT)
+    if len(fds) == 0:
+        if allow_miss:
+            return
+        raise BootFailure('acknowledgement not received')
+
+    if len(os.read(fd, 1)) != 1:
+        raise BootFailure('failed to read ack')
+
+def send_buf(fd, poll, buf):
+    progress = ProgressBar(widgets = [Percentage(), Bar()],
+                           maxval = len(buf)).start()
+
+    for i, b in enumerate(buf):
+        if os.write(fd, b) != 1:
+            raise BootFailure('failed to write data byte')
+        wait_for_ack(poll, fd)
+        progress.update(i + 1)
+
+def format_length(length):
+    """Format the length as a 32 bit big endian integer."""
+    return struct.pack('>I', length)
+
+def boot(pts, filename):
+    fd = os.open(pts, os.O_RDWR | os.O_NONBLOCK)
+    poll = select.poll()
+    poll.register(fd, select.POLLIN)
+
+    # Hello packet that we may have missed.
+    wait_for_ack(poll, fd, allow_miss = True)
+
+    with open(filename, 'r') as binfile:
+        data = binfile.read()
+        length = format_length(len(data))
+        print('sending length')
+        send_buf(fd, poll, length)
+        print('sending data')
+        send_buf(fd, poll, data)
+
+def main(args):
+    if len(args) != 2:
+        print('usage: bootterm PTS BINFILE')
+        return -1
+
+    try:
+        boot(args[0], args[1])
+    except BootFailure as e:
+        print e
+        return 1
+    except Exception as e:
+        print e
+        return 1
+    subprocess.call(['/usr/bin/minicom', '-p', args[0]])
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
