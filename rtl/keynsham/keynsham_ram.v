@@ -13,11 +13,11 @@ module keynsham_ram(input wire clk,
 `ifdef __ICARUS__
 
 sim_dp_ram	mem(.clk(clk),
-		    .i_addr(i_addr),
+		    .i_addr({20'b0, i_addr[11:2], 2'b0}),
 		    .i_data(i_data),
 		    .d_access(d_access),
 		    .d_cs(d_cs),
-		    .d_addr(d_addr),
+		    .d_addr({20'b0, d_addr[11:2], 2'b0}),
 		    .d_data(d_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_val(d_wr_val),
@@ -26,12 +26,12 @@ sim_dp_ram	mem(.clk(clk),
 `else /* Altera FPGA */
 
 ram		mem(.clock(clk),
-		    .address_a(i_addr[31:2]), /* Word addressed with byte enables. */
+		    .address_a(i_addr[11:2]), /* Word addressed with byte enables. */
 		    .data_a(32'b0),
 		    .byteena_a(4'b1111),
 		    .wren_a(0),
 		    .q_a(i_data),
-		    .address_b(d_addr[31:2]), /* Word addressed with byte enables. */
+		    .address_b(d_addr[11:2]), /* Word addressed with byte enables. */
 		    .data_b(d_wr_val),
 		    .byteena_b(d_bytesel),
 		    .wren_b(d_wr_en),
