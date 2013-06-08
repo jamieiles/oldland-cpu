@@ -35,8 +35,7 @@ wire [3:0] opcode = instr[29:26];
 wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
 wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
 
-/* For RET, we need to move the link register into the PC. */
-assign ra_sel = _class == `CLASS_BRANCH && opcode == `OPCODE_RET ? 3'd6 : instr[5:3];
+assign ra_sel = instr[5:3];
 assign rb_sel = instr[2:0];
 
 initial begin
@@ -74,7 +73,6 @@ always @(posedge clk) begin
 	/* Branch to Ra is special - just bypass Ra through the ALU. */
 	alu_opc <= _class == `CLASS_ARITH ? opcode :
 		(_class == `CLASS_BRANCH && instr[25]) ? 4'b1111 :
-		(_class == `CLASS_BRANCH && opcode == `OPCODE_RET) ? 4'b1111 :
 		4'b0000;
 	/*
 	* Whether we store the result of the ALU operation in the destination
@@ -94,8 +92,7 @@ always @(posedge clk) begin
 		(opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} : imm16;
 
 	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM ||
-		       (_class == `CLASS_BRANCH && (opcode == `OPCODE_RET ||
-                                                    instr[25])));
+		       (_class == `CLASS_BRANCH && instr[25]));
 	alu_op2_rb <= (_class == `CLASS_ARITH && instr[9]);
 
 	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
