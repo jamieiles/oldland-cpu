@@ -13,6 +13,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <termios.h>
 #include <unistd.h>
 
 #include <vpi_user.h>
@@ -24,6 +25,7 @@ struct uart_data {
 static int create_pts(void)
 {
 	int pts = posix_openpt(O_RDWR | O_NONBLOCK);
+	struct termios termios;
 
 	if (pts < 0)
 		err(1, "failed to create pseudo terminal");
@@ -33,6 +35,12 @@ static int create_pts(void)
 
 	if (unlockpt(pts))
 		err(1, "failed to unlock pseudo terminal");
+
+	if (tcgetattr(pts, &termios))
+		err(1, "failed to get termios");
+	cfmakeraw(&termios);
+	if (tcsetattr(pts, TCSANOW, &termios))
+		err(1, "failed to set termios");
 
 	printf("pts: %s\n", ptsname(pts));
 
@@ -49,7 +57,7 @@ static int uart_get_calltf(char *user_data)
 	vpiHandle systfref, args_iter, argh;
 	struct t_vpi_value argval;
 	struct uart_data *data = (struct uart_data *)user_data;
-	char ichar;
+	char ichar = 0;
 
 	systfref = vpi_handle(vpiSysTfCall, NULL);
 	args_iter = vpi_iterate(vpiArgument, systfref);
