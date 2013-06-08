@@ -159,7 +159,8 @@
         "ret": {
             "class": 1,
             "opcode": 1,
-            "format": []
+            "format": [],
+            "constbits": "0x02000006"
         },
 	"b": {
             "class": 1,

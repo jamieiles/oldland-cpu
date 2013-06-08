@@ -87,6 +87,7 @@ def gen_instruction(name, definition):
                 .name = "{name}",
                 .class = {class},
                 .opcode = OPCODE_{name_upper},
+                .constbits = 0x{constbits:08x},
                 .nr_operands = {nr_operands},
                 .op1 = {{{op1}}},
                 .op2 = {{{op2}}},
@@ -96,6 +97,7 @@ def gen_instruction(name, definition):
     fdict = {
         'name': name,
         'name_upper': name.upper(),
+        'constbits': int(definition.get('constbits', '0'), 0),
         'class': definition['class'],
         'nr_operands': len(definition['format']),
         'formatsel': definition.get('formatsel', -1)
