@@ -8,7 +8,7 @@ OBJS := bootrom.o
 
 .PHONY:	all clean
 
-all:	bootrom.hex
+all:	bootrom.ihex bootrom.hex
 
 %.o:	%.s
 	$(AS) $< -o $@
@@ -19,7 +19,10 @@ bootrom:	$(OBJS)
 %.bin:	%
 	$(OBJCOPY) $< $@ -O binary
 
-%.hex:	%.bin
+%.hex:	%
+	$(OBJCOPY) $< $@ -O verilog
+
+%.ihex:	%.bin
 	../tools/makeramfile/makeramfile $< $@
 
 clean:

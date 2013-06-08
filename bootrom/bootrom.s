@@ -33,11 +33,12 @@ config_loop:
 	/* Awake and ready to receive. */
 	call	send_ack
 
+	xor	$r1, $r1, $r1
 	/* Read the length. */
 next_length_byte:
+	lsl	$r5, $r5, 8
 	call	read_char
 	or	$r5, $r5, $r0
-	lsl	$r5, $r5, 8
 	add	$r1, $r1, 1
 	call	send_ack
 	cmp	$r1, 4

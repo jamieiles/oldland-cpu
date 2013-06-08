@@ -4,7 +4,7 @@ OUTPUT_ARCH(oldland)
 ENTRY(_start)
 
 MEMORY {
-	rom : ORIGIN = 0x10000000, LENGTH = 4K
+	rom : ORIGIN = 0x00000000, LENGTH = 4K
 }
 
 SECTIONS {
