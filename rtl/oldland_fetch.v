@@ -1,4 +1,13 @@
 `include "oldland_defines.v"
+
+/*
+ * Instructions are fetched from the next_pc on reset, so we need the initial
+ * PC to be -4.
+ */
+`ifndef OLDLAND_RESET_ADDR
+`define OLDLAND_RESET_ADDR 32'hfffffffc
+`endif /* !OLDLAND_RESET_ADDR */
+
 /*
  * The fetch unit.  Outputs the instruction to execute, and the PC + 4.  This
  * means that PC relative addresses are actually relative to the PC + 4, but
@@ -20,11 +29,7 @@ module oldland_fetch(input wire clk,
 		     output wire [31:0] fetch_addr,
 		     input wire [31:0] fetch_data);
 
-/*
- * Instructions are fetched from the next_pc on reset, so we need the initial
- * PC to be -4.
- */
-initial pc		= 32'hfffffffc;
+initial pc		= `OLDLAND_RESET_ADDR;
 
 /* Next PC calculation logic. */
 assign pc_plus_4	= pc + 32'd4;
