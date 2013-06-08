@@ -27,6 +27,7 @@ always @(posedge clk) begin
 		    ram[i_addr + 2],
 		    ram[i_addr + 1],
 		    ram[i_addr + 0] };
+
 	if (d_wr_en && d_access && d_cs) begin
 		if (d_bytesel[3])
 			ram[d_addr + 3] <= d_wr_val[31:24];
@@ -35,7 +36,7 @@ always @(posedge clk) begin
 		if (d_bytesel[1])
 			ram[d_addr + 1] <= d_wr_val[15:8];
 		if (d_bytesel[0])
-			ram[d_addr + 3] <= d_wr_val[7:0];
+			ram[d_addr + 0] <= d_wr_val[7:0];
 	end else if (d_access && d_cs) begin
 		if (d_bytesel[3])
 			d_data[31:24] <= ram[d_addr + 3];
