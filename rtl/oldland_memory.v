@@ -32,10 +32,11 @@ assign d_access = load | store;
 
 reg [2:0] rd_sel_out_bypass = 3'b0;
 reg [2:0] mem_rd = 3'b0;
+reg mem_update_rd = 1'b0;
 
 assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
 assign complete = d_ack;
-assign update_rd_out = complete ? 1'b1 : update_rd_bypass;
+assign update_rd_out = complete ? mem_update_rd : update_rd_bypass;
 assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
 
 initial begin
@@ -52,6 +53,8 @@ always @(posedge clk) begin
 
 	if (load)
 		mem_rd <= rd_sel;
+	if (store || load)
+		mem_update_rd <= load;
 end
 
 /* Byte enables and rotated data write value. */
