@@ -33,7 +33,7 @@
 //applicable agreement for further details.
 
 
-//altsyncram ADDRESS_REG_B="CLOCK0" CLOCK_ENABLE_INPUT_A="BYPASS" CLOCK_ENABLE_INPUT_B="BYPASS" CLOCK_ENABLE_OUTPUT_A="BYPASS" CLOCK_ENABLE_OUTPUT_B="BYPASS" DEVICE_FAMILY="Cyclone IV E" INDATA_REG_B="CLOCK0" INIT_FILE="../../fpga/bootrom.hex" NUMWORDS_A=64 NUMWORDS_B=64 OPERATION_MODE="BIDIR_DUAL_PORT" OUTDATA_ACLR_A="NONE" OUTDATA_ACLR_B="NONE" OUTDATA_REG_A="UNREGISTERED" OUTDATA_REG_B="UNREGISTERED" POWER_UP_UNINITIALIZED="FALSE" WIDTH_A=32 WIDTH_B=32 WIDTH_BYTEENA_A=1 WIDTH_BYTEENA_B=1 WIDTHAD_A=6 WIDTHAD_B=6 WRCONTROL_WRADDRESS_REG_B="CLOCK0" address_a address_b clock0 data_a data_b q_a q_b wren_a wren_b
+//altsyncram ADDRESS_REG_B="CLOCK0" CLOCK_ENABLE_INPUT_A="BYPASS" CLOCK_ENABLE_INPUT_B="BYPASS" CLOCK_ENABLE_OUTPUT_A="BYPASS" CLOCK_ENABLE_OUTPUT_B="BYPASS" DEVICE_FAMILY="Cyclone IV E" INDATA_REG_B="CLOCK0" INIT_FILE="../bootrom.hex" NUMWORDS_A=64 NUMWORDS_B=64 OPERATION_MODE="BIDIR_DUAL_PORT" OUTDATA_ACLR_A="NONE" OUTDATA_ACLR_B="NONE" OUTDATA_REG_A="UNREGISTERED" OUTDATA_REG_B="UNREGISTERED" POWER_UP_UNINITIALIZED="FALSE" WIDTH_A=32 WIDTH_B=32 WIDTH_BYTEENA_A=1 WIDTH_BYTEENA_B=1 WIDTHAD_A=6 WIDTHAD_B=6 WRCONTROL_WRADDRESS_REG_B="CLOCK0" address_a address_b clock0 data_a data_b q_a q_b wren_a wren_b
 //VERSION_BEGIN 13.0 cbx_altsyncram 2013:04:24:18:16:58:SJ cbx_cycloneii 2013:04:24:18:16:58:SJ cbx_lpm_add_sub 2013:04:24:18:16:58:SJ cbx_lpm_compare 2013:04:24:18:16:58:SJ cbx_lpm_decode 2013:04:24:18:16:58:SJ cbx_lpm_mux 2013:04:24:18:16:58:SJ cbx_mgl 2013:04:24:18:18:51:SJ cbx_stratix 2013:04:24:18:16:58:SJ cbx_stratixii 2013:04:24:18:16:58:SJ cbx_stratixiii 2013:04:24:18:16:58:SJ cbx_stratixv 2013:04:24:18:16:58:SJ cbx_util_mgl 2013:04:24:18:16:58:SJ  VERSION_END
 // synthesis VERILOG_INPUT_VERSION VERILOG_2001
 // altera message_off 10463
@@ -185,7 +185,7 @@ module  bootrom_altsyncram
 		ram_block1a_0.clk0_core_clock_enable = "none",
 		ram_block1a_0.clk0_input_clock_enable = "none",
 		ram_block1a_0.connectivity_checking = "OFF",
-		ram_block1a_0.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_0.init_file = "../bootrom.hex",
 		ram_block1a_0.init_file_layout = "port_a",
 		ram_block1a_0.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_0.mem_init0 = 64'h0000000002A8F0A8,
@@ -257,7 +257,7 @@ module  bootrom_altsyncram
 		ram_block1a_1.clk0_core_clock_enable = "none",
 		ram_block1a_1.clk0_input_clock_enable = "none",
 		ram_block1a_1.connectivity_checking = "OFF",
-		ram_block1a_1.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_1.init_file = "../bootrom.hex",
 		ram_block1a_1.init_file_layout = "port_a",
 		ram_block1a_1.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_1.mem_init0 = 64'h0000000000C48480,
@@ -329,7 +329,7 @@ module  bootrom_altsyncram
 		ram_block1a_2.clk0_core_clock_enable = "none",
 		ram_block1a_2.clk0_input_clock_enable = "none",
 		ram_block1a_2.connectivity_checking = "OFF",
-		ram_block1a_2.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_2.init_file = "../bootrom.hex",
 		ram_block1a_2.init_file_layout = "port_a",
 		ram_block1a_2.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_2.mem_init0 = 64'h0000008043046418,
@@ -401,7 +401,7 @@ module  bootrom_altsyncram
 		ram_block1a_3.clk0_core_clock_enable = "none",
 		ram_block1a_3.clk0_input_clock_enable = "none",
 		ram_block1a_3.connectivity_checking = "OFF",
-		ram_block1a_3.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_3.init_file = "../bootrom.hex",
 		ram_block1a_3.init_file_layout = "port_a",
 		ram_block1a_3.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_3.mem_init0 = 64'h00000098CAAC9B7E,
@@ -473,7 +473,7 @@ module  bootrom_altsyncram
 		ram_block1a_4.clk0_core_clock_enable = "none",
 		ram_block1a_4.clk0_input_clock_enable = "none",
 		ram_block1a_4.connectivity_checking = "OFF",
-		ram_block1a_4.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_4.init_file = "../bootrom.hex",
 		ram_block1a_4.init_file_layout = "port_a",
 		ram_block1a_4.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_4.mem_init0 = 64'h00000199C8CB349A,
@@ -545,7 +545,7 @@ module  bootrom_altsyncram
 		ram_block1a_5.clk0_core_clock_enable = "none",
 		ram_block1a_5.clk0_input_clock_enable = "none",
 		ram_block1a_5.connectivity_checking = "OFF",
-		ram_block1a_5.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_5.init_file = "../bootrom.hex",
 		ram_block1a_5.init_file_layout = "port_a",
 		ram_block1a_5.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_5.mem_init0 = 64'h0000018143081148,
@@ -617,7 +617,7 @@ module  bootrom_altsyncram
 		ram_block1a_6.clk0_core_clock_enable = "none",
 		ram_block1a_6.clk0_input_clock_enable = "none",
 		ram_block1a_6.connectivity_checking = "OFF",
-		ram_block1a_6.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_6.init_file = "../bootrom.hex",
 		ram_block1a_6.init_file_layout = "port_a",
 		ram_block1a_6.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_6.mem_init0 = 64'h0000008042A8136B,
@@ -689,7 +689,7 @@ module  bootrom_altsyncram
 		ram_block1a_7.clk0_core_clock_enable = "none",
 		ram_block1a_7.clk0_input_clock_enable = "none",
 		ram_block1a_7.connectivity_checking = "OFF",
-		ram_block1a_7.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_7.init_file = "../bootrom.hex",
 		ram_block1a_7.init_file_layout = "port_a",
 		ram_block1a_7.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_7.mem_init0 = 64'h0000008040CA1009,
@@ -761,7 +761,7 @@ module  bootrom_altsyncram
 		ram_block1a_8.clk0_core_clock_enable = "none",
 		ram_block1a_8.clk0_input_clock_enable = "none",
 		ram_block1a_8.connectivity_checking = "OFF",
-		ram_block1a_8.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_8.init_file = "../bootrom.hex",
 		ram_block1a_8.init_file_layout = "port_a",
 		ram_block1a_8.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_8.mem_init0 = 64'h0000008043081148,
@@ -833,7 +833,7 @@ module  bootrom_altsyncram
 		ram_block1a_9.clk0_core_clock_enable = "none",
 		ram_block1a_9.clk0_input_clock_enable = "none",
 		ram_block1a_9.connectivity_checking = "OFF",
-		ram_block1a_9.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_9.init_file = "../bootrom.hex",
 		ram_block1a_9.init_file_layout = "port_a",
 		ram_block1a_9.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_9.mem_init0 = 64'h0000009ACBF9312A,
@@ -905,7 +905,7 @@ module  bootrom_altsyncram
 		ram_block1a_10.clk0_core_clock_enable = "none",
 		ram_block1a_10.clk0_input_clock_enable = "none",
 		ram_block1a_10.connectivity_checking = "OFF",
-		ram_block1a_10.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_10.init_file = "../bootrom.hex",
 		ram_block1a_10.init_file_layout = "port_a",
 		ram_block1a_10.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_10.mem_init0 = 64'h000000E4400A1208,
@@ -977,7 +977,7 @@ module  bootrom_altsyncram
 		ram_block1a_11.clk0_core_clock_enable = "none",
 		ram_block1a_11.clk0_input_clock_enable = "none",
 		ram_block1a_11.connectivity_checking = "OFF",
-		ram_block1a_11.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_11.init_file = "../bootrom.hex",
 		ram_block1a_11.init_file_layout = "port_a",
 		ram_block1a_11.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_11.mem_init0 = 64'h0000008070081008,
@@ -1049,7 +1049,7 @@ module  bootrom_altsyncram
 		ram_block1a_12.clk0_core_clock_enable = "none",
 		ram_block1a_12.clk0_input_clock_enable = "none",
 		ram_block1a_12.connectivity_checking = "OFF",
-		ram_block1a_12.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_12.init_file = "../bootrom.hex",
 		ram_block1a_12.init_file_layout = "port_a",
 		ram_block1a_12.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_12.mem_init0 = 64'h0000009048081808,
@@ -1121,7 +1121,7 @@ module  bootrom_altsyncram
 		ram_block1a_13.clk0_core_clock_enable = "none",
 		ram_block1a_13.clk0_input_clock_enable = "none",
 		ram_block1a_13.connectivity_checking = "OFF",
-		ram_block1a_13.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_13.init_file = "../bootrom.hex",
 		ram_block1a_13.init_file_layout = "port_a",
 		ram_block1a_13.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_13.mem_init0 = 64'h0000008040081048,
@@ -1193,7 +1193,7 @@ module  bootrom_altsyncram
 		ram_block1a_14.clk0_core_clock_enable = "none",
 		ram_block1a_14.clk0_input_clock_enable = "none",
 		ram_block1a_14.connectivity_checking = "OFF",
-		ram_block1a_14.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_14.init_file = "../bootrom.hex",
 		ram_block1a_14.init_file_layout = "port_a",
 		ram_block1a_14.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_14.mem_init0 = 64'h0000008040081008,
@@ -1265,7 +1265,7 @@ module  bootrom_altsyncram
 		ram_block1a_15.clk0_core_clock_enable = "none",
 		ram_block1a_15.clk0_input_clock_enable = "none",
 		ram_block1a_15.connectivity_checking = "OFF",
-		ram_block1a_15.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_15.init_file = "../bootrom.hex",
 		ram_block1a_15.init_file_layout = "port_a",
 		ram_block1a_15.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_15.mem_init0 = 64'h0000008040081008,
@@ -1337,7 +1337,7 @@ module  bootrom_altsyncram
 		ram_block1a_16.clk0_core_clock_enable = "none",
 		ram_block1a_16.clk0_input_clock_enable = "none",
 		ram_block1a_16.connectivity_checking = "OFF",
-		ram_block1a_16.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_16.init_file = "../bootrom.hex",
 		ram_block1a_16.init_file_layout = "port_a",
 		ram_block1a_16.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_16.mem_init0 = 64'h0000008440081008,
@@ -1409,7 +1409,7 @@ module  bootrom_altsyncram
 		ram_block1a_17.clk0_core_clock_enable = "none",
 		ram_block1a_17.clk0_input_clock_enable = "none",
 		ram_block1a_17.connectivity_checking = "OFF",
-		ram_block1a_17.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_17.init_file = "../bootrom.hex",
 		ram_block1a_17.init_file_layout = "port_a",
 		ram_block1a_17.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_17.mem_init0 = 64'h0000008040081008,
@@ -1481,7 +1481,7 @@ module  bootrom_altsyncram
 		ram_block1a_18.clk0_core_clock_enable = "none",
 		ram_block1a_18.clk0_input_clock_enable = "none",
 		ram_block1a_18.connectivity_checking = "OFF",
-		ram_block1a_18.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_18.init_file = "../bootrom.hex",
 		ram_block1a_18.init_file_layout = "port_a",
 		ram_block1a_18.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_18.mem_init0 = 64'h0000008040081008,
@@ -1553,7 +1553,7 @@ module  bootrom_altsyncram
 		ram_block1a_19.clk0_core_clock_enable = "none",
 		ram_block1a_19.clk0_input_clock_enable = "none",
 		ram_block1a_19.connectivity_checking = "OFF",
-		ram_block1a_19.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_19.init_file = "../bootrom.hex",
 		ram_block1a_19.init_file_layout = "port_a",
 		ram_block1a_19.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_19.mem_init0 = 64'h0000008040081008,
@@ -1625,7 +1625,7 @@ module  bootrom_altsyncram
 		ram_block1a_20.clk0_core_clock_enable = "none",
 		ram_block1a_20.clk0_input_clock_enable = "none",
 		ram_block1a_20.connectivity_checking = "OFF",
-		ram_block1a_20.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_20.init_file = "../bootrom.hex",
 		ram_block1a_20.init_file_layout = "port_a",
 		ram_block1a_20.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_20.mem_init0 = 64'h0000008040081008,
@@ -1697,7 +1697,7 @@ module  bootrom_altsyncram
 		ram_block1a_21.clk0_core_clock_enable = "none",
 		ram_block1a_21.clk0_input_clock_enable = "none",
 		ram_block1a_21.connectivity_checking = "OFF",
-		ram_block1a_21.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_21.init_file = "../bootrom.hex",
 		ram_block1a_21.init_file_layout = "port_a",
 		ram_block1a_21.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_21.mem_init0 = 64'h0000008040081008,
@@ -1769,7 +1769,7 @@ module  bootrom_altsyncram
 		ram_block1a_22.clk0_core_clock_enable = "none",
 		ram_block1a_22.clk0_input_clock_enable = "none",
 		ram_block1a_22.connectivity_checking = "OFF",
-		ram_block1a_22.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_22.init_file = "../bootrom.hex",
 		ram_block1a_22.init_file_layout = "port_a",
 		ram_block1a_22.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_22.mem_init0 = 64'h000000804008100A,
@@ -1841,7 +1841,7 @@ module  bootrom_altsyncram
 		ram_block1a_23.clk0_core_clock_enable = "none",
 		ram_block1a_23.clk0_input_clock_enable = "none",
 		ram_block1a_23.connectivity_checking = "OFF",
-		ram_block1a_23.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_23.init_file = "../bootrom.hex",
 		ram_block1a_23.init_file_layout = "port_a",
 		ram_block1a_23.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_23.mem_init0 = 64'h0000008040081008,
@@ -1913,7 +1913,7 @@ module  bootrom_altsyncram
 		ram_block1a_24.clk0_core_clock_enable = "none",
 		ram_block1a_24.clk0_input_clock_enable = "none",
 		ram_block1a_24.connectivity_checking = "OFF",
-		ram_block1a_24.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_24.init_file = "../bootrom.hex",
 		ram_block1a_24.init_file_layout = "port_a",
 		ram_block1a_24.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_24.mem_init0 = 64'h0000000000000000,
@@ -1985,7 +1985,7 @@ module  bootrom_altsyncram
 		ram_block1a_25.clk0_core_clock_enable = "none",
 		ram_block1a_25.clk0_input_clock_enable = "none",
 		ram_block1a_25.connectivity_checking = "OFF",
-		ram_block1a_25.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_25.init_file = "../bootrom.hex",
 		ram_block1a_25.init_file_layout = "port_a",
 		ram_block1a_25.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_25.mem_init0 = 64'h0000010104000001,
@@ -2057,7 +2057,7 @@ module  bootrom_altsyncram
 		ram_block1a_26.clk0_core_clock_enable = "none",
 		ram_block1a_26.clk0_input_clock_enable = "none",
 		ram_block1a_26.connectivity_checking = "OFF",
-		ram_block1a_26.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_26.init_file = "../bootrom.hex",
 		ram_block1a_26.init_file_layout = "port_a",
 		ram_block1a_26.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_26.mem_init0 = 64'h0000018343F01021,
@@ -2129,7 +2129,7 @@ module  bootrom_altsyncram
 		ram_block1a_27.clk0_core_clock_enable = "none",
 		ram_block1a_27.clk0_input_clock_enable = "none",
 		ram_block1a_27.connectivity_checking = "OFF",
-		ram_block1a_27.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_27.init_file = "../bootrom.hex",
 		ram_block1a_27.init_file_layout = "port_a",
 		ram_block1a_27.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_27.mem_init0 = 64'h0000002613F14129,
@@ -2201,7 +2201,7 @@ module  bootrom_altsyncram
 		ram_block1a_28.clk0_core_clock_enable = "none",
 		ram_block1a_28.clk0_input_clock_enable = "none",
 		ram_block1a_28.connectivity_checking = "OFF",
-		ram_block1a_28.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_28.init_file = "../bootrom.hex",
 		ram_block1a_28.init_file_layout = "port_a",
 		ram_block1a_28.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_28.mem_init0 = 64'h000000EA77F9786C,
@@ -2273,7 +2273,7 @@ module  bootrom_altsyncram
 		ram_block1a_29.clk0_core_clock_enable = "none",
 		ram_block1a_29.clk0_input_clock_enable = "none",
 		ram_block1a_29.connectivity_checking = "OFF",
-		ram_block1a_29.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_29.init_file = "../bootrom.hex",
 		ram_block1a_29.init_file_layout = "port_a",
 		ram_block1a_29.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_29.mem_init0 = 64'h0000004420002905,
@@ -2345,7 +2345,7 @@ module  bootrom_altsyncram
 		ram_block1a_30.clk0_core_clock_enable = "none",
 		ram_block1a_30.clk0_input_clock_enable = "none",
 		ram_block1a_30.connectivity_checking = "OFF",
-		ram_block1a_30.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_30.init_file = "../bootrom.hex",
 		ram_block1a_30.init_file_layout = "port_a",
 		ram_block1a_30.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_30.mem_init0 = 64'h00000181440CD498,
@@ -2417,7 +2417,7 @@ module  bootrom_altsyncram
 		ram_block1a_31.clk0_core_clock_enable = "none",
 		ram_block1a_31.clk0_input_clock_enable = "none",
 		ram_block1a_31.connectivity_checking = "OFF",
-		ram_block1a_31.init_file = "../../fpga/bootrom.hex",
+		ram_block1a_31.init_file = "../bootrom.hex",
 		ram_block1a_31.init_file_layout = "port_a",
 		ram_block1a_31.logical_ram_name = "ALTSYNCRAM",
 		ram_block1a_31.mem_init0 = 64'h0000001888010002,
@@ -2455,7 +2455,7 @@ module  bootrom_altsyncram
 		q_b = {wire_ram_block1a_31portbdataout[0], wire_ram_block1a_30portbdataout[0], wire_ram_block1a_29portbdataout[0], wire_ram_block1a_28portbdataout[0], wire_ram_block1a_27portbdataout[0], wire_ram_block1a_26portbdataout[0], wire_ram_block1a_25portbdataout[0], wire_ram_block1a_24portbdataout[0], wire_ram_block1a_23portbdataout[0], wire_ram_block1a_22portbdataout[0], wire_ram_block1a_21portbdataout[0], wire_ram_block1a_20portbdataout[0], wire_ram_block1a_19portbdataout[0], wire_ram_block1a_18portbdataout[0], wire_ram_block1a_17portbdataout[0], wire_ram_block1a_16portbdataout[0], wire_ram_block1a_15portbdataout[0], wire_ram_block1a_14portbdataout[0], wire_ram_block1a_13portbdataout[0], wire_ram_block1a_12portbdataout[0], wire_ram_block1a_11portbdataout[0], wire_ram_block1a_10portbdataout[0], wire_ram_block1a_9portbdataout[0], wire_ram_block1a_8portbdataout[0], wire_ram_block1a_7portbdataout[0], wire_ram_block1a_6portbdataout[0], wire_ram_block1a_5portbdataout[0], wire_ram_block1a_4portbdataout[0], wire_ram_block1a_3portbdataout[0], wire_ram_block1a_2portbdataout[0], wire_ram_block1a_1portbdataout[0], wire_ram_block1a_0portbdataout[0]};
 	initial/*synthesis enable_verilog_initial_construct*/
  	begin
-		$display("Warning: Memory initialization file ../../fpga/bootrom.hex is not of the dimensions 64 X 32, the resulting memory design may not produce consistent simulation results.");
+		$display("Warning: Memory initialization file ../bootrom.hex is not of the dimensions 64 X 32, the resulting memory design may not produce consistent simulation results.");
 	end
 endmodule //bootrom_altsyncram
 //VALID FILE
@@ -2539,7 +2539,7 @@ endmodule
 // Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
 // Retrieval info: PRIVATE: MEMSIZE NUMERIC "2048"
 // Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
-// Retrieval info: PRIVATE: MIFfilename STRING "../../fpga/bootrom.hex"
+// Retrieval info: PRIVATE: MIFfilename STRING "../bootrom.hex"
 // Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
 // Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "0"
 // Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "0"
@@ -2571,7 +2571,7 @@ endmodule
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 // Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK0"
-// Retrieval info: CONSTANT: INIT_FILE STRING "../../fpga/bootrom.hex"
+// Retrieval info: CONSTANT: INIT_FILE STRING "../bootrom.hex"
 // Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
 // Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "64"
