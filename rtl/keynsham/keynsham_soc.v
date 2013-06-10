@@ -15,7 +15,7 @@ module keynsham_soc(input wire clk,
 		    output wire [1:0] s_banksel);
 
 wire [31:0] i_addr;
-reg [31:0] i_data;
+reg [31:0] i_data = 32'b0;
 wire [31:0] d_addr;
 reg [31:0] d_data = 32'b0;
 wire [31:0] d_wr_val;
@@ -97,7 +97,7 @@ keynsham_bootrom rom(.clk(clk),
 		     .i_addr(i_addr),
 		     .i_data(i_rom_data),
 		     .d_access(d_access),
-		     .d_cs(ram_cs),
+		     .d_cs(rom_cs),
 		     .d_addr(d_addr),
 		     .d_data(rom_data),
 		     .d_bytesel(d_bytesel),
