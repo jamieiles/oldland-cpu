@@ -114,14 +114,14 @@ struct cpu *new_cpu(const char *binary)
 static void emul_arithmetic(struct cpu *c, uint32_t instr)
 {
 	enum regs ra, rb, rd;
-	uint16_t imm16;
+	int32_t imm16;
 	uint64_t op2;
 	uint64_t result = 0;
 
 	ra = instr_ra(instr);
 	rb = instr_rb(instr);
 	rd = instr_rd(instr);
-	imm16 = instr_imm16(instr);
+	imm16 = ((int32_t)instr_imm16(instr) << 16) >> 16;
 	op2 = (instr & (1 << 9)) ? c->regs[rb] : imm16;
 
 	switch (instr_opc(instr)) {
@@ -251,15 +251,15 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	enum regs ra = instr_ra(instr), rb = instr_rb(instr), rd = instr_rd(instr);
 	int err;
 
+	/* Sign extend. */
+	imm16 <<= 16;
+	imm16 >>= 16;
+
 	/* PC relative addressing. */
-	if (!(instr & (1 << 9))) {
-		/* Sign extend. */
-		imm16 <<= 16;
-		imm16 >>= 16;
+	if (!(instr & (1 << 9)))
 		addr = c->pc + imm16;
-	} else {
+	else
 		addr = c->regs[ra] + imm16;
-	}
 
 	switch (instr_opc(instr)) {
 	case OPCODE_LDR8:
