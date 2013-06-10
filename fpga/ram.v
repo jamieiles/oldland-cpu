@@ -110,12 +110,6 @@ module ram (
 		altsyncram_component.clock_enable_output_a = "BYPASS",
 		altsyncram_component.clock_enable_output_b = "BYPASS",
 		altsyncram_component.indata_reg_b = "CLOCK0",
-`ifdef NO_PLI
-		altsyncram_component.init_file = "../rom.rif"
-`else
-		altsyncram_component.init_file = "../rom.hex"
-`endif
-,
 		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_type = "altsyncram",
 		altsyncram_component.numwords_a = 128,
@@ -150,7 +144,7 @@ endmodule
 // Retrieval info: PRIVATE: BYTE_ENABLE_A NUMERIC "1"
 // Retrieval info: PRIVATE: BYTE_ENABLE_B NUMERIC "1"
 // Retrieval info: PRIVATE: BYTE_SIZE NUMERIC "8"
-// Retrieval info: PRIVATE: BlankMemory NUMERIC "0"
+// Retrieval info: PRIVATE: BlankMemory NUMERIC "1"
 // Retrieval info: PRIVATE: CLOCK_ENABLE_INPUT_A NUMERIC "0"
 // Retrieval info: PRIVATE: CLOCK_ENABLE_INPUT_B NUMERIC "0"
 // Retrieval info: PRIVATE: CLOCK_ENABLE_OUTPUT_A NUMERIC "0"
@@ -211,7 +205,6 @@ endmodule
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 // Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK0"
-// Retrieval info: CONSTANT: INIT_FILE STRING "../rom.hex"
 // Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
 // Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "128"
