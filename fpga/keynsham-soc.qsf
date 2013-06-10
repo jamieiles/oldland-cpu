@@ -101,8 +101,13 @@ set_location_assignment PIN_A3 -to uart_rx
 set_location_assignment PIN_M7 -to s_banksel[0]
 set_location_assignment PIN_M6 -to s_banksel[1]
 
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to uart_tx
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to uart_rx
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name VERILOG_FILE toplevel.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland_defines.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_bootrom.v
 set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/sdram_controller.v"
 set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/counter.v"
 set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/bridge_32_16.v"
@@ -123,6 +128,4 @@ set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name MIF_FILE ../rom.mif
 set_global_assignment -name HEX_FILE ../rom2.hex
-set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to uart_tx
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to uart_rx
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
