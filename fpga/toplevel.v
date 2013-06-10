@@ -9,9 +9,16 @@ module toplevel(input wire clk,
 		output wire s_cs_n,
 		output wire s_clken,
 		inout [15:0] s_data,
-		output wire [1:0] s_banksel);
+		output wire [1:0] s_banksel,
+		output wire sdr_clk);
 
-keynsham_soc	soc(.clk(clk),
+wire sys_clk;
+
+sys_pll		pll(.inclk0(clk),
+		    .c0(sys_clk),
+		    .c1(sdr_clk));
+
+keynsham_soc	soc(.clk(sys_clk),
 		    .uart_rx(uart_rx),
 		    .uart_tx(uart_tx),
 		    .s_ras_n(s_ras_n),
