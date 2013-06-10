@@ -2,9 +2,8 @@
 #
 # Boot a Keynsham SoC device using the onchip bootrom and open a minicom
 # instance for interacting with it.
-import os
 from progressbar import ProgressBar, Percentage, Bar
-import select
+import serial
 import struct
 import subprocess
 import sys
@@ -14,29 +13,25 @@ ACK_TIMEOUT = 2500 # 2.5 seconds should cover slow simulations.
 class BootFailure(IOError):
     pass
 
-def wait_for_ack(poll, fd, allow_miss = False):
+def wait_for_ack(sp, allow_miss = False):
     """Wait for the acknowledgement packet.  If allow_miss = True, then we can
        skip the acknowledgement packet.  This can be useful when the
        simulation/device has already been booted and we don't attach quickly
        enough to see the awake packet.
     """
-    fds = poll.poll(ACK_TIMEOUT)
-    if len(fds) == 0:
-        if allow_miss:
-            return
-        raise BootFailure('acknowledgement not received')
-
-    if len(os.read(fd, 1)) != 1:
+    rxdata = sp.read(1)
+    if len(rxdata) != 1 and not allow_miss:
         raise BootFailure('failed to read ack')
+    print rxdata
 
-def send_buf(fd, poll, buf):
+def send_buf(sp, buf):
     progress = ProgressBar(widgets = [Percentage(), Bar()],
                            maxval = len(buf)).start()
 
     for i, b in enumerate(buf):
-        if os.write(fd, b) != 1:
+        if sp.write(b) != 1:
             raise BootFailure('failed to write data byte')
-        wait_for_ack(poll, fd)
+        wait_for_ack(sp)
         progress.update(i + 1)
 
 def format_length(length):
@@ -44,20 +39,18 @@ def format_length(length):
     return struct.pack('>I', length)
 
 def boot(pts, filename):
-    fd = os.open(pts, os.O_RDWR | os.O_NONBLOCK)
-    poll = select.poll()
-    poll.register(fd, select.POLLIN)
+    sp = serial.Serial(port = pts, baudrate = 115200, timeout = 2.5)
 
     # Hello packet that we may have missed.
-    wait_for_ack(poll, fd, allow_miss = True)
+    wait_for_ack(sp, allow_miss = True)
 
     with open(filename, 'r') as binfile:
         data = binfile.read()
         length = format_length(len(data))
         print('sending length')
-        send_buf(fd, poll, length)
+        send_buf(sp, length)
         print('sending data')
-        send_buf(fd, poll, data)
+        send_buf(sp, data)
 
 def main(args):
     if len(args) != 2:
@@ -72,7 +65,10 @@ def main(args):
     except Exception as e:
         print e
         return 1
-    subprocess.call(['/usr/bin/minicom', '-p', args[0]])
+    cmd = ['/usr/bin/minicom']
+    if 'pts' in args[0]:
+        cmd += ['-p', args[0]]
+    subprocess.call(cmd)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
