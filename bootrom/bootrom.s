@@ -62,6 +62,8 @@ done:
 	xor	$r3, $r3, $r3
 	xor	$r4, $r4, $r4
 	xor	$r5, $r5, $r5
+	xor	$lr, $lr, $lr
+	xor	$sp, $sp, $sp
 	/* Here we go! */
 	b	$r0
 
