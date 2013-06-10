@@ -69,10 +69,18 @@ always @(*) begin
 		d_data = 32'b0;
 end
 
+reg ram_i_out_cs = 1'b0;
+reg rom_i_out_cs = 1'b0;
+
+always @(posedge clk) begin
+	ram_i_out_cs <= ram_i_cs;
+	rom_i_out_cs <= rom_i_cs;
+end
+
 always @(*) begin
-	if (ram_i_cs)
+	if (ram_i_out_cs)
 		i_data = i_ram_data;
-	else if (rom_i_cs)
+	else if (rom_i_out_cs)
 		i_data = i_rom_data;
 	else
 		i_data = 32'b0;
