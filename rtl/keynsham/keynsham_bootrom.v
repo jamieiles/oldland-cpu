@@ -21,16 +21,10 @@ sim_dp_rom	mem(.clk(clk),
 		    .d_ack(d_ack));
 `else /* Altera FPGA */
 
-ram		mem(.clock(clk),
+bootrom		mem(.clock(clk),
 		    .address_a(i_addr[11:2]), /* Word addressed with byte enables. */
-		    .data_a(32'b0),
-		    .byteena_a(4'b1111),
-		    .wren_a(1'b0),
 		    .q_a(i_data),
 		    .address_b(d_addr[11:2]), /* Word addressed with byte enables. */
-		    .data_b(32'b0),
-		    .byteena_b(4'b0),
-		    .wren_b(1'b0),
 		    .q_b(d_data));
 
 reg rom_ack = 1'b0;

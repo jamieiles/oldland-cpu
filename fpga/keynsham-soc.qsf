@@ -128,4 +128,5 @@ set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name MIF_FILE ../rom.mif
 set_global_assignment -name HEX_FILE ../rom2.hex
+set_global_assignment -name QIP_FILE bootrom.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
