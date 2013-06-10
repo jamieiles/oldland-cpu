@@ -10,7 +10,7 @@ module sim_dp_ram(input wire clk,
 		  output reg [31:0] d_data,
 		  output reg d_ack);
 
-reg [7:0] ram [255:0];
+reg [7:0] ram [4096:0];
 reg [8 * 128:0] ram_filename;
 
 initial begin
