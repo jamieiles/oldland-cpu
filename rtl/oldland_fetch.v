@@ -23,13 +23,12 @@ module oldland_fetch(input wire clk,
 		     input wire stall_clear,
 		     input wire [31:0] branch_pc,
 		     input wire branch_taken,
-		     output reg [31:0] pc,
 		     output wire [31:0] pc_plus_4,
 		     output wire [31:0] instr,
 		     output wire [31:0] fetch_addr,
 		     input wire [31:0] fetch_data);
 
-initial pc		= `OLDLAND_RESET_ADDR;
+reg [31:0] pc		= `OLDLAND_RESET_ADDR;
 
 /* Next PC calculation logic. */
 assign pc_plus_4	= pc + 32'd4;
