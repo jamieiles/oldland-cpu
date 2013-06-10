@@ -1,1 +1,22 @@
 { "" "" "" "Feature LogicLock is only available with a valid subscription license. You can purchase a software subscription to gain full access to this feature." {  } {  } 0 292013 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[0\] uses I/O standard 3.3-V LVCMOS at G2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[1\] uses I/O standard 3.3-V LVCMOS at G1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[2\] uses I/O standard 3.3-V LVCMOS at L8" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[3\] uses I/O standard 3.3-V LVCMOS at K5" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[4\] uses I/O standard 3.3-V LVCMOS at K2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[5\] uses I/O standard 3.3-V LVCMOS at J2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[6\] uses I/O standard 3.3-V LVCMOS at J1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[7\] uses I/O standard 3.3-V LVCMOS at R7" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[8\] uses I/O standard 3.3-V LVCMOS at T4" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[9\] uses I/O standard 3.3-V LVCMOS at T2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[10\] uses I/O standard 3.3-V LVCMOS at T3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[11\] uses I/O standard 3.3-V LVCMOS at R3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[12\] uses I/O standard 3.3-V LVCMOS at R5" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[13\] uses I/O standard 3.3-V LVCMOS at P3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[14\] uses I/O standard 3.3-V LVCMOS at N3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[15\] uses I/O standard 3.3-V LVCMOS at K1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin clk uses I/O standard 3.3-V LVCMOS at R8" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin uart_rx uses I/O standard 3.3-V LVCMOS at A3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin \"s_cs_n\" is stuck at GND" {  } {  } 0 13410 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin \"s_clken\" is stuck at VCC" {  } {  } 0 13410 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "PLL \"sys_pll:pll\|altpll:altpll_component\|sys_pll_altpll:auto_generated\|pll1\" output port clk\[1\] feeds output pin \"sdr_clk~output\" via non-dedicated routing -- jitter performance depends on switching rate of other design elements. Use PLL dedicated clock outputs to ensure jitter performance" {  } {  } 0 15064 "" 0 0 "Quartus II" 0 -1 0 ""}
