@@ -34,7 +34,7 @@ ram		mem(.clock(clk),
 		    .address_b(d_addr[11:2]), /* Word addressed with byte enables. */
 		    .data_b(d_wr_val),
 		    .byteena_b(d_bytesel),
-		    .wren_b(d_wr_en),
+		    .wren_b(d_wr_en & d_cs),
 		    .q_b(d_data));
 
 reg ram_ack = 1'b0;
