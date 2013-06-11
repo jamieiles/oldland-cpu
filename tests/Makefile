@@ -1,7 +1,8 @@
 TESTS := hello \
 	 echo \
 	 hellosdram \
-	 addbranch
+	 addbranch \
+	 sdram
 
 .PHONY:	all clean $(TESTS)
 

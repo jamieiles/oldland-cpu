@@ -12,6 +12,9 @@ all:	$(TESTNAME).bin
 %.o:	%.S
 	$(AS) $< -o $@
 
+%.o:	%.s
+	$(AS) $< -o $@
+
 %.bin:	%
 	$(OBJCOPY) $< $@ -O binary
 
