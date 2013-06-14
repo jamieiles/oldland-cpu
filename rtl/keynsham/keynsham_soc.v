@@ -12,7 +12,9 @@ module keynsham_soc(input wire clk,
 		    output wire s_cs_n,
 		    output wire s_clken,
 		    inout [15:0] s_data,
-		    output wire [1:0] s_banksel);
+		    output wire [1:0] s_banksel,
+		    input wire cpu_run,
+		    output wire cpu_stopped);
 
 wire [31:0] i_addr;
 reg [31:0] i_data = 32'b0;
@@ -155,6 +157,8 @@ oldland_cpu	cpu(.clk(clk),
 		    .d_wr_val(d_wr_val),
 		    .d_access(d_access),
 		    .d_ack(d_ack),
-		    .d_error(d_error));
+		    .d_error(d_error),
+		    .cpu_run(cpu_run),
+		    .cpu_stopped(cpu_stopped));
 
 endmodule

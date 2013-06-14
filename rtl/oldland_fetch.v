@@ -26,7 +26,9 @@ module oldland_fetch(input wire clk,
 		     output wire [31:0] pc_plus_4,
 		     output wire [31:0] instr,
 		     output wire [31:0] fetch_addr,
-		     input wire [31:0] fetch_data);
+		     input wire [31:0] fetch_data,
+		     input wire run,
+		     output reg stopped);
 
 reg [31:0] pc		= `OLDLAND_RESET_ADDR;
 
@@ -41,12 +43,14 @@ wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
  */
 reg stalled		= 1'b0;
 wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
-assign instr		= stalled ? `INSTR_NOP : fetch_data;
+assign instr		= stalled || stopped ? `INSTR_NOP : fetch_data;
 
-assign fetch_addr = stalling ? pc : next_pc;
+assign fetch_addr	= stalling || stopped || !run ? pc : next_pc;
+
+initial stopped = 1'b0;
 
 always @(posedge clk)
-	if (!stalling)
+	if (!stalling && !stopped)
 		pc <= next_pc;
 
 always @(posedge clk) begin
@@ -54,6 +58,20 @@ always @(posedge clk) begin
 		stalled <= 1'b1;
 	else if (stall_clear)
 		stalled <= 1'b0;
+
+	if (!run && !stalling)
+		stopped <= 1'b1;
+	if (run)
+		stopped <= 1'b0;
 end
+
+/*
+ * To step the pipeline:
+ *
+ * - wait for any stall to resolve - we don't want to lose a branch.
+ * - mark the pipeline as stalling, allow enough cycles to flush any
+ *   instruction in the pipeline.
+ * - issue nops until run goes high, resume execution.
+ */
 
 endmodule

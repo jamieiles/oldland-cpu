@@ -8,7 +8,9 @@ module oldland_cpu(input wire clk,
 		   input wire [31:0] d_data,
 		   output wire d_access,
 		   input wire d_ack,
-		   input wire d_error);
+		   input wire d_error,
+		   input wire cpu_run,
+		   output wire cpu_stopped);
 
 /* Fetch -> decode signals. */
 wire [31:0] fd_pc_plus_4;
@@ -100,7 +102,9 @@ oldland_fetch	fetch(.clk(clk),
 		      .pc_plus_4(fd_pc_plus_4),
 		      .instr(fd_instr),
 		      .fetch_addr(i_addr),
-		      .fetch_data(i_data));
+		      .fetch_data(i_data),
+		      .run(cpu_run),
+		      .stopped(cpu_stopped));
 
 oldland_decode	decode(.clk(clk),
 		       .instr(fd_instr),
