@@ -31,7 +31,8 @@ main:
 
 init_mem:
 	movhi	$r2, 0x2000 /* Start */
-	movhi	$r1, 0x2010 /* End */
+	movhi	$r1, 0x2000 /* End */
+	orlo	$r1, $r1, 0x0100
 
 wait_user:
 	ldr32	$r3, [$r0, 0x4]

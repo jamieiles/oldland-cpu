@@ -1,4 +1,6 @@
 - verilog JTAG controller + PLI interface.
 - i+d cache.
 - interrupts.
-- add a setlo instruction that doesn't use the 16 bit immediate as signed.
+- I/D arbiter for shared instruction/data memory.
+- gpio for signalling board status.
+- reset signal to cpu core.

@@ -142,4 +142,16 @@ set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to s_*
 set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to sdr_clk
 set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[0]"
 set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[1]"
+set_global_assignment -name SMART_RECOMPILE ON
+set_global_assignment -name ADV_NETLIST_OPT_SYNTH_WYSIWYG_REMAP ON
+set_global_assignment -name AUTO_SHIFT_REGISTER_RECOGNITION ALWAYS
+set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
+set_global_assignment -name CYCLONEII_OPTIMIZATION_TECHNIQUE SPEED
+set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_DUPLICATION ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_RETIMING ON
+set_global_assignment -name ROUTER_LCELL_INSERTION_AND_LOGIC_DUPLICATION ON
+set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL MAXIMUM
+set_global_assignment -name AUTO_PACKED_REGISTERS_STRATIXII NORMAL
+set_global_assignment -name MUX_RESTRUCTURE OFF
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
