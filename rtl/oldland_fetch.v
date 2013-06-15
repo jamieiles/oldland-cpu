@@ -43,14 +43,16 @@ wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
  */
 reg stalled		= 1'b0;
 wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
-assign instr		= stalled || stopped ? `INSTR_NOP : fetch_data;
+assign instr		= stalled || stopping ? `INSTR_NOP : fetch_data;
+reg stopping		= 1'b0;
+reg [2:0] stop_ctr	= 3'd5;
 
-assign fetch_addr	= stalling || stopped || !run ? pc : next_pc;
+assign fetch_addr	= stalling || stopping || !run ? pc : next_pc;
 
-initial stopped = 1'b0;
+initial stopped		= 1'b0;
 
 always @(posedge clk)
-	if (!stalling && !stopped)
+	if (!stalling && !stopping)
 		pc <= next_pc;
 
 always @(posedge clk) begin
@@ -60,9 +62,18 @@ always @(posedge clk) begin
 		stalled <= 1'b0;
 
 	if (!run && !stalling)
-		stopped <= 1'b1;
-	if (run)
+		stopping <= 1'b1;
+
+	if (run) begin
+		stopping <= 1'b0;
 		stopped <= 1'b0;
+		stop_ctr <= 3'd5;
+	end else begin
+		if (stopping && |stop_ctr && !stalling)
+			stop_ctr <= stop_ctr - 3'b1;
+		if (~|stop_ctr)
+			stopped <= 1'b1;
+	end
 end
 
 /*
