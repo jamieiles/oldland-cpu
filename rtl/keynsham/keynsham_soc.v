@@ -2,8 +2,10 @@
 `define OLDLAND_RESET_ADDR	32'h0ffffffc
 
 module keynsham_soc(input wire clk,
+		    /* UART I/O signals. */
 		    input wire uart_rx,
 		    output wire uart_tx,
+		    /* SDRAM I/O signals. */
 		    output wire s_ras_n,
 		    output wire s_cas_n,
 		    output wire s_wr_en,
@@ -13,8 +15,14 @@ module keynsham_soc(input wire clk,
 		    output wire s_clken,
 		    inout [15:0] s_data,
 		    output wire [1:0] s_banksel,
-		    input wire cpu_run,
-		    output wire cpu_stopped);
+		    /* Debug I/O signals. */
+		    input wire dbg_clk,
+		    input wire [1:0] dbg_addr,
+		    input wire [31:0] dbg_din,
+		    output wire [31:0] dbg_dout,
+		    input wire dbg_wr_en,
+		    input wire dbg_req,
+		    output wire dbg_ack);
 
 wire [31:0] i_addr;
 reg [31:0] i_data = 32'b0;
@@ -158,7 +166,12 @@ oldland_cpu	cpu(.clk(clk),
 		    .d_access(d_access),
 		    .d_ack(d_ack),
 		    .d_error(d_error),
-		    .cpu_run(cpu_run),
-		    .cpu_stopped(cpu_stopped));
+		    .dbg_clk(dbg_clk),
+		    .dbg_addr(dbg_addr),
+		    .dbg_din(dbg_din),
+		    .dbg_dout(dbg_dout),
+		    .dbg_wr_en(dbg_wr_en),
+		    .dbg_req(dbg_req),
+		    .dbg_ack(dbg_ack));
 
 endmodule

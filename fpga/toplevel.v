@@ -29,5 +29,11 @@ keynsham_soc	soc(.clk(sys_clk),
 		    .s_cs_n(s_cs_n),
 		    .s_clken(s_clken),
 		    .s_data(s_data),
-		    .s_banksel(s_banksel));
+		    .s_banksel(s_banksel),
+		    .dbg_clk(1'b0),
+		    .dbg_addr(2'b0),
+		    .dbg_din(32'b0),
+		    .dbg_wr_en(1'b0),
+		    .dbg_req(1'b0));
+
 endmodule

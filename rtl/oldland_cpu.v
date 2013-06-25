@@ -1,6 +1,8 @@
 module oldland_cpu(input wire clk,
+		   /* Instruction bus. */
 		   output wire [31:0] i_addr,
 		   input wire [31:0] i_data,
+		   /* Data bus. */
 		   output wire [31:0] d_addr,
 		   output wire [3:0] d_bytesel,
 		   output wire d_wr_en,
@@ -9,8 +11,14 @@ module oldland_cpu(input wire clk,
 		   output wire d_access,
 		   input wire d_ack,
 		   input wire d_error,
-		   input wire cpu_run,
-		   output wire cpu_stopped);
+		   /* Debug control signals. */
+		   input wire dbg_clk,
+		   input wire [1:0] dbg_addr,
+		   input wire [31:0] dbg_din,
+		   output wire [31:0] dbg_dout,
+		   input wire dbg_wr_en,
+		   input wire dbg_req,
+		   output wire dbg_ack);
 
 /* Fetch -> decode signals. */
 wire [31:0] fd_pc_plus_4;
@@ -95,6 +103,35 @@ always @(*) begin
 		de_rb = rb;
 end
 
+/* Debug control signals. */
+wire cpu_run;
+wire cpu_stopped;
+wire [2:0] dbg_reg_sel;
+wire [31:0] dbg_reg_wr_val;
+wire [31:0] dbg_reg_val;
+wire dbg_reg_wr_en;
+wire [31:0] dbg_pc;
+wire [31:0] dbg_pc_wr_val;
+wire dbg_pc_wr_en;
+
+oldland_debug	debug(.clk(clk),
+		      .dbg_clk(dbg_clk),
+		      .addr(dbg_addr),
+		      .din(dbg_din),
+		      .dout(dbg_dout),
+		      .wr_en(dbg_wr_en),
+		      .req(dbg_req),
+		      .ack(dbg_ack),
+		      .run(cpu_run),
+		      .stopped(cpu_stopped),
+		      .dbg_reg_sel(dbg_reg_sel),
+		      .dbg_reg_wr_val(dbg_reg_wr_val),
+		      .dbg_reg_val(dbg_reg_val),
+		      .dbg_reg_wr_en(dbg_reg_wr_en),
+		      .dbg_pc(dbg_pc),
+		      .dbg_pc_wr_val(dbg_pc_wr_val),
+		      .dbg_pc_wr_en(dbg_pc_wr_en));
+
 oldland_fetch	fetch(.clk(clk),
 		      .stall_clear(stall_clear),
 		      .branch_pc(em_alu_out),
@@ -104,7 +141,8 @@ oldland_fetch	fetch(.clk(clk),
 		      .fetch_addr(i_addr),
 		      .fetch_data(i_data),
 		      .run(cpu_run),
-		      .stopped(cpu_stopped));
+		      .stopped(cpu_stopped),
+		      .dbg_pc(dbg_pc));
 
 oldland_decode	decode(.clk(clk),
 		       .instr(fd_instr),
@@ -186,6 +224,11 @@ oldland_regfile	regfile(.clk(clk),
 			.wr_en(mw_update_rd),
 			.wr_val(mw_wr_val),
 			.ra(ra),
-			.rb(rb));
+			.rb(rb),
+			.dbg_reg_sel(dbg_reg_sel),
+			.dbg_reg_val(dbg_reg_val),
+			.dbg_reg_wr_val(dbg_reg_wr_val),
+			.dbg_reg_wr_en(dbg_reg_wr_en),
+			.dbg_en(cpu_stopped));
 
 endmodule
