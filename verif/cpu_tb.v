@@ -22,6 +22,13 @@ wire s_clken;
 wire [15:0] s_data;
 wire [1:0] s_banksel;
 
+wire [1:0] dbg_addr;
+wire [31:0] dbg_din;
+wire [31:0] dbg_dout;
+wire dbg_wr_en;
+wire dbg_req;
+wire dbg_acl;
+
 always #10 clk = ~clk;
 
 mt48lc16m16a2 ram_model(.Dq(s_data),
@@ -46,7 +53,14 @@ keynsham_soc	soc(.clk(clk),
 		    .s_cs_n(s_cs_n),
 		    .s_clken(s_clken),
 		    .s_data(s_data),
-		    .s_banksel(s_banksel));
+		    .s_banksel(s_banksel),
+		    .dbg_clk(clk),
+		    .dbg_addr(dbg_addr),
+		    .dbg_din(dbg_din),
+		    .dbg_dout(dbg_dout),
+		    .dbg_wr_en(dbg_wr_en),
+		    .dbg_req(dbg_req),
+		    .dbg_ack(dbg_ack));
 
 uart		tb_uart(.clk_50m(clk),
 			.wr_en(uart_tx_en),
@@ -58,11 +72,19 @@ uart		tb_uart(.clk_50m(clk),
 			.rdy_clr(rx_rdy_clr),
 			.dout(uart_rx_data));
 
+debug_controller	dbg(.clk(clk),
+			    .addr(dbg_addr),
+			    .read_data(dbg_dout),
+			    .write_data(dbg_din),
+			    .wr_en(dbg_wr_en),
+			    .req(dbg_req),
+			    .ack(dbg_ack));
+
 initial begin
 	$dumpfile("cpu.lxt");
 	$dumpvars(0, cpu_tb);
 	if (!$test$plusargs("interactive")) begin
-		#1500000;
+		#15000000;
 		$display();
 		$finish;
 	end

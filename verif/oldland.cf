@@ -18,3 +18,4 @@ cpu_tb.v
 ../rtl/oldland_decode.v
 ../rtl/oldland_execute.v
 ../rtl/oldland_regfile.v
+../rtl/oldland_debug.v
