@@ -4,25 +4,44 @@ module oldland_regfile(input wire clk,
 		       input wire [2:0] rd_sel,
 		       input wire wr_en,
 		       input wire [31:0] wr_val,
-		       output reg [31:0] ra,
-		       output reg [31:0] rb);
+		       output wire [31:0] ra,
+		       output wire [31:0] rb,
+		       input wire [2:0] dbg_reg_sel,
+		       output wire [31:0] dbg_reg_val,
+		       input wire [31:0] dbg_reg_wr_val,
+		       input wire dbg_reg_wr_en,
+		       input wire dbg_en);
 
 reg [31:0] registers[7:0];
 reg [3:0] regno = 4'b0;
 
+wire [2:0] port_a_sel = dbg_en ? dbg_reg_sel : ra_sel;
+reg [31:0] port_a_val = 32'b0;
+
+wire [2:0] port_b_sel = rb_sel;
+reg [31:0] port_b_val = 32'b0;
+
+wire [31:0] wr_port_val = dbg_en ? dbg_reg_wr_val : wr_val;
+wire wr_port_wr_en = dbg_en ? dbg_reg_wr_en : wr_en;
+wire [2:0] wr_port_sel = dbg_en ? dbg_reg_sel : rd_sel;
+
+assign ra = port_a_val;
+assign rb = port_b_val;
+assign dbg_reg_val = port_a_val;
+
 initial begin
 	for (regno = 0; regno < 8; regno = regno + 4'b1)
 		registers[regno[2:0]] = 32'b0;
-	ra = 32'b0;
-	rb = 32'b0;
 end
 
 always @(posedge clk) begin
-	ra <= (wr_en && ra_sel == rd_sel) ? wr_val : registers[ra_sel];
-	rb <= (wr_en && rb_sel == rd_sel) ? wr_val : registers[rb_sel];
+	port_a_val <= (wr_en && port_a_sel == rd_sel) ? wr_port_val :
+		registers[port_a_sel];
+	port_b_val <= (wr_en && port_b_sel == rd_sel) ? wr_port_val :
+		registers[port_b_sel];
 
-	if (wr_en)
-		registers[rd_sel] <= wr_val;
+	if (wr_port_wr_en)
+		registers[wr_port_sel] <= wr_port_val;
 end
 
 endmodule
