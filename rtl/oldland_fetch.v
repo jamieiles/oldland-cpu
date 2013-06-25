@@ -28,28 +28,43 @@ module oldland_fetch(input wire clk,
 		     output wire [31:0] fetch_addr,
 		     input wire [31:0] fetch_data,
 		     input wire run,
-		     output reg stopped);
+		     output reg stopped,
+		     output wire [31:0] dbg_pc,
+		     input wire dbg_pc_wr_en,
+		     input wire [31:0] dbg_pc_wr_val);
 
-reg [31:0] pc		= `OLDLAND_RESET_ADDR;
+reg [31:0]	pc		= `OLDLAND_RESET_ADDR;
 
 /* Next PC calculation logic. */
-assign pc_plus_4	= pc + 32'd4;
-wire [31:0] next_pc	= branch_taken ? branch_pc : pc_plus_4;
+assign		pc_plus_4	= pc + 32'd4;
+reg [31:0]	next_pc;
+assign		dbg_pc		= pc;
 
 /*
  * Load/store or branches cause stalling.  This means a class of 01 or 10.
  *
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
-reg stalled		= 1'b0;
-wire stalling		= (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
-assign instr		= stalled || stopping ? `INSTR_NOP : fetch_data;
-reg stopping		= 1'b0;
-reg [2:0] stop_ctr	= 3'd5;
+reg		stalled		= 1'b0;
+wire		stalling	= (^instr[31:30] == 1'b1 || stalled) &&
+					!stall_clear;
+assign		instr		= stalled || stopping ? `INSTR_NOP :
+					fetch_data;
+reg		stopping	= 1'b0;
+reg [2:0]	stop_ctr	= 3'd5;
 
-assign fetch_addr	= stalling || stopping || !run ? pc : next_pc;
+assign		fetch_addr	= stalling || stopping || !run ? pc : next_pc;
 
-initial stopped		= 1'b0;
+initial		stopped		= 1'b0;
+
+always @(*) begin
+	if (dbg_pc_wr_en)
+		next_pc = dbg_pc_wr_val;
+	else if (branch_taken)
+		next_pc = branch_pc;
+	else
+		next_pc = pc_plus_4;
+end
 
 always @(posedge clk)
 	if (!stalling && !stopping)
