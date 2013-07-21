@@ -13,7 +13,7 @@ module oldland_debug(input wire		clk,
 		     output reg [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
 		     input wire [31:0]	dbg_pc,
-		     output wire	dbg_pc_wr_en,
+		     output reg		dbg_pc_wr_en,
 		     output reg [31:0]	dbg_pc_wr_val);
 
 localparam STATE_IDLE		= 3'b000;
@@ -78,13 +78,13 @@ initial begin
 	dbg_reg_wr_val = 32'b0;
 	dbg_reg_wr_en = 1'b0;
 	dbg_pc_wr_val = 32'b0;
+	dbg_pc_wr_en = 1'b0;
 end
 
 always @(*) begin
 	case (state)
 	STATE_IDLE: begin
-		if (req_sync)
-			next_state = STATE_LOAD_CMD;
+		next_state = req_sync ? STATE_LOAD_CMD : STATE_IDLE;
 	end
 	STATE_LOAD_CMD: begin
 		next_state = STATE_LOAD_ADDR;
@@ -143,7 +143,7 @@ always @(posedge clk) begin
 		CMD_HALT: run <= 1'b0;
 		CMD_RUN: run <= 1'b1;
 		CMD_STEP: run <= 1'b1;
-		CMD_READ_REG: dbg_reg_sel <= ctl_dout[2:0];
+		CMD_READ_REG: dbg_reg_sel <= debug_addr[2:0];
 		default: begin
 		end
 		endcase
