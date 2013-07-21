@@ -2,10 +2,10 @@
 
 all:	keynsham.vvp
 
-keynsham.vvp:	vpi_uart.o
+keynsham.vvp:	vpi_uart.o vpi_debug_stub.o
 	iverilog -c oldland.cf -o keynsham.vvp
 
-vpi_uart.o:	vpi_uart.c
+%.o:	%.c
 	iverilog-vpi $<
 
 clean:
