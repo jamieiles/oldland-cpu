@@ -35,11 +35,6 @@ wire [2:0] d_rb_sel;
 reg [2:0] e_ra_sel = 3'b0;
 reg [2:0] e_rb_sel = 3'b0;
 
-always @(posedge clk) begin
-	e_ra_sel <= d_ra_sel;
-	e_rb_sel <= d_rb_sel;
-end
-
 /* Decode -> execute signals. */
 wire [2:0] de_rd_sel;
 wire de_update_rd;
@@ -57,6 +52,8 @@ wire [1:0] de_class;
 wire de_is_call;
 wire [1:0] de_mem_width;
 wire de_update_flags;
+reg [31:0] de_ra = 32'b0;
+reg [31:0] de_rb = 32'b0;
 
 /* Execute -> memory signals. */
 wire [31:0] em_alu_out;
@@ -79,29 +76,6 @@ wire mf_complete;
 /* Fetch stalling signals. */
 wire stall_clear = ef_stall_clear | mf_complete;
 wire stalling;
-
-/* 
- * Forwarding logic.  We need to forward results from the end of the execute
- * stage back to the input of the ALU.
- */
-reg [31:0] de_ra = 32'b0;
-reg [31:0] de_rb = 32'b0;
-
-always @(*) begin
-	if (em_rd_sel == e_ra_sel && em_update_rd)
-		de_ra = em_alu_out;
-	else if (mw_rd_sel == e_ra_sel && mw_update_rd)
-		de_ra = mw_wr_val;
-	else
-		de_ra = ra;
-
-	if (em_rd_sel == e_rb_sel && em_update_rd)
-		de_rb = em_alu_out;
-	else if (mw_rd_sel == e_rb_sel && mw_update_rd)
-		de_rb = mw_wr_val;
-	else
-		de_rb = rb;
-end
 
 /* Debug control signals. */
 wire cpu_run;
@@ -230,5 +204,30 @@ oldland_regfile	regfile(.clk(clk),
 			.dbg_reg_wr_val(dbg_reg_wr_val),
 			.dbg_reg_wr_en(dbg_reg_wr_en),
 			.dbg_en(cpu_stopped));
+
+/*
+ * Forwarding logic.  We need to forward results from the end of the execute
+ * stage back to the input of the ALU.
+ */
+always @(posedge clk) begin
+	e_ra_sel <= d_ra_sel;
+	e_rb_sel <= d_rb_sel;
+end
+
+always @(*) begin
+	if (em_rd_sel == e_ra_sel && em_update_rd)
+		de_ra = em_alu_out;
+	else if (mw_rd_sel == e_ra_sel && mw_update_rd)
+		de_ra = mw_wr_val;
+	else
+		de_ra = ra;
+
+	if (em_rd_sel == e_rb_sel && em_update_rd)
+		de_rb = em_alu_out;
+	else if (mw_rd_sel == e_rb_sel && mw_update_rd)
+		de_rb = mw_wr_val;
+	else
+		de_rb = rb;
+end
 
 endmodule
