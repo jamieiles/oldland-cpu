@@ -21,8 +21,6 @@ reg [1:0]	dbg_addr = 2'b0;
 reg [31:0]	dbg_val = 32'b0;
 
 always @(posedge clk) begin
-	wr_en <= 1'b0;
-
 	if (!req && !ack) begin
 		$dbg_get(dbg_req, dbg_rnw, dbg_addr, dbg_val);
 
@@ -30,13 +28,21 @@ always @(posedge clk) begin
 			addr <= dbg_addr;
 			write_data <= dbg_val;
 			wr_en <= ~dbg_rnw;
-			req <= 1'b1;
+			req <= dbg_addr[1:0] == 2'b00;
+
+			/*
+			 * Wait for the read data to be presented at the read
+			 * port.
+			 */
+			if (dbg_rnw) begin
+				@(posedge clk);
+				@(posedge clk);
+				$dbg_put(read_data);
+			end
 		end
 	end else if (ack) begin
+		wr_en <= 1'b0;
 		req <= 1'b0;
-
-		if (dbg_rnw)
-			$dbg_put(read_data);
 	end
 end
 

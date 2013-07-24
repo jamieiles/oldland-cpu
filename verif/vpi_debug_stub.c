@@ -123,7 +123,6 @@ static int dbg_get_calltf(char *user_data)
 		if(__sync_val_compare_and_swap(&debug_data->pending, 1, 0) == 0)
 			debug_data->more_data = 1;
 
-	/* Step. */
 	data[D_REQ] = get_request(debug_data, &req) == 0;
 	data[D_RNW] = req.read_not_write;
 	data[D_ADDR] = req.addr;
@@ -135,7 +134,7 @@ static int dbg_get_calltf(char *user_data)
 		vpi_put_value(argh, &argval, NULL, vpiNoDelay);
 	}
 
-	if (data[D_REQ]) {
+	if (data[D_REQ] && !data[D_RNW]) {
 		resp.status = 0;
 		send_response(debug_data, &resp);
 	}
@@ -147,6 +146,25 @@ static int dbg_get_calltf(char *user_data)
 
 static int dbg_put_calltf(char *user_data)
 {
+	vpiHandle systfref, args_iter;
+	struct t_vpi_value argval = {
+		.format = vpiIntVal,
+	};
+	struct debug_data *debug_data = (struct debug_data *)user_data;
+	struct dbg_response resp;
+
+	systfref = vpi_handle(vpiSysTfCall, NULL);
+	args_iter = vpi_iterate(vpiArgument, systfref);
+
+	vpiHandle argh = vpi_scan(args_iter);
+	vpi_get_value(argh, &argval);
+
+	resp.status = 0;
+	resp.data = argval.value.integer;
+	send_response(debug_data, &resp);
+
+	vpi_free_object(args_iter);
+
 	return 0;
 }
 
