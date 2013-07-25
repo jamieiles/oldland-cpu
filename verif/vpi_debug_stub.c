@@ -193,8 +193,12 @@ static int spawn_server(void)
 		fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if (fd < 0)
 			continue;
+
+		enable_reuseaddr(fd);
+
 		if (!bind(fd, rp->ai_addr, rp->ai_addrlen))
 			break;
+
 		close(fd);
 	}
 
@@ -202,8 +206,6 @@ static int spawn_server(void)
 		err(1, "failed to bind server");
 
 	freeaddrinfo(result);
-
-	enable_reuseaddr(fd);
 
 	if (listen(fd, 1))
 		err(1, "failed to listen on socket");
