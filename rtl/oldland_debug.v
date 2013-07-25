@@ -8,7 +8,7 @@ module oldland_debug(input wire		clk,
 		     output wire	ack,
 		     output reg		run,
 		     input wire		stopped,
-		     output reg [2:0]	dbg_reg_sel,
+		     output wire [2:0]	dbg_reg_sel,
 		     input wire [31:0]	dbg_reg_val,
 		     output reg [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
@@ -74,23 +74,30 @@ sync2ff		sync_ack(.dst_clk(dbg_clk),
 initial begin
 	ack_internal = 1'b0;
 	run = 1'b1;
-	dbg_reg_sel = 3'b000;
 	dbg_reg_wr_val = 32'b0;
 	dbg_reg_wr_en = 1'b0;
 	dbg_pc_wr_val = 32'b0;
 	dbg_pc_wr_en = 1'b0;
 end
 
+assign dbg_reg_sel = debug_addr[2:0];
+
 always @(*) begin
+	ctl_addr = 2'b00;
+	ctl_wr_en = 1'b0;
+
 	case (state)
 	STATE_IDLE: begin
 		next_state = req_sync ? STATE_LOAD_CMD : STATE_IDLE;
+		ctl_addr = 2'b00;
 	end
 	STATE_LOAD_CMD: begin
 		next_state = STATE_LOAD_ADDR;
+		ctl_addr = 2'b01;
 	end
 	STATE_LOAD_ADDR: begin
 		next_state = STATE_LOAD_DATA;
+		ctl_addr = 2'b10;
 	end
 	STATE_LOAD_DATA: begin
 		case (debug_cmd)
@@ -108,6 +115,9 @@ always @(*) begin
 		next_state = stopped ? STATE_COMPL : STATE_WAIT_STOPPED;
 	end
 	STATE_STORE_REG_RVAL: begin
+		ctl_addr = 2'b11;
+		ctl_wr_en = 1'b1;
+		ctl_din = debug_addr[3] ? dbg_pc : dbg_reg_val;
 		next_state = STATE_COMPL;
 	end
 	STATE_COMPL: begin
@@ -121,20 +131,16 @@ end
 
 always @(posedge clk) begin
 	ack_internal <= 1'b0;
-	ctl_wr_en <= 1'b0;
 	dbg_reg_wr_en <= 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
-		ctl_addr <= 2'b00;
 	end
 	STATE_LOAD_CMD: begin
 		debug_cmd <= ctl_dout[3:0];
-		ctl_addr <= 2'b01;
 	end
 	STATE_LOAD_ADDR: begin
 		debug_addr <= ctl_dout;
-		ctl_addr <= 2'b10;
 	end
 	STATE_LOAD_DATA: begin
 		debug_data <= ctl_dout;
@@ -143,15 +149,9 @@ always @(posedge clk) begin
 		CMD_HALT: run <= 1'b0;
 		CMD_RUN: run <= 1'b1;
 		CMD_STEP: run <= 1'b1;
-		CMD_READ_REG: dbg_reg_sel <= debug_addr[2:0];
 		default: begin
 		end
 		endcase
-	end
-	STATE_STORE_REG_RVAL: begin
-		ctl_addr <= 2'b11;
-		ctl_wr_en <= 1'b1;
-		ctl_din <= debug_data[3] ? dbg_pc : dbg_reg_val;
 	end
 	STATE_STEP: begin
 		run <= 1'b0;
