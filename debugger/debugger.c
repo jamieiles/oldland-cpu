@@ -22,6 +22,10 @@
 
 #include "protocol.h"
 
+#ifndef INSTALL_PATH
+#define INSTALL_PATH "/usr/local"
+#endif /* !INSTALL_PATH */
+
 struct target {
 	int fd;
 };
@@ -222,6 +226,20 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{}
 };
 
+static void load_support(lua_State *L)
+{
+	char *path = NULL;
+
+	if (asprintf(&path, "%s/libexec/oldland-debug-ui.lua",
+		     INSTALL_PATH) < 0)
+		err(1, "failed to allocate support path");
+
+	if (luaL_dofile(L, path))
+		errx(1, "failed to load support (%s)", lua_tostring(L, -1));
+
+	free(path);
+}
+
 int main(void)
 {
 	lua_State *L = luaL_newstate();
@@ -231,6 +249,7 @@ int main(void)
 	luaL_openlibs(L);
 	luaL_newlib(L, dbg_funcs);
 	lua_setglobal(L, "target");
+	load_support(L);
 
 	target = target_alloc();
 
