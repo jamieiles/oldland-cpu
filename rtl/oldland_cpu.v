@@ -116,7 +116,9 @@ oldland_fetch	fetch(.clk(clk),
 		      .fetch_data(i_data),
 		      .run(cpu_run),
 		      .stopped(cpu_stopped),
-		      .dbg_pc(dbg_pc));
+		      .dbg_pc(dbg_pc),
+		      .dbg_pc_wr_en(dbg_pc_wr_en),
+		      .dbg_pc_wr_val(dbg_pc_wr_val));
 
 oldland_decode	decode(.clk(clk),
 		       .instr(fd_instr),
