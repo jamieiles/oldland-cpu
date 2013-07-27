@@ -12,11 +12,15 @@ module sim_dp_ram(input wire clk,
 
 reg [7:0] ram [4096:0];
 reg [8 * 128:0] ram_filename;
+reg [4096:0] ram_i;
 
 initial begin
 	if ($value$plusargs("ramfile=%s", ram_filename) &&
 	    ram_filename != 0)
 		$readmemh(ram_filename, ram);
+	else
+		for (ram_i = 0; ram_i < 4096; ram_i = ram_i + 1)
+			ram[ram_i] = 8'b0;
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;
 	d_ack = 1'b0;
