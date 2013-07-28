@@ -67,7 +67,9 @@ always @(*) begin
 end
 
 always @(posedge clk)
-	if (!stalling && !stopping)
+	if (dbg_pc_wr_en)
+		pc <= dbg_pc_wr_val;
+	else if (!stalling && !stopping)
 		pc <= next_pc;
 
 always @(posedge clk) begin
