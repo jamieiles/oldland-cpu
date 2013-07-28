@@ -10,33 +10,35 @@ module oldland_debug(input wire		clk,
 		     input wire		stopped,
 		     output wire [2:0]	dbg_reg_sel,
 		     input wire [31:0]	dbg_reg_val,
-		     output reg [31:0]	dbg_reg_wr_val,
+		     output wire [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
 		     input wire [31:0]	dbg_pc,
 		     output reg		dbg_pc_wr_en,
-		     output reg [31:0]	dbg_pc_wr_val);
+		     output wire [31:0]	dbg_pc_wr_val);
 
-localparam STATE_IDLE		= 3'b000;
-localparam STATE_LOAD_CMD	= 3'b001;
-localparam STATE_LOAD_ADDR	= 3'b010;
-localparam STATE_LOAD_DATA	= 3'b011;
-localparam STATE_WAIT_STOPPED	= 3'b100;
-localparam STATE_STEP		= 3'b101;
-localparam STATE_COMPL		= 3'b110;
-localparam STATE_STORE_REG_RVAL	= 3'b111;
+localparam STATE_IDLE		= 4'b0000;
+localparam STATE_LOAD_CMD	= 4'b0001;
+localparam STATE_LOAD_ADDR	= 4'b0010;
+localparam STATE_LOAD_DATA	= 4'b0011;
+localparam STATE_WAIT_STOPPED	= 4'b0100;
+localparam STATE_STEP		= 4'b0101;
+localparam STATE_COMPL		= 4'b0110;
+localparam STATE_STORE_REG_RVAL	= 4'b0111;
+localparam STATE_WRITE_REG	= 4'b1111;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
 localparam CMD_STEP		= 4'h2;
 localparam CMD_READ_REG		= 4'h3;
+localparam CMD_WRITE_REG	= 4'h4;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
 wire [31:0]	ctl_dout;
 reg		ctl_wr_en = 1'b0;
 
-reg [2:0]	state = STATE_IDLE;
-reg [2:0]	next_state = STATE_IDLE;
+reg [3:0]	state = STATE_IDLE;
+reg [3:0]	next_state = STATE_IDLE;
 
 reg [3:0]	debug_cmd = 4'b0;
 reg [31:0]	debug_addr = 32'b0;
@@ -74,17 +76,19 @@ sync2ff		sync_ack(.dst_clk(dbg_clk),
 initial begin
 	ack_internal = 1'b0;
 	run = 1'b1;
-	dbg_reg_wr_val = 32'b0;
 	dbg_reg_wr_en = 1'b0;
-	dbg_pc_wr_val = 32'b0;
 	dbg_pc_wr_en = 1'b0;
 end
 
 assign dbg_reg_sel = debug_addr[2:0];
+assign dbg_pc_wr_val = debug_data;
+assign dbg_reg_wr_val = debug_data;
 
 always @(*) begin
 	ctl_addr = 2'b00;
 	ctl_wr_en = 1'b0;
+	dbg_pc_wr_en = 1'b0;
+	dbg_reg_wr_en = 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
@@ -105,8 +109,16 @@ always @(*) begin
 		CMD_RUN: next_state = STATE_COMPL;
 		CMD_STEP: next_state = STATE_STEP;
 		CMD_READ_REG: next_state = STATE_STORE_REG_RVAL;
+		CMD_WRITE_REG: next_state = STATE_WRITE_REG;
 		default: next_state = STATE_COMPL;
 		endcase
+	end
+	STATE_WRITE_REG: begin
+		if (debug_addr[3])
+			dbg_pc_wr_en = 1'b1;
+		else
+			dbg_reg_wr_en = 1'b1;
+		next_state = STATE_COMPL;
 	end
 	STATE_STEP: begin
 		next_state = STATE_WAIT_STOPPED;

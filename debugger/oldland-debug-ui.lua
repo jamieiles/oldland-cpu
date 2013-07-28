@@ -15,6 +15,10 @@ function read_reg(reg)
 	print(string.format("%08x", v))
 end
 
+function write_reg(reg, val)
+	target.write_reg(reg, val)
+end
+
 regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'sp', 'lr', 'pc' }
 
 function regs()

@@ -218,11 +218,25 @@ static int lua_read_reg(lua_State *L)
 	return 1;
 }
 
+static int lua_write_reg(lua_State *L)
+{
+	lua_Integer regnum, val;
+
+	regnum = lua_tointeger(L, 1);
+	val = lua_tointeger(L, 2);
+	if (dbg_write_reg(target, regnum, val))
+		warnx("failed to write register %u", (unsigned)regnum);
+	lua_pop(L, 2);
+
+	return 0;
+}
+
 static const struct luaL_Reg dbg_funcs[] = {
 	{ "step", lua_step },
 	{ "run", lua_run },
 	{ "stop", lua_stop },
 	{ "read_reg", lua_read_reg },
+	{ "write_reg", lua_write_reg },
 	{}
 };
 
