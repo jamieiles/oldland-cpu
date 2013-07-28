@@ -33,6 +33,7 @@ assign d_access = load | store;
 reg [2:0] rd_sel_out_bypass = 3'b0;
 reg [2:0] mem_rd = 3'b0;
 reg mem_update_rd = 1'b0;
+reg [31:0] rd_mask = 32'b0;
 
 assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
 assign complete = d_ack;
@@ -61,24 +62,28 @@ end
 always @(*) begin
 	case (width)
 	2'b10: begin
+		rd_mask = {32{1'b1}};
 		d_bytesel = 4'b1111;
 		d_wr_val = mdr;
-		mem_rd_val = d_data;
+		mem_rd_val = d_data & rd_mask;
 	end
 	2'b01: begin
+		rd_mask = {{16{1'b0}}, {16{1'b1}}};
 		d_bytesel = 4'b0011 << (addr[1] * 2);
 		d_wr_val = mdr << (addr[1] * 16);
-		mem_rd_val = d_data >> (addr[1] * 16);
+		mem_rd_val = (d_data >> (addr[1] * 16)) & rd_mask;
 	end
 	2'b00: begin
+		rd_mask = {{24{1'b0}}, {8{1'b1}}};
 		d_bytesel = 4'b0001 << addr[1:0];
 		d_wr_val = mdr << (addr[1:0] * 8);
-		mem_rd_val = d_data >> (addr[1:0] * 8);
+		mem_rd_val = (d_data >> (addr[1:0] * 8)) & rd_mask;
 	end
 	default: begin
+		rd_mask = {32{1'b1}};
 		d_bytesel = 4'b1111;
 		d_wr_val = mdr;
-		mem_rd_val = d_data;
+		mem_rd_val = d_data & rd_mask;
 	end
 	endcase
 end
