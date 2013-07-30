@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,9 +30,15 @@
 
 struct target {
 	int fd;
+	bool interrupted;
 };
 
 static struct target *target;
+
+static void sigint_handler(int s)
+{
+	target->interrupted = true;
+}
 
 int target_exchange(const struct target *t, const struct dbg_request *req,
 		    struct dbg_response *resp)
@@ -196,10 +204,20 @@ static int lua_stop(lua_State *L)
 	return 0;
 }
 
+static void wait_until_stopped(struct target *t)
+{
+	target->interrupted = false;
+
+	while (!target->interrupted)
+		pause();
+}
+
 static int lua_run(lua_State *L)
 {
 	if (dbg_run(target))
 		warnx("failed to step target");
+
+	wait_until_stopped(target);
 
 	return 0;
 }
@@ -268,6 +286,8 @@ int main(void)
 	target = target_alloc();
 
 	stifle_history(1024);
+
+	signal(SIGINT, sigint_handler);
 
 	for (;;) {
 		char *line = readline("oldland> ");
