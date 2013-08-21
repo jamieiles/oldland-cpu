@@ -20,25 +20,41 @@ module oldland_memory(input wire clk,
 		      input wire [31:0] d_data,
 		      output wire d_access,
 		      input wire d_ack,
-		      input wire d_error);
+		      input wire d_error,
+		      /* Debug control signals. */
+		      input wire dbg_en,
+		      input wire dbg_access,
+		      input wire dbg_wr_en,
+		      input wire [31:0] dbg_addr,
+		      input wire [1:0] dbg_width,
+		      input wire [31:0] dbg_wr_val,
+		      output wire [31:0] dbg_rd_val,
+		      output wire dbg_compl);
 
 reg [31:0] wr_val_bypass;
 reg update_rd_bypass = 1'b0;
 reg [31:0] mem_rd_val;
 
-assign d_addr = {addr[31:2], 2'b00};
-assign d_wr_en = mem_wr_en;
-assign d_access = load | store;
+wire [31:0] address = dbg_en ? dbg_addr : mar;
+wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
+
+assign d_addr = dbg_en ? {dbg_addr[31:2], 2'b00} : {addr[31:2], 2'b00};
+assign d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
+assign d_access = dbg_en ? dbg_access : (load | store);
 
 reg [2:0] rd_sel_out_bypass = 3'b0;
 reg [2:0] mem_rd = 3'b0;
 reg mem_update_rd = 1'b0;
 reg [31:0] rd_mask = 32'b0;
+wire [1:0] mem_width = dbg_en ? dbg_width : width;
 
 assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
 assign complete = d_ack;
-assign update_rd_out = complete ? mem_update_rd : update_rd_bypass;
+assign update_rd_out = complete && !dbg_en ? mem_update_rd : update_rd_bypass;
 assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
+
+assign dbg_rd_val = mem_rd_val;
+assign dbg_compl = complete;
 
 initial begin
 	wr_val_bypass = 32'b0;
@@ -60,29 +76,29 @@ end
 
 /* Byte enables and rotated data write value. */
 always @(*) begin
-	case (width)
+	case (mem_width)
 	2'b10: begin
 		rd_mask = {32{1'b1}};
 		d_bytesel = 4'b1111;
-		d_wr_val = mdr;
+		d_wr_val = wr_data;
 		mem_rd_val = d_data & rd_mask;
 	end
 	2'b01: begin
 		rd_mask = {{16{1'b0}}, {16{1'b1}}};
 		d_bytesel = 4'b0011 << (addr[1] * 2);
-		d_wr_val = mdr << (addr[1] * 16);
+		d_wr_val = wr_data << (addr[1] * 16);
 		mem_rd_val = (d_data >> (addr[1] * 16)) & rd_mask;
 	end
 	2'b00: begin
 		rd_mask = {{24{1'b0}}, {8{1'b1}}};
 		d_bytesel = 4'b0001 << addr[1:0];
-		d_wr_val = mdr << (addr[1:0] * 8);
+		d_wr_val = wr_data << (addr[1:0] * 8);
 		mem_rd_val = (d_data >> (addr[1:0] * 8)) & rd_mask;
 	end
 	default: begin
 		rd_mask = {32{1'b1}};
 		d_bytesel = 4'b1111;
-		d_wr_val = mdr;
+		d_wr_val = wr_data;
 		mem_rd_val = d_data & rd_mask;
 	end
 	endcase

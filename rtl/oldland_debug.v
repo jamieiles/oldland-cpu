@@ -6,12 +6,23 @@ module oldland_debug(input wire		clk,
 		     input wire		wr_en,
 		     input wire		req,
 		     output wire	ack,
+		     /* Execution control signals. */
 		     output reg		run,
 		     input wire		stopped,
+		     /* Memory read/write signals. */
+		     output wire [31:0] mem_addr,
+		     output reg [1:0]	mem_width,
+		     output wire [31:0] mem_wr_val,
+		     input wire [31:0]	mem_rd_val,
+		     output reg		mem_wr_en,
+		     output reg		mem_access,
+		     input wire		mem_compl,
+		     /* GPR read/write signals. */
 		     output wire [2:0]	dbg_reg_sel,
 		     input wire [31:0]	dbg_reg_val,
 		     output wire [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
+		     /* PC read/write signals. */
 		     input wire [31:0]	dbg_pc,
 		     output reg		dbg_pc_wr_en,
 		     output wire [31:0]	dbg_pc_wr_val);
@@ -25,12 +36,21 @@ localparam STATE_STEP		= 4'b0101;
 localparam STATE_COMPL		= 4'b0110;
 localparam STATE_STORE_REG_RVAL	= 4'b0111;
 localparam STATE_WRITE_REG	= 4'b1111;
+localparam STATE_WAIT_RMEM	= 4'b1110;
+localparam STATE_WAIT_WMEM	= 4'b1100;
+localparam STATE_EXECUTE	= 4'b1000;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
 localparam CMD_STEP		= 4'h2;
 localparam CMD_READ_REG		= 4'h3;
 localparam CMD_WRITE_REG	= 4'h4;
+localparam CMD_RMEM32		= 4'h5;
+localparam CMD_RMEM16		= 4'h6;
+localparam CMD_RMEM8		= 4'h7;
+localparam CMD_WMEM32		= 4'h8;
+localparam CMD_WMEM16		= 4'h9;
+localparam CMD_WMEM8		= 4'ha;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
@@ -78,17 +98,45 @@ initial begin
 	run = 1'b1;
 	dbg_reg_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
+	mem_wr_en = 1'b0;
+	mem_access = 1'b0;
 end
 
 assign dbg_reg_sel = debug_addr[2:0];
 assign dbg_pc_wr_val = debug_data;
 assign dbg_reg_wr_val = debug_data;
+assign mem_addr = debug_addr;
+assign mem_wr_val = debug_data;
+
+always @(*) begin
+	mem_width = 2'b10;
+	mem_wr_en = 1'b0;
+
+	case (debug_cmd)
+	CMD_WMEM32: begin
+		mem_width = 2'b10;
+		mem_wr_en = 1'b1;
+	end
+	CMD_WMEM16: begin
+		mem_width = 2'b01;
+		mem_wr_en = 1'b1;
+	end
+	CMD_WMEM8: begin
+		mem_width = 2'b00;
+		mem_wr_en = 1'b1;
+	end
+	CMD_RMEM32: mem_width = 2'b10;
+	CMD_RMEM16: mem_width = 2'b01;
+	CMD_RMEM8: mem_width = 2'b00;
+	endcase
+end
 
 always @(*) begin
 	ctl_addr = 2'b00;
 	ctl_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
 	dbg_reg_wr_en = 1'b0;
+	mem_access = 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
@@ -104,12 +152,39 @@ always @(*) begin
 		ctl_addr = 2'b10;
 	end
 	STATE_LOAD_DATA: begin
+		next_state = STATE_EXECUTE;
+	end
+	STATE_EXECUTE: begin
 		case (debug_cmd)
 		CMD_HALT: next_state = STATE_WAIT_STOPPED;
 		CMD_RUN: next_state = STATE_COMPL;
 		CMD_STEP: next_state = STATE_STEP;
 		CMD_READ_REG: next_state = STATE_STORE_REG_RVAL;
 		CMD_WRITE_REG: next_state = STATE_WRITE_REG;
+		CMD_RMEM8: begin
+			next_state = STATE_WAIT_RMEM;
+			mem_access = 1'b1;
+		end
+		CMD_RMEM16: begin
+			next_state = STATE_WAIT_RMEM;
+			mem_access = 1'b1;
+		end
+		CMD_RMEM32: begin
+			next_state = STATE_WAIT_RMEM;
+			mem_access = 1'b1;
+		end
+		CMD_WMEM8: begin
+			next_state = STATE_WAIT_WMEM;
+			mem_access = 1'b1;
+		end
+		CMD_WMEM16: begin
+			next_state = STATE_WAIT_WMEM;
+			mem_access = 1'b1;
+		end
+		CMD_WMEM32: begin
+			next_state = STATE_WAIT_WMEM;
+			mem_access = 1'b1;
+		end
 		default: next_state = STATE_COMPL;
 		endcase
 	end
@@ -119,6 +194,21 @@ always @(*) begin
 		else
 			dbg_reg_wr_en = 1'b1;
 		next_state = STATE_COMPL;
+	end
+	STATE_WAIT_WMEM: begin
+		mem_access = ~mem_compl;
+		next_state = mem_compl ? STATE_COMPL : STATE_WAIT_WMEM;
+	end
+	STATE_WAIT_RMEM: begin
+		mem_access = ~mem_compl;
+		if (mem_compl) begin
+			ctl_addr = 2'b11;
+			ctl_wr_en = 1'b1;
+			ctl_din = mem_rd_val;
+			next_state = STATE_COMPL;
+		end else begin
+			next_state = STATE_WAIT_RMEM;
+		end
 	end
 	STATE_STEP: begin
 		next_state = STATE_WAIT_STOPPED;
@@ -156,7 +246,8 @@ always @(posedge clk) begin
 	end
 	STATE_LOAD_DATA: begin
 		debug_data <= ctl_dout;
-
+	end
+	STATE_EXECUTE: begin
 		case (debug_cmd)
 		CMD_HALT: run <= 1'b0;
 		CMD_RUN: run <= 1'b1;

@@ -87,6 +87,13 @@ wire dbg_reg_wr_en;
 wire [31:0] dbg_pc;
 wire [31:0] dbg_pc_wr_val;
 wire dbg_pc_wr_en;
+wire [31:0] dbg_mem_addr;
+wire [1:0] dbg_mem_width;
+wire [31:0] dbg_mem_wr_val;
+wire [31:0] dbg_mem_rd_val;
+wire dbg_mem_wr_en;
+wire dbg_mem_access;
+wire dbg_mem_compl;
 
 oldland_debug	debug(.clk(clk),
 		      .dbg_clk(dbg_clk),
@@ -98,6 +105,13 @@ oldland_debug	debug(.clk(clk),
 		      .ack(dbg_ack),
 		      .run(cpu_run),
 		      .stopped(cpu_stopped),
+		      .mem_addr(dbg_mem_addr),
+		      .mem_width(dbg_mem_width),
+		      .mem_wr_val(dbg_mem_wr_val),
+		      .mem_rd_val(dbg_mem_rd_val),
+		      .mem_wr_en(dbg_mem_wr_en),
+		      .mem_access(dbg_mem_access),
+		      .mem_compl(dbg_mem_compl),
 		      .dbg_reg_sel(dbg_reg_sel),
 		      .dbg_reg_wr_val(dbg_reg_wr_val),
 		      .dbg_reg_val(dbg_reg_val),
@@ -191,7 +205,15 @@ oldland_memory	mem(.clk(clk),
 		    .d_access(d_access),
 		    .d_ack(d_ack),
 		    .d_error(d_error),
-		    .complete(mf_complete));
+		    .complete(mf_complete),
+		    .dbg_en(cpu_stopped),
+		    .dbg_access(dbg_mem_access),
+		    .dbg_wr_en(dbg_mem_wr_en),
+		    .dbg_addr(dbg_mem_addr),
+		    .dbg_width(dbg_mem_width),
+		    .dbg_wr_val(dbg_mem_wr_val),
+		    .dbg_rd_val(dbg_mem_rd_val),
+		    .dbg_compl(dbg_mem_compl));
 
 oldland_regfile	regfile(.clk(clk),
 			.ra_sel(d_ra_sel),
