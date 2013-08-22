@@ -131,6 +131,73 @@ int dbg_read_reg(const struct target *t, unsigned reg, uint32_t *val)
 	return dbg_read(t, REG_RDATA, val);
 }
 
+#define MEM_READ_FN(width)							\
+int dbg_read##width(const struct target *t, unsigned addr, uint32_t *val)	\
+{										\
+	int rc;									\
+										\
+	rc = dbg_write(t, REG_ADDRESS, addr);					\
+	if (rc)									\
+		return rc;							\
+	rc = dbg_write(t, REG_CMD, CMD_RMEM##width);				\
+	if (rc)									\
+		return rc;							\
+										\
+	return dbg_read(t, REG_RDATA, val);					\
+}										\
+										\
+static int lua_read##width(lua_State *L)					\
+{										\
+	uint32_t v;								\
+	lua_Integer addr;							\
+										\
+	addr = lua_tointeger(L, 1);						\
+	if (dbg_read##width(target, addr, &v))					\
+		warnx("failed to read " #width "-bit address %u",		\
+		      (unsigned)addr);						\
+	lua_pop(L, 1);								\
+	lua_pushinteger(L, v);							\
+										\
+	return 1;								\
+}
+
+#define MEM_WRITE_FN(width)							\
+int dbg_write##width(const struct target *t, unsigned addr, uint32_t val)	\
+{										\
+	int rc;									\
+										\
+	rc = dbg_write(t, REG_ADDRESS, addr);					\
+	if (rc)									\
+		return rc;							\
+	rc = dbg_write(t, REG_WDATA, val);					\
+	if (rc)									\
+		return rc;							\
+										\
+	return dbg_write(t, REG_CMD, CMD_WMEM##width);				\
+}										\
+										\
+static int lua_write##width(lua_State *L)					\
+{										\
+	lua_Integer addr, val;							\
+										\
+	addr = lua_tointeger(L, 1);						\
+	val = lua_tointeger(L, 2);						\
+	if (dbg_write##width(target, addr, val))				\
+		warnx("failed to write " #width "-bit address  %u",		\
+		      (unsigned)addr);						\
+	lua_pop(L, 2);								\
+										\
+	return 0;								\
+}
+
+MEM_READ_FN(32);
+MEM_READ_FN(16);
+MEM_READ_FN(8);
+MEM_WRITE_FN(32);
+MEM_WRITE_FN(16);
+MEM_WRITE_FN(8);
+
+
 int dbg_write_reg(const struct target *t, unsigned reg, uint32_t val)
 {
 	int rc;
@@ -255,6 +322,12 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "stop", lua_stop },
 	{ "read_reg", lua_read_reg },
 	{ "write_reg", lua_write_reg },
+	{ "read32", lua_read32 },
+	{ "write32", lua_write32 },
+	{ "read16", lua_read16 },
+	{ "write16", lua_write16 },
+	{ "read8", lua_read8 },
+	{ "write8", lua_write8 },
 	{}
 };
 

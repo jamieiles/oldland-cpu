@@ -9,6 +9,12 @@ enum dbg_cmd {
 	CMD_STEP,
 	CMD_READ_REG,
 	CMD_WRITE_REG,
+	CMD_RMEM32,
+	CMD_RMEM16,
+	CMD_RMEM8,
+	CMD_WMEM32,
+	CMD_WMEM16,
+	CMD_WMEM8,
 };
 
 enum dbg_reg {

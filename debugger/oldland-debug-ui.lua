@@ -11,12 +11,19 @@ function run()
 end
 
 function read_reg(reg)
-	v = target.read_reg(reg)
-	print(string.format("%08x", v))
+	print(string.format("%08x", target.read_reg(reg)))
 end
 
 function write_reg(reg, val)
 	target.write_reg(reg, val)
+end
+
+function read32(addr)
+	print(string.format("%08x", target.read32(addr)))
+end
+
+function write32(addr, val)
+	target.write32(addr, val)
 end
 
 regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'sp', 'lr', 'pc' }
