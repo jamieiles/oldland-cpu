@@ -14,6 +14,8 @@ def main(args):
     parser.add_argument('--interactive', help = 'start in interactive mode',
                         action = 'store_true')
     parser.add_argument('--ramfile', help = 'file to preload onchip ram with')
+    parser.add_argument('--debug', help = 'enable trace debugging',
+                        action = 'store_true')
     opts = parser.parse_args(args)
 
     rom_file = '{0}{1}'.format(ROM_PATH,
@@ -22,6 +24,8 @@ def main(args):
           ['%INSTALL_PATH%/lib/keynsham.vvp', '-lxt2', '+romfile={0}'.format(rom_file)]
     if opts.interactive:
         cmd += ['+interactive']
+    if opts.debug:
+        cmd += ['+debug']
     if opts.ramfile:
         cmd += ['+ramfile={0}'.format(opts.ramfile)]
     try:

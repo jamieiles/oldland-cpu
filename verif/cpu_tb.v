@@ -81,8 +81,10 @@ debug_controller	dbg(.clk(clk),
 			    .ack(dbg_ack));
 
 initial begin
-	$dumpfile("cpu.lxt");
-	$dumpvars(0, cpu_tb);
+	if ($test$plusargs("debug")) begin
+		$dumpfile("cpu.lxt");
+		$dumpvars(0, cpu_tb);
+	end
 	if (!$test$plusargs("interactive")) begin
 		#15000000;
 		$display();
