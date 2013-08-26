@@ -40,8 +40,9 @@ static void sigint_handler(int s)
 	target->interrupted = true;
 }
 
-int target_exchange(const struct target *t, const struct dbg_request *req,
-		    struct dbg_response *resp)
+static int target_exchange(const struct target *t,
+			   const struct dbg_request *req,
+			   struct dbg_response *resp)
 {
 	ssize_t rc;
 	struct iovec reqv = {
@@ -197,7 +198,6 @@ MEM_WRITE_FN(32);
 MEM_WRITE_FN(16);
 MEM_WRITE_FN(8);
 
-
 int dbg_write_reg(const struct target *t, unsigned reg, uint32_t val)
 {
 	int rc;
@@ -241,7 +241,7 @@ int open_server(const char *hostname, const char *port)
 	return fd;
 }
 
-struct target *target_alloc(void)
+static struct target *target_alloc(void)
 {
 	struct target *t = calloc(1, sizeof(*t));
 
