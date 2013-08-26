@@ -26,6 +26,26 @@ function write32(addr, val)
 	target.write32(addr, val)
 end
 
+function read16(addr)
+	print(string.format("%04x", target.read16(addr)))
+end
+
+function write16(addr, val)
+	target.write16(addr, val)
+end
+
+function read8(addr)
+	print(string.format("%02x", target.read8(addr)))
+end
+
+function write8(addr, val)
+	target.write8(addr, val)
+end
+
+function loadelf(path)
+	target.loadelf(path)
+end
+
 regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'sp', 'lr', 'pc' }
 
 function regs()
