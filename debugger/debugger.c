@@ -22,6 +22,7 @@
 #include <lua5.2/lauxlib.h>
 #include <lua5.2/lualib.h>
 
+#include "debugger.h"
 #include "protocol.h"
 
 #ifndef INSTALL_PATH
@@ -34,6 +35,11 @@ struct target {
 };
 
 static struct target *target;
+
+const struct target *get_target(void)
+{
+	return target;
+}
 
 static void sigint_handler(int s)
 {
@@ -316,6 +322,18 @@ static int lua_write_reg(lua_State *L)
 	return 0;
 }
 
+static int lua_loadelf(lua_State *L)
+{
+	const char *path;
+
+	path = lua_tostring(L, 1);
+	if (load_elf(target, path))
+		warnx("failed to load device with %s", path);
+	lua_pop(L, 1);
+
+	return 0;
+}
+
 static const struct luaL_Reg dbg_funcs[] = {
 	{ "step", lua_step },
 	{ "run", lua_run },
@@ -328,6 +346,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "write16", lua_write16 },
 	{ "read8", lua_read8 },
 	{ "write8", lua_write8 },
+	{ "loadelf", lua_loadelf },
 	{}
 };
 
