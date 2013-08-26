@@ -17,7 +17,7 @@ initial begin
 		$display("+romfile=PATH_TO_rom.hex required");
 		$finish;
 	end
-	$readmemh(rom_filename, rom);
+	$readmemh(rom_filename, rom, 0, 255);
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;
 	d_ack = 1'b0;
