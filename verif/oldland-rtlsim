@@ -19,7 +19,7 @@ def main(args):
     rom_file = '{0}{1}'.format(ROM_PATH,
                                 opts.bootrom if opts.bootrom else DEFAULT_ROM)
     cmd = ['vvp', '-n', '-M{0}'.format(MODULE_PATH)] + ['-m{0}'.format(m) for m in MODULES] + \
-          ['-lxt2', '%INSTALL_PATH%/lib/keynsham.vvp', '+romfile={0}'.format(rom_file)]
+          ['%INSTALL_PATH%/lib/keynsham.vvp', '-lxt2', '+romfile={0}'.format(rom_file)]
     if opts.interactive:
         cmd += ['+interactive']
     if opts.ramfile:
