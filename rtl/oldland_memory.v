@@ -38,6 +38,7 @@ reg [31:0] mem_rd_val;
 wire [31:0] address = dbg_en ? dbg_addr : mar;
 wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
 
+wire [1:0] byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];
 assign d_addr = dbg_en ? {dbg_addr[31:2], 2'b00} : {addr[31:2], 2'b00};
 assign d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
 assign d_access = dbg_en ? dbg_access : (load | store);
@@ -85,15 +86,15 @@ always @(*) begin
 	end
 	2'b01: begin
 		rd_mask = {{16{1'b0}}, {16{1'b1}}};
-		d_bytesel = 4'b0011 << (addr[1] * 2);
-		d_wr_val = wr_data << (addr[1] * 16);
-		mem_rd_val = (d_data >> (addr[1] * 16)) & rd_mask;
+		d_bytesel = 4'b0011 << (byte_addr[1] * 2);
+		d_wr_val = wr_data << (byte_addr[1] * 16);
+		mem_rd_val = (d_data >> (byte_addr[1] * 16)) & rd_mask;
 	end
 	2'b00: begin
 		rd_mask = {{24{1'b0}}, {8{1'b1}}};
-		d_bytesel = 4'b0001 << addr[1:0];
-		d_wr_val = wr_data << (addr[1:0] * 8);
-		mem_rd_val = (d_data >> (addr[1:0] * 8)) & rd_mask;
+		d_bytesel = 4'b0001 << byte_addr[1:0];
+		d_wr_val = wr_data << (byte_addr[1:0] * 8);
+		mem_rd_val = (d_data >> (byte_addr[1:0] * 8)) & rd_mask;
 	end
 	default: begin
 		rd_mask = {32{1'b1}};
