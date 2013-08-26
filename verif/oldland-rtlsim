@@ -24,7 +24,10 @@ def main(args):
         cmd += ['+interactive']
     if opts.ramfile:
         cmd += ['+ramfile={0}'.format(opts.ramfile)]
-    subprocess.check_call(cmd)
+    try:
+        subprocess.check_call(cmd)
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
