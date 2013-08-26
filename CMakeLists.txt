@@ -3,6 +3,8 @@ project(Oldland)
 
 add_subdirectory(sim)
 add_subdirectory(debugger)
+add_subdirectory(verif)
+add_subdirectory(bootrom)
 include(ExternalProject)
 ExternalProject_Add(binutils-oldland
 		    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/binutils-oldland

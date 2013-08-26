@@ -1,12 +1,24 @@
-Build the simulation:
-  cd verif
-  make
+For interactive simulation:
 
-Generate the rom file to use as verilog:
-  oldland-elf-objcopy ELF_FILE rom.hex -O verilog
+- Run the simulation:
+    oldland-rtlsim --interactive
+  
+- Observe the PTS number.
+  
+- Load the application binary through the onchip bootrom
+    ./tools/bootterm/bootterm /dev/pts/PTS_NUM binary_file
+  
+- Attach minicom to the uart:
+    minicom -p /dev/pts/PTS_NUM
 
-Run the simulation:
-  vvp -n -Mverif -mvpi_uart verif/keynsham.vvp -lxt2 +ramfile=rom.hex +interactive
 
-Attach minicom to the uart:
-  minicom -p PTS_FILE
+
+To bypass the onchip bootrom for quicker loads:
+
+- Run the simulation:
+    oldland-rtlsim --interactive --ramfile=path_to_ram_file --bootrom=sim.hex
+
+- Observe the PTS number.
+  
+- Attach minicom to the uart:
+    minicom -p /dev/pts/PTS_NUM

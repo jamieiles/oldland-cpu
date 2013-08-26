@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+import argparse
+import subprocess
+import sys
+
+MODULE_PATH = '%INSTALL_PATH%/lib'
+MODULES = 'vpi_uart vpi_debug_stub'.split()
+ROM_PATH = '%INSTALL_PATH%/lib/'
+DEFAULT_ROM = 'bootrom.hex'
+
+def main(args):
+    parser = argparse.ArgumentParser(description = 'Oldland RTL Simluation wrapper')
+    parser.add_argument('--bootrom', help = 'bootrom file in %INSTALL_PATH%/lib to use')
+    parser.add_argument('--interactive', help = 'start in interactive mode',
+                        action = 'store_true')
+    parser.add_argument('--ramfile', help = 'file to preload onchip ram with')
+    opts = parser.parse_args(args)
+
+    rom_file = '{0}{1}'.format(ROM_PATH,
+                                opts.bootrom if opts.bootrom else DEFAULT_ROM)
+    cmd = ['vvp', '-n', '-M{0}'.format(MODULE_PATH)] + ['-m{0}'.format(m) for m in MODULES] + \
+          ['-lxt2', '%INSTALL_PATH%/lib/keynsham.vvp', '+romfile={0}'.format(rom_file)]
+    if opts.interactive:
+        cmd += ['+interactive']
+    if opts.ramfile:
+        cmd += ['+ramfile={0}'.format(opts.ramfile)]
+    subprocess.check_call(cmd)
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
