@@ -29,19 +29,20 @@ wire ef_branch_taken;
 wire ef_stall_clear;
 
 /* Decode signals. */
-wire [2:0] d_ra_sel;
-wire [2:0] d_rb_sel;
+wire [3:0] d_ra_sel;
+wire [3:0] d_rb_sel;
 
-reg [2:0] e_ra_sel = 3'b0;
-reg [2:0] e_rb_sel = 3'b0;
+reg [3:0] e_ra_sel = 4'b0;
+reg [3:0] e_rb_sel = 4'b0;
 
 /* Decode -> execute signals. */
-wire [2:0] de_rd_sel;
+wire [3:0] de_rd_sel;
 wire de_update_rd;
 wire [31:0] de_imm32;
 wire [3:0] de_alu_opc;
 wire [2:0] de_branch_condition;
 wire de_alu_op1_ra;
+wire de_alu_op1_rb;
 wire de_alu_op2_rb;
 wire de_mem_load;
 wire de_mem_store;
@@ -60,7 +61,7 @@ wire [31:0] em_alu_out;
 wire em_mem_load;
 wire em_mem_store;
 wire em_update_rd;
-wire [2:0] em_rd_sel;
+wire [3:0] em_rd_sel;
 wire [31:0] em_wr_val;
 wire [1:0] em_mem_width;
 wire [31:0] em_mar;
@@ -70,7 +71,7 @@ wire em_mem_wr_en;
 /* Memory -> writeback signals. */
 wire [31:0] mw_wr_val;
 wire mw_update_rd;
-wire [2:0] mw_rd_sel;
+wire [3:0] mw_rd_sel;
 wire mf_complete;
 
 /* Fetch stalling signals. */
@@ -80,7 +81,7 @@ wire stalling;
 /* Debug control signals. */
 wire cpu_run;
 wire cpu_stopped;
-wire [2:0] dbg_reg_sel;
+wire [3:0] dbg_reg_sel;
 wire [31:0] dbg_reg_wr_val;
 wire [31:0] dbg_reg_val;
 wire dbg_reg_wr_en;
@@ -144,6 +145,7 @@ oldland_decode	decode(.clk(clk),
 		       .alu_opc(de_alu_opc),
 		       .branch_condition(de_branch_condition),
 		       .alu_op1_ra(de_alu_op1_ra),
+		       .alu_op1_rb(de_alu_op1_rb),
 		       .alu_op2_rb(de_alu_op2_rb),
 		       .mem_load(de_mem_load),
 		       .mem_store(de_mem_store),
@@ -164,6 +166,7 @@ oldland_exec	execute(.clk(clk),
 			.alu_opc(de_alu_opc),
 			.branch_condition(de_branch_condition),
 			.alu_op1_ra(de_alu_op1_ra),
+			.alu_op1_rb(de_alu_op1_rb),
 			.alu_op2_rb(de_alu_op2_rb),
 			.mem_load(de_mem_load),
 			.mem_store(de_mem_store),

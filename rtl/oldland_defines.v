@@ -23,6 +23,8 @@
 `define OPCODE_BIC	4'h8
 `define OPCODE_BKP	4'h0
 `define OPCODE_STR16	4'h5
+`define OPCODE_ORLO	4'hd
+`define OPCODE_NOP	4'hf
 `define OPCODE_B	4'h4
 `define OPCODE_LDR16	4'h1
 `define OPCODE_MOVHI	4'hb
@@ -31,4 +33,3 @@
 `define OPCODE_BEQ	4'h6
 `define OPCODE_OR	4'ha
 `define OPCODE_CMP	4'hc
-`define OPCODE_NOP	4'hf

@@ -18,7 +18,7 @@ module oldland_debug(input wire		clk,
 		     output reg		mem_access,
 		     input wire		mem_compl,
 		     /* GPR read/write signals. */
-		     output wire [2:0]	dbg_reg_sel,
+		     output wire [3:0]	dbg_reg_sel,
 		     input wire [31:0]	dbg_reg_val,
 		     output wire [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
@@ -102,7 +102,7 @@ initial begin
 	mem_access = 1'b0;
 end
 
-assign dbg_reg_sel = debug_addr[2:0];
+assign dbg_reg_sel = debug_addr[3:0];
 assign dbg_pc_wr_val = debug_data;
 assign dbg_reg_wr_val = debug_data;
 assign mem_addr = debug_addr;

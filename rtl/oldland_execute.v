@@ -4,10 +4,11 @@ module oldland_exec(input wire clk,
 		    input wire [31:0] rb,
 		    input wire [31:0] imm32,
 		    input wire [31:0] pc_plus_4,
-		    input wire [2:0] rd_sel,
+		    input wire [3:0] rd_sel,
 		    input wire update_rd,
 		    input wire [3:0] alu_opc,
 		    input wire alu_op1_ra,
+		    input wire alu_op1_rb,
 		    input wire alu_op2_rb,
 		    input wire mem_load,
 		    input wire mem_store,
@@ -23,7 +24,7 @@ module oldland_exec(input wire clk,
 		    output reg [1:0] mem_width_out,
 		    output reg [31:0] wr_val,
 		    output reg wr_result,
-		    output reg [2:0] rd_sel_out,
+		    output reg [3:0] rd_sel_out,
 		    output reg stall_clear,
 		    output reg [31:0] mar,
 		    output reg [31:0] mdr,
@@ -35,7 +36,7 @@ initial begin
 	mem_load_out = 1'b0;
 	mem_store_out = 1'b0;
 	wr_result = 1'b0;
-	rd_sel_out = 3'b0;
+	rd_sel_out = 4'b0;
 	wr_val = 32'b0;
 	mem_width_out = 2'b00;
 	stall_clear = 1'b0;
@@ -44,7 +45,8 @@ initial begin
 	mem_wr_en = 1'b0;
 end
 
-wire [31:0] op1 = alu_op1_ra ? ra : pc_plus_4;
+wire [31:0] op1 = alu_op1_ra ? ra :
+		  alu_op1_rb ? rb : pc_plus_4;
 wire [31:0] op2 = alu_op2_rb ? rb : imm32;
 reg [31:0] alu_q = 32'b0;
 reg alu_c = 1'b0;

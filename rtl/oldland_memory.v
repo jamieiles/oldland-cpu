@@ -7,10 +7,10 @@ module oldland_memory(input wire clk,
 		      input wire [1:0] width,
 		      input wire [31:0] wr_val,
 		      input wire update_rd,
-		      input wire [2:0] rd_sel,
+		      input wire [3:0] rd_sel,
 		      output wire [31:0] reg_wr_val,
 		      output wire update_rd_out,
-		      output wire [2:0] rd_sel_out,
+		      output wire [3:0] rd_sel_out,
 		      output wire complete,
 		      /* Signals to data bus */
 		      output wire [31:0] d_addr,
@@ -35,7 +35,7 @@ reg [31:0] wr_val_bypass;
 reg update_rd_bypass = 1'b0;
 reg [31:0] mem_rd_val;
 
-wire [31:0] address = dbg_en ? dbg_addr : mar;
+wire [31:0] address = dbg_en ? dbg_addr : addr;
 wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
 
 wire [1:0] byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];
@@ -43,8 +43,8 @@ assign d_addr = dbg_en ? {dbg_addr[31:2], 2'b00} : {addr[31:2], 2'b00};
 assign d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
 assign d_access = dbg_en ? dbg_access : (load | store);
 
-reg [2:0] rd_sel_out_bypass = 3'b0;
-reg [2:0] mem_rd = 3'b0;
+reg [3:0] rd_sel_out_bypass = 4'b0;
+reg [3:0] mem_rd = 4'b0;
 reg mem_update_rd = 1'b0;
 reg [31:0] rd_mask = 32'b0;
 wire [1:0] mem_width = dbg_en ? dbg_width : width;
