@@ -2,18 +2,18 @@
     "operands": {
         "rd": {
             "type": "register",
-            "bitpos": 6,
-            "length": 3
+            "bitpos": 0,
+            "length": 4
         },
         "ra": {
             "type": "register",
-            "bitpos": 3,
-            "length": 3
+            "bitpos": 8,
+            "length": 4
         },
         "rb": {
             "type": "register",
-            "bitpos": 0,
-            "length": 3
+            "bitpos": 4,
+            "length": 4
         },
         "imm16": {
             "type": "immediate",
@@ -26,6 +26,17 @@
             "length": 16,
             "pcrel": true
         },
+        "imm13": {
+            "type": "immediate",
+            "bitpos": 13,
+            "length": 13
+        },
+        "imm13pc": {
+            "type": "immediate",
+            "bitpos": 13,
+            "length": 13,
+            "pcrel": true
+        },
         "imm24": {
             "type": "immediate",
             "bitpos": 0,
@@ -35,125 +46,113 @@
         },
         "index": {
             "type": "index",
-            "operands": ["ra", "imm16"]
+            "operands": ["ra", "imm13"]
         }
     },
     "instructions": {
         "add": {
             "class": 0,
             "opcode": 0,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra + OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C", "O"]
         },
         "addc": {
             "class": 0,
             "opcode": 1,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra + OP2 + C, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C", "O"]
         },
         "sub": {
             "class": 0,
             "opcode": 2,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra - OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C", "O"]
         },
         "subc": {
             "class": 0,
             "opcode": 3,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra - OP2 + C, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C", "O"]
         },
         "lsl": {
             "class": 0,
             "opcode": 4,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra << OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C"]
         },
         "lsr": {
             "class": 0,
             "opcode": 5,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra >> OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C"]
         },
         "and": {
             "class": 0,
             "opcode": 6,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra & OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z", "C"]
         },
         "xor": {
             "class": 0,
             "opcode": 7,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra ^ OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
         },
         "bic": {
             "class": 0,
             "opcode": 8,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra &= ~(1 << OP2), OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
         },
         "bst": {
             "class": 0,
             "opcode": 9,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra |= (1 << OP2), OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
         },
         "or": {
             "class": 0,
             "opcode": 10,
-            "format": [["rd"], ["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["rd"], ["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra | OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
-        },
-        "movhi": {
-            "class": 0,
-            "opcode": 11,
-            "format": [["rd"], ["imm16"]],
-            "description": "Rd := imm16 << 16."
         },
         "cmp": {
             "class": 0,
             "opcode": 12,
-            "format": [["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Ra - OP2, OP2 may either be a register or a 16-bit signed immediate.  The result is discarded.",
             "flags_updated": ["Z", "C", "O"]
         },
         "asr": {
             "class": 0,
             "opcode": 14,
-            "format": [["ra"], ["imm16", "rb"]],
-            "formatsel": 9,
+            "format": [["ra"], ["imm13", "rb"]],
+            "formatsel": 12,
             "description": "Rd := Ra ASR OP2, OP2 may either be a register or a 16-bit signed immediate.",
             "flags_updated": ["Z"]
-        },
-        "orlo": {
-            "class": 0,
-            "opcode": 13,
-            "format": [["rd"], ["ra"], ["imm16"]],
-            "description": "Rd := Ra | imm16."
         },
         "call": {
             "class": 1,
@@ -166,7 +165,7 @@
             "class": 1,
             "opcode": 1,
             "format": [],
-            "constbits": "0x02000030"
+            "constbits": "0x02000e00"
         },
 	"b": {
             "class": 1,
@@ -201,38 +200,38 @@
         "ldr32": {
             "class": 2,
             "opcode": 0,
-            "format": [["rd"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rd"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "ldr16": {
             "class": 2,
             "opcode": 1,
-            "format": [["rd"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rd"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "ldr8": {
             "class": 2,
             "opcode": 2,
-            "format": [["rd"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rd"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "str32": {
             "class": 2,
             "opcode": 4,
-            "format": [["rb"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rb"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "str16": {
             "class": 2,
             "opcode": 5,
-            "format": [["rb"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rb"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "str8": {
             "class": 2,
             "opcode": 6,
-            "format": [["rb"], ["imm16", "index"]],
-            "formatsel": 9
+            "format": [["rb"], ["imm13", "index"]],
+            "formatsel": 12
         },
         "bkp": {
             "class": 3,
@@ -243,6 +242,18 @@
             "class": 3,
             "opcode": 15,
             "format": []
+        },
+        "movhi": {
+            "class": 3,
+            "opcode": 11,
+            "format": [["rd"], ["imm16"]],
+            "description": "Rd := imm16 << 16."
+        },
+        "orlo": {
+            "class": 3,
+            "opcode": 13,
+            "format": [["rd"], ["rb"], ["imm16"]],
+            "description": "Rd := Rb | imm16."
         }
     }
 }

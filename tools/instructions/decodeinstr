@@ -13,16 +13,16 @@ def decode_operand(fmt, instr):
     opdef = instructions.operands[fmt]
     if fmt in ['ra', 'rb', 'rd']:
         return '$r' + str(((instr >> opdef['bitpos']) & 0x7))
-    if fmt == 'imm16':
+    if fmt in ['imm16', 'imm13']:
         return '0x{0:04x}'.format(
             ((instr >> opdef['bitpos']) & (1 << opdef['length']) - 1))
-    if fmt in ['imm16pc', 'imm24']:
+    if fmt in ['imm16pc', 'imm24', 'imm13pc']:
         imm = BitArray(uint = ((instr >> opdef['bitpos']) & ((1 << opdef['length']) - 1)) << 2,
                        length = opdef['length'] + 2)
         return '$pc + 0x{0:x}'.format(imm.int)
     if fmt == 'index':
         return '[{0}, {1}]'.format(decode_operand('ra', instr),
-                                   decode_operand('imm16', instr))
+                                   decode_operand('imm13', instr))
 
 def decode(instr):
     cls = (instr >> 30) & 0x3

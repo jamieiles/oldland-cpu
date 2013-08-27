@@ -4,9 +4,10 @@ Oldland CPU
 Architecture
 ------------
 
-6x32-bit GPR's.
-1x32-bit link register, addressable as R6.
-1x32-bit stack pointer, addressable as R7.
+13x32-bit GPR's.
+1x32-bit frame pointer, addressable as FP
+1x32-bit link register, addressable as LR.
+1x32-bit stack pointer, addressable as SP.
 
 1x32-bit status register:
   - Zero flag
@@ -65,39 +66,39 @@ Encoding:
 
 	31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
 
-ADD	 0  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-ADDC	 0  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-SUB	 0  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-SUBC	 0  0  0  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-LSL	 0  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-LSR	 0  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-AND	 0  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-BIC	 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-BST	 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
-MOVHI	 0  0  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0 rd rd rd  x  x  x  x  x  x
-CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
-ORLO	 0  0  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0 rd rd rd ra ra ra  x  x  x
-ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra rb rb rb
+ADD	 0  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+ADDC	 0  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+SUd	 0  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+SUdC	 0  0  0  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+LSL	 0  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+LSR	 0  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+AND	 0  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+dIC	 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+dST	 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
+ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
 
-CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  0  x  x  x
-B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
-BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR
+CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  1  0  x  x  x  x  x  x  x  x
+B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 
-LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
-LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
-LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R rd rd rd ra ra ra  x  x  x
+LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
+LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
+LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
 
-STR	 1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
-STR16	 1  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
-STR8	 1  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  R  x  x  x ra ra ra rb rb rb
+STR	 1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
+STR16	 1  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
+STR8	 1  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
 
 BKP	 1  1  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x
+MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd
+ORLO	 1  1  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x rb rb rb rb rd rd rd rd
 
 NOP is encoded as OR R0, R0, R0
 
@@ -121,9 +122,9 @@ ALU operations
 --------------
 
 - ra OP rb
-- ra OP imm16
+- ra OP imm13
 - pc OP imm24
-- pc OP imm16
+- pc OP imm13
 - pc OP rb
 
 Stalling
