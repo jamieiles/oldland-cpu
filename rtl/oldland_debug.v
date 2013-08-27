@@ -189,7 +189,7 @@ always @(*) begin
 		endcase
 	end
 	STATE_WRITE_REG: begin
-		if (debug_addr[3])
+		if (debug_addr[4])
 			dbg_pc_wr_en = 1'b1;
 		else
 			dbg_reg_wr_en = 1'b1;
@@ -219,7 +219,7 @@ always @(*) begin
 	STATE_STORE_REG_RVAL: begin
 		ctl_addr = 2'b11;
 		ctl_wr_en = 1'b1;
-		ctl_din = debug_addr[3] ? dbg_pc : dbg_reg_val;
+		ctl_din = debug_addr[4] ? dbg_pc : dbg_reg_val;
 		next_state = STATE_COMPL;
 	end
 	STATE_COMPL: begin
