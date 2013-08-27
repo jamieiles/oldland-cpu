@@ -6,9 +6,9 @@ _start:
 	 * configuration is done.
 	 */
 	movhi	$r3, 0x8000
-	orlo	$r2, $r2, 0x1000
+	orlo	$r2, $r3, 0x1000
 config_loop:
-	ldr32	$r1, [$r2, 0x1000]
+	ldr32	$r1, [$r2, 0]
 	cmp	$r1, 0x0
 	beq	config_loop
 	xor	$r2, $r2, $r2
