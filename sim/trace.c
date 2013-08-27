@@ -26,6 +26,14 @@ struct {
 	[TRACE_R5]	= { '5', 32, "R5" },
 	[TRACE_R6]	= { '6', 32, "R6" },
 	[TRACE_R7]	= { '7', 32, "R7" },
+	[TRACE_R8]	= { '8', 32, "R8" },
+	[TRACE_R9]	= { '9', 32, "R9" },
+	[TRACE_R10]	= { 'A', 32, "R10" },
+	[TRACE_R11]	= { 'B', 32, "R11" },
+	[TRACE_R12]	= { 'C', 32, "R12" },
+	[TRACE_FP]	= { 'D', 32, "FP" },
+	[TRACE_LR]	= { 'E', 32, "LR" },
+	[TRACE_SP]	= { 'F', 32, "SP" },
 };
 
 void trace(FILE *trace_file, enum trace_points tp, uint32_t val)

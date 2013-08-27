@@ -17,7 +17,7 @@
 struct cpu {
 	uint32_t pc;
 	uint32_t next_pc;
-	uint32_t regs[8];
+	uint32_t regs[16];
 	union {
 		uint32_t flagsw;
 		struct {
@@ -50,22 +50,27 @@ static inline unsigned instr_opc(uint32_t instr)
 
 static inline enum regs instr_rd(uint32_t instr)
 {
-	return (instr >> 6) & 0x7;
+	return (instr >> 0) & 0xf;
 }
 
 static inline enum regs instr_ra(uint32_t instr)
 {
-	return (instr >> 3) & 0x7;
+	return (instr >> 8) & 0xf;
 }
 
 static inline enum regs instr_rb(uint32_t instr)
 {
-	return instr & 0x7;
+	return (instr >> 4) & 0xf;
 }
 
 static inline uint16_t instr_imm16(uint32_t instr)
 {
 	return (instr >> 10) & 0xffff;
+}
+
+static inline uint16_t instr_imm13(uint32_t instr)
+{
+	return (instr >> 13) & 0x1fff;
 }
 
 static inline uint32_t instr_imm24(uint32_t instr)
@@ -114,15 +119,15 @@ struct cpu *new_cpu(const char *binary)
 static void emul_arithmetic(struct cpu *c, uint32_t instr)
 {
 	enum regs ra, rb, rd;
-	int32_t imm16;
+	int32_t imm13;
 	uint64_t op2;
 	uint64_t result = 0;
 
 	ra = instr_ra(instr);
 	rb = instr_rb(instr);
 	rd = instr_rd(instr);
-	imm16 = ((int32_t)instr_imm16(instr) << 16) >> 16;
-	op2 = (instr & (1 << 9)) ? c->regs[rb] : imm16;
+	imm13 = ((int32_t)instr_imm13(instr) << 19) >> 19;
+	op2 = (instr & (1 << 9)) ? c->regs[rb] : imm13;
 
 	switch (instr_opc(instr)) {
 	case OPCODE_ADD:
@@ -146,9 +151,6 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 	case OPCODE_ASR:
 		result = (uint64_t)(int32_t)c->regs[ra] >> op2;
 		break;
-	case OPCODE_ORLO:
-		result = (uint64_t)c->regs[ra] | (op2 & 0xffff);
-		break;
 	case OPCODE_LSR:
 		result = (uint64_t)c->regs[ra] >> op2;
 		break;
@@ -166,9 +168,6 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		break;
 	case OPCODE_OR:
 		result = (uint64_t)c->regs[ra] | op2;
-		break;
-	case OPCODE_MOVHI:
-		result = op2 << 16;
 		break;
 	default:
 		die("invalid arithmetic opcode %u (%08x)\n", instr_opc(instr),
@@ -246,20 +245,20 @@ static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 
 static void emul_ldr_str(struct cpu *c, uint32_t instr)
 {
-	int32_t imm16 = instr_imm16(instr);
+	int32_t imm13 = instr_imm13(instr);
 	uint32_t addr, v;
 	enum regs ra = instr_ra(instr), rb = instr_rb(instr), rd = instr_rd(instr);
 	int err;
 
 	/* Sign extend. */
-	imm16 <<= 16;
-	imm16 >>= 16;
+	imm13 <<= 19;
+	imm13 >>= 19;
 
 	/* PC relative addressing. */
-	if (!(instr & (1 << 9)))
-		addr = c->pc + imm16;
+	if (!(instr & (1 << 12)))
+		addr = c->pc + imm13;
 	else
-		addr = c->regs[ra] + imm16;
+		addr = c->regs[ra] + imm13;
 
 	switch (instr_opc(instr)) {
 	case OPCODE_LDR8:
@@ -306,13 +305,27 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 
 static void emul_misc(struct cpu *c, uint32_t instr)
 {
+	int32_t imm16 = (int32_t)instr_imm16(instr);
+	uint64_t result;
+	enum regs rb = instr_rb(instr);
+	enum regs rd = instr_rd(instr);
+
 	switch (instr_opc(instr)) {
 	case OPCODE_NOP:
+		break;
+	case OPCODE_ORLO:
+		result = (uint64_t)c->regs[rb] | imm16;
+		cpu_wr_reg(c, rd, result & 0xffffffff);
+		break;
+	case OPCODE_MOVHI:
+		result = imm16 << 16;
+		cpu_wr_reg(c, rd, result & 0xffffffff);
 		break;
 	default:
 		die("invalid misc opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
+
 }
 
 static void emul_insn(struct cpu *c, uint32_t instr)
