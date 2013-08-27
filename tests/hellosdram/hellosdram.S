@@ -17,8 +17,8 @@ config_loop:
 	xor	$r2, $r2, $r2
 	movhi	$r0, %hi(str_start)
 	add	$r1, $r0, 0
-	or	$r0, $r0, %lo(str_start)
-	or	$r1, $r1, %lo(str_end)
+	orlo	$r0, $r0, %lo(str_start)
+	orlo	$r1, $r1, %lo(str_end)
 	movhi	$r2, 0x2000 # SDRAM at 0x20000000
 
 copy_loop:

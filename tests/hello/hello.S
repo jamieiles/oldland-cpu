@@ -2,8 +2,8 @@
 _start:
 	movhi	$r4, %hi(hello_start)
 	add	$r2, $r4, 0
-	or	$r4, $r4, %lo(hello_start)
-	or	$r2, $r2, %lo(hello_end)
+	orlo	$r4, $r4, %lo(hello_start)
+	orlo	$r2, $r2, %lo(hello_end)
 
 copy_loop:
 	cmp	$r2, $r4
