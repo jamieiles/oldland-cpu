@@ -94,7 +94,6 @@ static int load_section(const struct target *target, uint32_t addr,
 	while (len-- != 0) {
 		uint32_t v = *(data++);
 
-		//printf("%08x := %02x\n", addr, v);
 		ret = dbg_write8(target, addr++, v);
 		if (ret) {
 			warnx("failed to write to %08x", addr);
@@ -105,7 +104,44 @@ static int load_section(const struct target *target, uint32_t addr,
 	return ret;
 }
 
-int load_elf(const struct target *target, const char *path)
+static const Elf32_Shdr *find_section(const struct elf_info *elf,
+				      const char *name)
+{
+	const Elf32_Shdr *shdr;
+	int i;
+
+	for_each_section(shdr, i, elf) {
+		const char *n = elf->secstrings + shdr->sh_name;
+
+		if (!strcmp(n, name))
+			return shdr;
+	}
+
+	return NULL;
+}
+
+static void load_testpoints(const struct elf_info *elf,
+			    struct testpoint **testpoints,
+			    size_t *nr_testpoints)
+{
+	const Elf32_Shdr *tp_section = find_section(elf, ".testpoints");
+
+	*nr_testpoints = 0;
+
+	if (!tp_section)
+		return;
+
+	*testpoints = malloc(tp_section->sh_size);
+	if (!*testpoints)
+		return;
+
+	memcpy(*testpoints, elf->elf + tp_section->sh_offset,
+	       tp_section->sh_size);
+	*nr_testpoints = tp_section->sh_size / sizeof(struct testpoint);
+}
+
+int load_elf(const struct target *target, const char *path,
+	     struct testpoint **testpoints, size_t *nr_testpoints)
 {
 	struct elf_info elf = {};
 	int i, ret;
@@ -133,6 +169,8 @@ int load_elf(const struct target *target, const char *path)
 	if (dbg_write_reg(target, PC, (uint32_t)elf.ehdr->e_entry))
 		warnx("failed to set PC to entry point %08x",
 		      (uint32_t)elf.ehdr->e_entry);
+
+	load_testpoints(&elf, testpoints, nr_testpoints);
 
 out:
 	unmap_elf(&elf);

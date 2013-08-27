@@ -1,6 +1,8 @@
 #ifndef __DEBUGGER_H__
 #define __DEBUGGER_H__
 
+#include <stdint.h>
+
 enum regs {
 	R0,
 	R1,
@@ -21,6 +23,18 @@ enum regs {
 	PC
 };
 
+enum testpoint_type {
+	TP_SUCCESS	= 0x1,
+	TP_FAILURE	= 0x2,
+	TP_USER		= 0x4,
+};
+
+struct testpoint {
+	uint32_t	addr;
+	uint16_t	type;
+	uint16_t	tag;
+};
+
 struct target;
 
 const struct target *get_target(void);
@@ -36,6 +50,7 @@ int dbg_read8(const struct target *t, unsigned addr, uint32_t *val);
 int dbg_write32(const struct target *t, unsigned addr, uint32_t val);
 int dbg_write16(const struct target *t, unsigned addr, uint32_t val);
 int dbg_write8(const struct target *t, unsigned addr, uint32_t val);
-int load_elf(const struct target *t, const char *path);
+int load_elf(const struct target *t, const char *path,
+	     struct testpoint **testpoints, size_t *nr_testpoints);
 
 #endif /* __DEBUGGER_H__ */

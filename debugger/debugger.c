@@ -322,14 +322,45 @@ static int lua_write_reg(lua_State *L)
 	return 0;
 }
 
+static void push_testpoint(lua_State *L, size_t idx,
+			   const struct testpoint *tp)
+{
+	lua_pushinteger(L, idx);
+	lua_newtable(L);
+
+	lua_pushstring(L, "address");
+	lua_pushinteger(L, tp->addr);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "type");
+	lua_pushinteger(L, tp->type);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "tag");
+	lua_pushinteger(L, tp->tag);
+	lua_settable(L, -3);
+
+	/* Set the testpoint in the table. */
+	lua_settable(L, -3);
+}
+
 static int lua_loadelf(lua_State *L)
 {
 	const char *path;
+	struct testpoint *testpoints;
+	size_t nr_testpoints;
+	size_t n;
 
 	path = lua_tostring(L, 1);
-	if (load_elf(target, path))
+	if (load_elf(target, path, &testpoints, &nr_testpoints))
 		warnx("failed to load device with %s", path);
 	lua_pop(L, 1);
+
+	lua_newtable(L);
+	for (n = 0; n < nr_testpoints; ++n)
+		push_testpoint(L, n, &testpoints[n]);
+
+	lua_setglobal(L, "testpoints");
 
 	return 0;
 }

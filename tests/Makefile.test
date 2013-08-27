@@ -10,7 +10,7 @@ include Makefile
 all:	$(TESTNAME).bin
 
 %.o:	%.S
-	$(AS) $< -o $@
+	$(AS) $< -o $@ -I$(PWD)/target/
 
 %.o:	%.s
 	$(AS) $< -o $@
