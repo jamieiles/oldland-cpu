@@ -109,6 +109,11 @@ static int dbg_read(const struct target *t, enum dbg_reg addr, uint32_t *value)
 	return rc;
 }
 
+static int dbg_term(const struct target *t)
+{
+	return dbg_write(t, REG_CMD, CMD_SIM_TERM);
+}
+
 int dbg_stop(const struct target *t)
 {
 	return dbg_write(t, REG_CMD, CMD_STOP);
@@ -297,6 +302,16 @@ static int lua_step(lua_State *L)
 	return 0;
 }
 
+static int lua_term(lua_State *L)
+{
+	assert_target(L);
+
+	if (dbg_term(target))
+		warnx("failed to terminate simulation");
+
+	return 0;
+}
+
 static int lua_stop(lua_State *L)
 {
 	assert_target(L);
@@ -453,6 +468,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "write8", lua_write8 },
 	{ "loadelf", lua_loadelf },
 	{ "connect", lua_connect },
+	{ "term", lua_term },
 	{}
 };
 

@@ -15,6 +15,8 @@ enum dbg_cmd {
 	CMD_WMEM32,
 	CMD_WMEM16,
 	CMD_WMEM8,
+
+	CMD_SIM_TERM = -1,
 };
 
 enum dbg_reg {

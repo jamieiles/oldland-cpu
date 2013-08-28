@@ -25,6 +25,16 @@ always @(posedge clk) begin
 		$dbg_get(dbg_req, dbg_rnw, dbg_addr, dbg_val);
 
 		if (dbg_req) begin
+			/*
+			 * Special hack to allow the debugger to terminate the
+			 * simulation so that we can spawn a new one without
+			 * worrying about system level reset.
+			 */
+			if (dbg_addr == 2'b00 && dbg_val == 32'hffffffff) begin
+				$dbg_put(32'b0);
+				$finish;
+			end
+
 			addr <= dbg_addr;
 			write_data <= dbg_val;
 			wr_en <= ~dbg_rnw;
