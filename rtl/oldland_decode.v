@@ -33,7 +33,7 @@ wire [1:0] _class = instr[31:30];
 wire [3:0] opcode = instr[29:26];
 
 /* Sign extended immediates. */
-wire [31:0] imm13 = {{19{instr[25]}}, instr[25:13]};
+wire [31:0] imm13 = {{19{instr[24]}}, instr[24:12]};
 wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
 wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
 
@@ -101,7 +101,7 @@ always @(posedge clk) begin
 	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM ||
 		       (_class == `CLASS_BRANCH && instr[25]));
 	alu_op1_rb <= _class == `CLASS_MISC && opcode == `OPCODE_ORLO;
-	alu_op2_rb <= (_class == `CLASS_ARITH && instr[12]);
+	alu_op2_rb <= (_class == `CLASS_ARITH && instr[25]);
 
 	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
 	mem_store <= _class == `CLASS_MEM && instr[28] == 1'b1;

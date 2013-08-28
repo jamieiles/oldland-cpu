@@ -251,11 +251,11 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	int err;
 
 	/* Sign extend. */
-	imm13 <<= 19;
-	imm13 >>= 19;
+	imm13 <<= 20;
+	imm13 >>= 20;
 
 	/* PC relative addressing. */
-	if (!(instr & (1 << 12)))
+	if (!(instr & (1 << 25)))
 		addr = c->pc + imm13;
 	else
 		addr = c->regs[ra] + imm13;

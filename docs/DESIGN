@@ -66,19 +66,19 @@ Encoding:
 
 	31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
 
-ADD	 0  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-ADDC	 0  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-SUd	 0  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-SUdC	 0  0  0  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-LSL	 0  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-LSR	 0  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-AND	 0  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-XOR	 0  0  0  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-dIC	 0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-dST	 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-OR 	 0  0  1  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
-CMP	 0  0  1  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
-ASR 	 0  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb rd rd rd rd
+ADD	 0  0  0  0  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+ADDC	 0  0  0  0  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+SUd	 0  0  0  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+SUdC	 0  0  0  0  1  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+LSL	 0  0  0  1  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+LSR	 0  0  0  1  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+AND	 0  0  0  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+XOR	 0  0  0  1  1  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+BIC	 0  0  1  0  0  0  R  0  0  0  0  0  0  0  0  0  0  I  I  0 ra ra ra ra rb rb rb rb rd rd rd rd
+BST	 0  0  1  0  0  1  R  0  0  0  0  0  0  0  0  0  0  I  I  0 ra ra ra ra rb rb rb rb rd rd rd rd
+OR 	 0  0  1  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+CMP	 0  0  1  1  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
+ASR 	 0  0  1  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  1  0  x  x  x  x  x  x  x  x
@@ -88,13 +88,13 @@ BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 
-LDR	 1  0  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
-LDR16	 1  0  0  0  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
-LDR8	 1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra  x  x  x  x rd rd rd rd
+LDR	 1  0  0  0  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
+LDR16	 1  0  0  0  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
+LDR8	 1  0  0  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
 
-STR	 1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
-STR16	 1  0  0  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
-STR8	 1  0  0  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  R ra ra ra ra rb rb rb rb  x  x  x  x
+STR	 1  0  0  1  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
+STR16	 1  0  0  1  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
+STR8	 1  0  0  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
 
 BKP	 1  1  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x
 MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd

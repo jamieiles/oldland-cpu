@@ -25,7 +25,7 @@ static const struct oldland_operand operands[] = {
                 .type = OPERAND_IMM13,
                 .pcrel = false,
                 .def = {
-                        .bitpos = 13,
+                        .bitpos = 12,
                         .length = 13,
                 },
         },
@@ -52,7 +52,7 @@ static const struct oldland_operand operands[] = {
                 .type = OPERAND_IMM13PC,
                 .pcrel = true,
                 .def = {
-                        .bitpos = 13,
+                        .bitpos = 12,
                         .length = 13,
                 },
         },
@@ -104,7 +104,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_LSL] = {
                 .name = "lsl",
@@ -115,7 +115,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_LSR] = {
                 .name = "lsr",
@@ -126,7 +126,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_SUBC] = {
                 .name = "subc",
@@ -137,7 +137,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_XOR] = {
                 .name = "xor",
@@ -148,7 +148,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_SUB] = {
                 .name = "sub",
@@ -159,7 +159,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_ADD] = {
                 .name = "add",
@@ -170,7 +170,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_ADDC] = {
                 .name = "addc",
@@ -181,7 +181,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_ASR] = {
                 .name = "asr",
@@ -192,7 +192,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RA]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_BST] = {
                 .name = "bst",
@@ -203,7 +203,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_BIC] = {
                 .name = "bic",
@@ -214,7 +214,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_OR] = {
                 .name = "or",
@@ -225,7 +225,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_RA]},
                 .op3 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_CMP] = {
                 .name = "cmp",
@@ -236,7 +236,7 @@ const struct oldland_instruction oldland_instructions_0[16] = {
                 .op1 = {&operands[OPERAND_RA]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_RB]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
 };
 
@@ -330,7 +330,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RB]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_STR32] = {
                 .name = "str32",
@@ -341,7 +341,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RB]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_LDR8] = {
                 .name = "ldr8",
@@ -352,7 +352,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_STR16] = {
                 .name = "str16",
@@ -363,7 +363,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RB]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_LDR16] = {
                 .name = "ldr16",
@@ -374,7 +374,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
         [OPCODE_LDR32] = {
                 .name = "ldr32",
@@ -385,7 +385,7 @@ const struct oldland_instruction oldland_instructions_2[16] = {
                 .op1 = {&operands[OPERAND_RD]},
                 .op2 = {&operands[OPERAND_IMM13], &operands[OPERAND_INDEX]},
                 .op3 = {},
-                .formatsel = 12,
+                .formatsel = 25,
         }, 
 };
 
