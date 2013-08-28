@@ -41,11 +41,6 @@ const struct target *get_target(void)
 	return target;
 }
 
-static void sigint_handler(int s)
-{
-	target->interrupted = true;
-}
-
 static int target_exchange(const struct target *t,
 			   const struct dbg_request *req,
 			   struct dbg_response *resp)
@@ -269,16 +264,20 @@ int open_server(const char *hostname, const char *port)
 	return fd;
 }
 
-static struct target *target_alloc(void)
+static struct target *target_alloc(const char *hostname,
+				   const char *port)
 {
 	struct target *t = calloc(1, sizeof(*t));
 
 	if (!t)
 		err(1, "failed to allocate target");
 
-	t->fd = open_server("localhost", "36000");
-	if (t->fd < 0)
-		err(1, "failed to connect to server");
+	t->fd = open_server(hostname, port);
+	if (t->fd < 0) {
+		warn("failed to connect to server");
+		free(t);
+		t = NULL;
+	}
 
 	return t;
 }
@@ -414,6 +413,32 @@ static int lua_loadelf(lua_State *L)
 	return 0;
 }
 
+static int lua_connect(lua_State *L)
+{
+	const char *host, *port;
+
+	if (lua_gettop(L) != 2) {
+		lua_pushstring(L, "host and port required");
+		lua_error(L);
+	}
+
+	host = lua_tostring(L, 1);
+	port = lua_tostring(L, 2);
+
+	target = target_alloc(host, port) ;
+	if (!target) {
+		lua_pushstring(L, "failed to connect to host");
+		lua_error(L);
+	}
+
+	if (dbg_stop(target)) {
+		lua_pushstring(L, "failed to stop target");
+		lua_error(L);
+	}
+
+	return 0;
+}
+
 static const struct luaL_Reg dbg_funcs[] = {
 	{ "step", lua_step },
 	{ "run", lua_run },
@@ -427,6 +452,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "read8", lua_read8 },
 	{ "write8", lua_write8 },
 	{ "loadelf", lua_loadelf },
+	{ "connect", lua_connect },
 	{}
 };
 
@@ -444,6 +470,14 @@ static void load_support(lua_State *L)
 	free(path);
 }
 
+static void sigint_handler(int s)
+{
+	target->interrupted = true;
+
+	if (target)
+		dbg_stop(target);
+}
+
 int main(void)
 {
 	lua_State *L = luaL_newstate();
@@ -454,8 +488,6 @@ int main(void)
 	luaL_newlib(L, dbg_funcs);
 	lua_setglobal(L, "target");
 	load_support(L);
-
-	target = target_alloc();
 
 	stifle_history(1024);
 
