@@ -1,14 +1,14 @@
-module sim_dp_rom(input wire clk,
-		  input wire [31:0] i_addr,
-		  output reg [31:0] i_data,
-		  input wire d_access,
-		  input wire d_cs,
-		  input wire [31:0] d_addr,
-		  input wire [3:0] d_bytesel,
-		  output reg [31:0] d_data,
-		  output reg d_ack);
+module sim_dp_rom(input wire		clk,
+		  input wire [31:0]	i_addr,
+		  output reg [31:0]	i_data,
+		  input wire		d_access,
+		  input wire		d_cs,
+		  input wire [31:0]	d_addr,
+		  input wire [3:0]	d_bytesel,
+		  output reg [31:0]	d_data,
+		  output reg		d_ack);
 
-reg [7:0] rom [255:0];
+reg [7:0]	rom [255:0];
 reg [8 * 128:0] rom_filename;
 
 initial begin

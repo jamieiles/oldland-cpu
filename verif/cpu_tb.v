@@ -1,35 +1,35 @@
 module cpu_tb();
 
-reg clk = 1'b0;
-wire clk180 = ~clk;
+reg		clk = 1'b0;
+wire		clk180 = ~clk;
 
-wire rx;
-wire tx;
-wire rx_rdy;
-reg rx_rdy_clr = 1'b0;
-wire [7:0] uart_rx_data;
-reg [7:0] uart_tx_data = 8'b0;
-reg uart_tx_en = 1'b0;
-wire uart_tx_busy;
+wire		rx;
+wire		tx;
+wire		rx_rdy;
+reg		rx_rdy_clr = 1'b0;
+wire [7:0]	uart_rx_data;
+reg [7:0]	uart_tx_data = 8'b0;
+reg		uart_tx_en = 1'b0;
+wire		uart_tx_busy;
 
-wire s_ras_n;
-wire s_cas_n;
-wire s_wr_en;
-wire [1:0] s_bytesel;
-wire [12:0] s_addr;
-wire s_cs_n;
-wire s_clken;
-wire [15:0] s_data;
-wire [1:0] s_banksel;
+wire		s_ras_n;
+wire		s_cas_n;
+wire		s_wr_en;
+wire [1:0]	s_bytesel;
+wire [12:0]	s_addr;
+wire		s_cs_n;
+wire		s_clken;
+wire [15:0]	s_data;
+wire [1:0]	s_banksel;
 
-wire [1:0] dbg_addr;
-wire [31:0] dbg_din;
-wire [31:0] dbg_dout;
-wire dbg_wr_en;
-wire dbg_req;
-wire dbg_acl;
+wire [1:0]	dbg_addr;
+wire [31:0]	dbg_din;
+wire [31:0]	dbg_dout;
+wire		dbg_wr_en;
+wire		dbg_req;
+wire		dbg_acl;
 
-always #10 clk = ~clk;
+reg [8:0]	uart_buf = 9'b0;
 
 mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Addr(s_addr),
@@ -92,7 +92,7 @@ initial begin
 	end
 end
 
-reg [8:0] uart_buf = 9'b0;
+always #10 clk = ~clk;
 
 always @(posedge clk) begin
 	if (rx_rdy && !rx_rdy_clr) begin

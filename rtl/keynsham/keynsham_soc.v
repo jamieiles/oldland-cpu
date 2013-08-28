@@ -1,53 +1,53 @@
 /* First instruction will be the boot rom at 0x10000000. */
 `define OLDLAND_RESET_ADDR	32'h0ffffffc
 
-module keynsham_soc(input wire clk,
+module keynsham_soc(input wire		clk,
 		    /* UART I/O signals. */
-		    input wire uart_rx,
-		    output wire uart_tx,
+		    input wire		uart_rx,
+		    output wire		uart_tx,
 		    /* SDRAM I/O signals. */
-		    output wire s_ras_n,
-		    output wire s_cas_n,
-		    output wire s_wr_en,
-		    output wire [1:0] s_bytesel,
-		    output wire [12:0] s_addr,
-		    output wire s_cs_n,
-		    output wire s_clken,
-		    inout [15:0] s_data,
-		    output wire [1:0] s_banksel,
+		    output wire		s_ras_n,
+		    output wire		s_cas_n,
+		    output wire		s_wr_en,
+		    output wire [1:0]	s_bytesel,
+		    output wire [12:0]	s_addr,
+		    output wire		s_cs_n,
+		    output wire		s_clken,
+		    inout [15:0]	s_data,
+		    output wire [1:0]	s_banksel,
 		    /* Debug I/O signals. */
-		    input wire dbg_clk,
-		    input wire [1:0] dbg_addr,
-		    input wire [31:0] dbg_din,
-		    output wire [31:0] dbg_dout,
-		    input wire dbg_wr_en,
-		    input wire dbg_req,
-		    output wire dbg_ack);
+		    input wire		dbg_clk,
+		    input wire [1:0]	dbg_addr,
+		    input wire [31:0]	dbg_din,
+		    output wire [31:0]	dbg_dout,
+		    input wire		dbg_wr_en,
+		    input wire		dbg_req,
+		    output wire		dbg_ack);
 
-wire [31:0] i_addr;
-reg [31:0] i_data = 32'b0;
-wire [31:0] d_addr;
-reg [31:0] d_data = 32'b0;
-wire [31:0] d_wr_val;
-wire [3:0] d_bytesel;
-wire d_wr_en;
-wire d_access;
+wire [31:0]	i_addr;
+reg [31:0]	i_data = 32'b0;
+wire [31:0]	d_addr;
+reg [31:0]	d_data = 32'b0;
+wire [31:0]	d_wr_val;
+wire [3:0]	d_bytesel;
+wire		d_wr_en;
+wire		d_access;
 
-wire [31:0] ram_data;
-wire [31:0] i_ram_data;
-wire ram_ack;
+wire [31:0]	ram_data;
+wire [31:0]	i_ram_data;
+wire		ram_ack;
 
-wire [31:0] rom_data;
-wire [31:0] i_rom_data;
-wire rom_ack;
+wire [31:0]	rom_data;
+wire [31:0]	i_rom_data;
+wire		rom_ack;
 
-wire [31:0] uart_data;
-wire uart_ack;
-wire uart_error;
+wire [31:0]	uart_data;
+wire		uart_ack;
+wire		uart_error;
 
-wire [31:0] sdram_data;
-wire sdram_ack;
-wire sdram_error;
+wire [31:0]	sdram_data;
+wire		sdram_ack;
+wire		sdram_error;
 
 /*
  * Memory map:
@@ -58,43 +58,16 @@ wire sdram_error;
  * 0x80000000 -- 0x80000fff: UART0.
  * 0x80001000 -- 0x80001fff: SDRAM controller.
  */
-wire ram_cs		= d_addr[31:12]	== 20'h00000;
-wire ram_i_cs		= i_addr[31:12]	== 20'h00000;
-wire rom_cs		= d_addr[31:12]	== 20'h10000;
-wire rom_i_cs		= i_addr[31:12]	== 20'h10000;
-wire sdram_cs		= d_addr[31:25] == 7'b0010000;
-wire sdram_ctrl_cs	= d_addr[31:12] == 20'h80001;
-wire uart_cs		= d_addr[31:12] == 20'h80000;
-
-always @(*) begin
-	if (ram_cs)
-		d_data = ram_data;
-	else if (uart_cs)
-		d_data = uart_data;
-	else if (sdram_cs || sdram_ctrl_cs)
-		d_data = sdram_data;
-	else if (rom_cs)
-		d_data = rom_data;
-	else
-		d_data = 32'b0;
-end
+wire		ram_cs		= d_addr[31:12]	== 20'h00000;
+wire		ram_i_cs	= i_addr[31:12]	== 20'h00000;
+wire		rom_cs		= d_addr[31:12]	== 20'h10000;
+wire		rom_i_cs	= i_addr[31:12]	== 20'h10000;
+wire		sdram_cs	= d_addr[31:25] == 7'b0010000;
+wire		sdram_ctrl_cs	= d_addr[31:12] == 20'h80001;
+wire		uart_cs		= d_addr[31:12] == 20'h80000;
 
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
-
-always @(posedge clk) begin
-	ram_i_out_cs <= ram_i_cs;
-	rom_i_out_cs <= rom_i_cs;
-end
-
-always @(*) begin
-	if (ram_i_out_cs)
-		i_data = i_ram_data;
-	else if (rom_i_out_cs)
-		i_data = i_rom_data;
-	else
-		i_data = 32'b0;
-end
 
 wire d_ack = uart_ack | ram_ack | sdram_ack | rom_ack;
 wire d_error = uart_error | sdram_error;
@@ -173,5 +146,32 @@ oldland_cpu	cpu(.clk(clk),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack));
+
+always @(*) begin
+	if (ram_cs)
+		d_data = ram_data;
+	else if (uart_cs)
+		d_data = uart_data;
+	else if (sdram_cs || sdram_ctrl_cs)
+		d_data = sdram_data;
+	else if (rom_cs)
+		d_data = rom_data;
+	else
+		d_data = 32'b0;
+end
+
+always @(posedge clk) begin
+	ram_i_out_cs <= ram_i_cs;
+	rom_i_out_cs <= rom_i_cs;
+end
+
+always @(*) begin
+	if (ram_i_out_cs)
+		i_data = i_ram_data;
+	else if (rom_i_out_cs)
+		i_data = i_rom_data;
+	else
+		i_data = 32'b0;
+end
 
 endmodule

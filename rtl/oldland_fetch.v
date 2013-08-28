@@ -19,43 +19,41 @@
  * whether to stall or not.  Later on down the pipeline the stall is cleared
  * to continue new instructions.
  */
-module oldland_fetch(input wire clk,
-		     input wire stall_clear,
-		     input wire [31:0] branch_pc,
-		     input wire branch_taken,
-		     output wire [31:0] pc_plus_4,
+module oldland_fetch(input wire		clk,
+		     input wire		stall_clear,
+		     input wire [31:0]	branch_pc,
+		     input wire		branch_taken,
+		     output wire [31:0]	pc_plus_4,
 		     output wire [31:0] instr,
 		     output wire [31:0] fetch_addr,
-		     input wire [31:0] fetch_data,
-		     input wire run,
-		     output reg stopped,
+		     input wire [31:0]	fetch_data,
+		     input wire		run,
+		     output reg		stopped,
 		     output wire [31:0] dbg_pc,
-		     input wire dbg_pc_wr_en,
-		     input wire [31:0] dbg_pc_wr_val);
+		     input wire		dbg_pc_wr_en,
+		     input wire [31:0]	dbg_pc_wr_val);
 
-reg [31:0]	pc		= `OLDLAND_RESET_ADDR;
+reg [31:0]	pc = `OLDLAND_RESET_ADDR;
 
 /* Next PC calculation logic. */
-assign		pc_plus_4	= pc + 32'd4;
-reg [31:0]	next_pc;
-assign		dbg_pc		= pc;
+assign		pc_plus_4 = pc + 32'd4;
+reg [31:0]	next_pc = 32'b0;
+assign		dbg_pc = pc;
 
 /*
  * Load/store or branches cause stalling.  This means a class of 01 or 10.
  *
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
-reg		stalled		= 1'b0;
-wire		stalling	= (^instr[31:30] == 1'b1 || stalled) &&
-					!stall_clear;
-assign		instr		= stalled || stopping ? `INSTR_NOP :
-					fetch_data;
-reg		stopping	= 1'b0;
-reg [2:0]	stop_ctr	= 3'd5;
+reg		stalled	= 1'b0;
+wire		stalling = (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
+assign		instr = stalled || stopping ? `INSTR_NOP : fetch_data;
+reg		stopping = 1'b0;
+reg [2:0]	stop_ctr = 3'd5;
 
-assign		fetch_addr	= stalling || stopping || !run ? pc : next_pc;
+assign		fetch_addr = stalling || stopping || !run ? pc : next_pc;
 
-initial		stopped		= 1'b0;
+initial		stopped	= 1'b0;
 
 always @(*) begin
 	if (dbg_pc_wr_en)

@@ -1,34 +1,47 @@
 `include "oldland_defines.v"
-module oldland_exec(input wire clk,
-		    input wire [31:0] ra,
-		    input wire [31:0] rb,
-		    input wire [31:0] imm32,
-		    input wire [31:0] pc_plus_4,
-		    input wire [3:0] rd_sel,
-		    input wire update_rd,
-		    input wire [3:0] alu_opc,
-		    input wire alu_op1_ra,
-		    input wire alu_op1_rb,
-		    input wire alu_op2_rb,
-		    input wire mem_load,
-		    input wire mem_store,
-		    input wire [1:0] mem_width,
-		    input wire [2:0] branch_condition,
-		    input wire [1:0] instr_class,
-		    input wire is_call,
-		    input wire update_flags,
-		    output reg branch_taken,
-		    output reg [31:0] alu_out,
-		    output reg mem_load_out,
-		    output reg mem_store_out,
-		    output reg [1:0] mem_width_out,
-		    output reg [31:0] wr_val,
-		    output reg wr_result,
-		    output reg [3:0] rd_sel_out,
-		    output reg stall_clear,
-		    output reg [31:0] mar,
-		    output reg [31:0] mdr,
-		    output reg mem_wr_en);
+module oldland_exec(input wire		clk,
+		    input wire [31:0]	ra,
+		    input wire [31:0]	rb,
+		    input wire [31:0]	imm32,
+		    input wire [31:0]	pc_plus_4,
+		    input wire [3:0]	rd_sel,
+		    input wire		update_rd,
+		    input wire [3:0]	alu_opc,
+		    input wire		alu_op1_ra,
+		    input wire		alu_op1_rb,
+		    input wire		alu_op2_rb,
+		    input wire		mem_load,
+		    input wire		mem_store,
+		    input wire [1:0]	mem_width,
+		    input wire [2:0]	branch_condition,
+		    input wire [1:0]	instr_class,
+		    input wire		is_call,
+		    input wire		update_flags,
+		    output reg		branch_taken,
+		    output reg [31:0]	alu_out,
+		    output reg		mem_load_out,
+		    output reg		mem_store_out,
+		    output reg [1:0]	mem_width_out,
+		    output reg [31:0]	wr_val,
+		    output reg		wr_result,
+		    output reg [3:0]	rd_sel_out,
+		    output reg		stall_clear,
+		    output reg [31:0]	mar,
+		    output reg [31:0]	mdr,
+		    output reg		mem_wr_en);
+
+wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
+wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
+
+reg [31:0]	alu_q = 32'b0;
+reg		alu_c = 1'b0;
+wire		alu_z = (op1 ^ op2) == 32'b0;
+
+reg		branch_condition_met = 1'b0;
+
+/* Status registers, not accessible by the programmer interface. */
+reg		c_flag = 1'b0;
+reg		z_flag = 1'b0;
 
 initial begin
 	branch_taken = 1'b0;
@@ -44,18 +57,6 @@ initial begin
 	mdr = 32'b0;
 	mem_wr_en = 1'b0;
 end
-
-wire [31:0] op1 = alu_op1_ra ? ra :
-		  alu_op1_rb ? rb : pc_plus_4;
-wire [31:0] op2 = alu_op2_rb ? rb : imm32;
-reg [31:0] alu_q = 32'b0;
-reg alu_c = 1'b0;
-wire alu_z = (op1 ^ op2) == 32'b0;
-reg branch_condition_met = 1'b0;
-
-/* Status registers, not accessible by the programmer interface. */
-reg c_flag = 1'b0;
-reg z_flag = 1'b0;
 
 always @(*) begin
 	alu_c = 1'b0;
@@ -114,12 +115,14 @@ end
 always @(posedge clk) begin
 	mem_load_out <= mem_load;
 	mem_store_out <= mem_store;
+
 	if (mem_store || mem_load) begin
 		mem_width_out <= mem_width;
 		mar <= alu_q;
 		if (mem_store)
 			mdr <= rb;
 	end
+
 	mem_wr_en <= mem_store;
 end
 

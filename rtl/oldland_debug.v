@@ -72,6 +72,12 @@ reg		ack_internal;	/*
 				 * clock.
 				 */
 
+assign		dbg_reg_sel = debug_addr[3:0];
+assign		dbg_pc_wr_val = debug_data;
+assign		dbg_reg_wr_val = debug_data;
+assign		mem_addr = debug_addr;
+assign		mem_wr_val = debug_data;
+
 dc_ram		#(.addr_bits(2),
 		  .data_bits(32))
 		dbg_ram(.clk_a(dbg_clk),
@@ -101,12 +107,6 @@ initial begin
 	mem_wr_en = 1'b0;
 	mem_access = 1'b0;
 end
-
-assign dbg_reg_sel = debug_addr[3:0];
-assign dbg_pc_wr_val = debug_data;
-assign dbg_reg_wr_val = debug_data;
-assign mem_addr = debug_addr;
-assign mem_wr_val = debug_data;
 
 always @(*) begin
 	mem_width = 2'b10;

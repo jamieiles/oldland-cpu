@@ -6,19 +6,19 @@ module debug_controller(input wire		clk,
 			output reg		req,
 			input wire		ack);
 
-initial begin
-	addr = 2'b00;
-	write_data = 32'b0;
-	wr_en = 1'b0;
-	req = 1'b0;
-end
-
 reg [31:0]	nr_steps = 32'b0;
 
 reg		dbg_req = 1'b0;
 reg		dbg_rnw = 1'b0;
 reg [1:0]	dbg_addr = 2'b0;
 reg [31:0]	dbg_val = 32'b0;
+
+initial begin
+	addr = 2'b00;
+	write_data = 32'b0;
+	wr_en = 1'b0;
+	req = 1'b0;
+end
 
 always @(posedge clk) begin
 	if (!req && !ack) begin

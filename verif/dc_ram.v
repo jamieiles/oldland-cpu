@@ -1,13 +1,13 @@
-module dc_ram(input wire clk_a,
-	      input wire [addr_bits - 1:0] addr_a,
-	      input wire [data_bits - 1:0] din_a,
-	      output reg [data_bits - 1:0] dout_a,
-	      input wire wr_en_a,
-	      input wire clk_b,
-	      input wire [addr_bits - 1:0] addr_b,
-	      input wire [data_bits - 1:0] din_b,
-	      output reg [data_bits - 1:0] dout_b,
-	      input wire wr_en_b);
+module dc_ram(input wire			clk_a,
+	      input wire [addr_bits - 1:0]	addr_a,
+	      input wire [data_bits - 1:0]	din_a,
+	      output reg [data_bits - 1:0]	dout_a,
+	      input wire			wr_en_a,
+	      input wire			clk_b,
+	      input wire [addr_bits - 1:0]	addr_b,
+	      input wire [data_bits - 1:0]	din_b,
+	      output reg [data_bits - 1:0]	dout_b,
+	      input wire			wr_en_b);
 
 parameter addr_bits = 32;
 parameter data_bits = 32;

@@ -1,100 +1,100 @@
-module oldland_cpu(input wire clk,
+module oldland_cpu(input wire		clk,
 		   /* Instruction bus. */
-		   output wire [31:0] i_addr,
-		   input wire [31:0] i_data,
+		   output wire [31:0]	i_addr,
+		   input wire [31:0]	i_data,
 		   /* Data bus. */
-		   output wire [31:0] d_addr,
-		   output wire [3:0] d_bytesel,
-		   output wire d_wr_en,
-		   output wire [31:0] d_wr_val,
-		   input wire [31:0] d_data,
-		   output wire d_access,
-		   input wire d_ack,
-		   input wire d_error,
+		   output wire [31:0]	d_addr,
+		   output wire [3:0]	d_bytesel,
+		   output wire		d_wr_en,
+		   output wire [31:0]	d_wr_val,
+		   input wire [31:0]	d_data,
+		   output wire		d_access,
+		   input wire		d_ack,
+		   input wire		d_error,
 		   /* Debug control signals. */
-		   input wire dbg_clk,
-		   input wire [1:0] dbg_addr,
-		   input wire [31:0] dbg_din,
-		   output wire [31:0] dbg_dout,
-		   input wire dbg_wr_en,
-		   input wire dbg_req,
-		   output wire dbg_ack);
+		   input wire		dbg_clk,
+		   input wire [1:0]	dbg_addr,
+		   input wire [31:0]	dbg_din,
+		   output wire [31:0]	dbg_dout,
+		   input wire		dbg_wr_en,
+		   input wire		dbg_req,
+		   output wire		dbg_ack);
 
 /* Fetch -> decode signals. */
-wire [31:0] fd_pc_plus_4;
-wire [31:0] fd_instr;
+wire [31:0]	fd_pc_plus_4;
+wire [31:0]	fd_instr;
 
 /* Execute -> fetch signals. */
-wire ef_branch_taken;
-wire ef_stall_clear;
+wire		ef_branch_taken;
+wire		ef_stall_clear;
 
 /* Decode signals. */
-wire [3:0] d_ra_sel;
-wire [3:0] d_rb_sel;
+wire [3:0]	d_ra_sel;
+wire [3:0]	d_rb_sel;
 
-reg [3:0] e_ra_sel = 4'b0;
-reg [3:0] e_rb_sel = 4'b0;
+reg [3:0]	e_ra_sel = 4'b0;
+reg [3:0]	e_rb_sel = 4'b0;
 
 /* Decode -> execute signals. */
-wire [3:0] de_rd_sel;
-wire de_update_rd;
-wire [31:0] de_imm32;
-wire [3:0] de_alu_opc;
-wire [2:0] de_branch_condition;
-wire de_alu_op1_ra;
-wire de_alu_op1_rb;
-wire de_alu_op2_rb;
-wire de_mem_load;
-wire de_mem_store;
-wire [31:0] ra;
-wire [31:0] rb;
-wire [31:0] de_pc_plus_4;
-wire [1:0] de_class;
-wire de_is_call;
-wire [1:0] de_mem_width;
-wire de_update_flags;
-reg [31:0] de_ra = 32'b0;
-reg [31:0] de_rb = 32'b0;
+wire [3:0]	de_rd_sel;
+wire		de_update_rd;
+wire [31:0]	de_imm32;
+wire [3:0]	de_alu_opc;
+wire [2:0]	de_branch_condition;
+wire		de_alu_op1_ra;
+wire		de_alu_op1_rb;
+wire		de_alu_op2_rb;
+wire		de_mem_load;
+wire		de_mem_store;
+wire [31:0]	ra;
+wire [31:0]	rb;
+wire [31:0]	de_pc_plus_4;
+wire [1:0]	de_class;
+wire		de_is_call;
+wire [1:0]	de_mem_width;
+wire		de_update_flags;
+reg [31:0]	de_ra = 32'b0;
+reg [31:0]	de_rb = 32'b0;
 
 /* Execute -> memory signals. */
-wire [31:0] em_alu_out;
-wire em_mem_load;
-wire em_mem_store;
-wire em_update_rd;
-wire [3:0] em_rd_sel;
-wire [31:0] em_wr_val;
-wire [1:0] em_mem_width;
-wire [31:0] em_mar;
-wire [31:0] em_mdr;
-wire em_mem_wr_en;
+wire [31:0]	em_alu_out;
+wire		em_mem_load;
+wire		em_mem_store;
+wire		em_update_rd;
+wire [3:0]	em_rd_sel;
+wire [31:0]	em_wr_val;
+wire [1:0]	em_mem_width;
+wire [31:0]	em_mar;
+wire [31:0]	em_mdr;
+wire		em_mem_wr_en;
 
 /* Memory -> writeback signals. */
-wire [31:0] mw_wr_val;
-wire mw_update_rd;
-wire [3:0] mw_rd_sel;
-wire mf_complete;
+wire [31:0]	mw_wr_val;
+wire		mw_update_rd;
+wire [3:0]	mw_rd_sel;
+wire		mf_complete;
 
 /* Fetch stalling signals. */
-wire stall_clear = ef_stall_clear | mf_complete;
-wire stalling;
+wire		stall_clear = ef_stall_clear | mf_complete;
+wire		stalling;
 
 /* Debug control signals. */
-wire cpu_run;
-wire cpu_stopped;
-wire [3:0] dbg_reg_sel;
-wire [31:0] dbg_reg_wr_val;
-wire [31:0] dbg_reg_val;
-wire dbg_reg_wr_en;
-wire [31:0] dbg_pc;
-wire [31:0] dbg_pc_wr_val;
-wire dbg_pc_wr_en;
-wire [31:0] dbg_mem_addr;
-wire [1:0] dbg_mem_width;
-wire [31:0] dbg_mem_wr_val;
-wire [31:0] dbg_mem_rd_val;
-wire dbg_mem_wr_en;
-wire dbg_mem_access;
-wire dbg_mem_compl;
+wire		cpu_run;
+wire		cpu_stopped;
+wire [3:0]	dbg_reg_sel;
+wire [31:0]	dbg_reg_wr_val;
+wire [31:0]	dbg_reg_val;
+wire		dbg_reg_wr_en;
+wire [31:0]	dbg_pc;
+wire [31:0]	dbg_pc_wr_val;
+wire		dbg_pc_wr_en;
+wire [31:0]	dbg_mem_addr;
+wire [1:0]	dbg_mem_width;
+wire [31:0]	dbg_mem_wr_val;
+wire [31:0]	dbg_mem_rd_val;
+wire		dbg_mem_wr_en;
+wire		dbg_mem_access;
+wire		dbg_mem_compl;
 
 oldland_debug	debug(.clk(clk),
 		      .dbg_clk(dbg_clk),

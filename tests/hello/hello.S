@@ -1,3 +1,5 @@
+.include "common.s"
+
 .globl _start
 _start:
 	movhi	$r4, %hi(hello_start)
@@ -26,7 +28,7 @@ done:
 	or	$r3, $r3, $r3
 	or	$r3, $r3, $r3
 	or	$r3, $r3, $r3
-	.long	0xffffffff # Trap to test env
+	SUCCESS
 
 /*
  * Write a single character to the UART, character to put is in r0,

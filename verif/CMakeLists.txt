@@ -18,4 +18,5 @@ add_custom_target(rtl ALL DEPENDS keynsham vpi_uart.vpi vpi_debug_stub.vpi oldla
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_uart.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_debug_stub.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/keynsham.vvp DESTINATION lib)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/decode.hex DESTINATION lib)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim DESTINATION bin)

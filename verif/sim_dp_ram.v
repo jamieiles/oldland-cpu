@@ -1,18 +1,18 @@
-module sim_dp_ram(input wire clk,
-		  input wire [31:0] i_addr,
-		  output reg [31:0] i_data,
-		  input wire d_access,
-		  input wire d_cs,
-		  input wire [31:0] d_addr,
-		  input wire [3:0] d_bytesel,
-		  input wire [31:0] d_wr_val,
-		  input wire d_wr_en,
-		  output reg [31:0] d_data,
-		  output reg d_ack);
+module sim_dp_ram(input wire		clk,
+		  input wire [31:0]	i_addr,
+		  output reg [31:0]	i_data,
+		  input wire		d_access,
+		  input wire		d_cs,
+		  input wire [31:0]	d_addr,
+		  input wire [3:0]	d_bytesel,
+		  input wire [31:0]	d_wr_val,
+		  input wire		d_wr_en,
+		  output reg [31:0]	d_data,
+		  output reg		d_ack);
 
-reg [7:0] ram [4096:0];
+reg [7:0]	ram [4096:0];
 reg [8 * 128:0] ram_filename;
-reg [4096:0] ram_i;
+reg [4096:0]	ram_i;
 
 initial begin
 	if ($value$plusargs("ramfile=%s", ram_filename) &&
