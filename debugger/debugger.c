@@ -138,6 +138,14 @@ int dbg_read_reg(const struct target *t, unsigned reg, uint32_t *val)
 	return dbg_read(t, REG_RDATA, val);
 }
 
+static void assert_target(lua_State *L)
+{
+	if (!target) {
+		lua_pushstring(L, "not connected");
+		lua_error(L);
+	}
+}
+
 #define MEM_READ_FN(width)							\
 int dbg_read##width(const struct target *t, unsigned addr, uint32_t *val)	\
 {										\
@@ -157,6 +165,13 @@ static int lua_read##width(lua_State *L)					\
 {										\
 	uint32_t v;								\
 	lua_Integer addr;							\
+										\
+	assert_target(L);							\
+										\
+	if (lua_gettop(L) != 1) {						\
+		lua_pushstring(L, "no address provided");			\
+		lua_error(L);							\
+	}									\
 										\
 	addr = lua_tointeger(L, 1);						\
 	if (dbg_read##width(target, addr, &v))					\
@@ -186,6 +201,13 @@ int dbg_write##width(const struct target *t, unsigned addr, uint32_t val)	\
 static int lua_write##width(lua_State *L)					\
 {										\
 	lua_Integer addr, val;							\
+										\
+	assert_target(L);							\
+										\
+	if (lua_gettop(L) != 1) {						\
+		lua_pushstring(L, "no address/value provided");			\
+		lua_error(L);							\
+	}									\
 										\
 	addr = lua_tointeger(L, 1);						\
 	val = lua_tointeger(L, 2);						\
@@ -263,6 +285,8 @@ static struct target *target_alloc(void)
 
 static int lua_step(lua_State *L)
 {
+	assert_target(L);
+
 	if (dbg_step(target))
 		warnx("failed to step target");
 
@@ -271,6 +295,8 @@ static int lua_step(lua_State *L)
 
 static int lua_stop(lua_State *L)
 {
+	assert_target(L);
+
 	if (dbg_stop(target))
 		warnx("failed to step target");
 
@@ -287,6 +313,8 @@ static void wait_until_stopped(struct target *t)
 
 static int lua_run(lua_State *L)
 {
+	assert_target(L);
+
 	if (dbg_run(target))
 		warnx("failed to step target");
 
@@ -300,6 +328,13 @@ static int lua_read_reg(lua_State *L)
 	uint32_t v;
 	lua_Integer regnum;
 
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no register identifier");
+		lua_error(L);
+	}
+
 	regnum = lua_tointeger(L, 1);
 	if (dbg_read_reg(target, regnum, &v))
 		warnx("failed to read register %u", (unsigned)regnum);
@@ -312,6 +347,13 @@ static int lua_read_reg(lua_State *L)
 static int lua_write_reg(lua_State *L)
 {
 	lua_Integer regnum, val;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 2) {
+		lua_pushstring(L, "no register identifier/value");
+		lua_error(L);
+	}
 
 	regnum = lua_tointeger(L, 1);
 	val = lua_tointeger(L, 2);
@@ -350,6 +392,13 @@ static int lua_loadelf(lua_State *L)
 	struct testpoint *testpoints;
 	size_t nr_testpoints;
 	size_t n;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no elf file provided.");
+		lua_error(L);
+	}
 
 	path = lua_tostring(L, 1);
 	if (load_elf(target, path, &testpoints, &nr_testpoints))
