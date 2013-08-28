@@ -499,9 +499,16 @@ static void run_interactive(lua_State *L)
 
 static void run_command_script(lua_State *L, const char *path)
 {
+	fflush(stdout);
+	fflush(stderr);
+
 	if (luaL_dofile(L, path))
 		errx(1, "failed to run command script %s", path);
-	exit(EXIT_SUCCESS);
+
+	fflush(stdout);
+	fflush(stderr);
+
+	exit(lua_gettop(L) == 1 ? lua_tointeger(L, 1) : 0);
 }
 
 static struct argp_option options[] = {
