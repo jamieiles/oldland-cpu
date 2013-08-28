@@ -13,24 +13,24 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
-  [20]    valid Valid instruction
-  [19:18] imsel Immediate select:
+  [21]    valid Valid instruction
+  [20:19] imsel Immediate select:
                 2'b00: imm13
                 2'b01: imm24
                 2'b10: hi16
                 2'b11: lo16
-  [17:15] bcc   ALU branch condition code.
-  [14:13] maw   Memory access width.
-  [12:12] icall Is call instruction.
-  [11:11] rdlr  RD is link register.
-  [10:10] mstr  Memory store.
-  [9:9]   mldr  Memory load.
-  [8:8]   op2rb ALU operand 2 is RB.
-  [7:7]   op1rb ALU operand 1 is RB.
-  [6:6]   op1ra ALU operand 1 is RA.
-  [5:5]   upcc  Update ALU condition codes.
-  [4:4]   wrrd  Write to destination register (RD).
-  [3:0]   aluop ALU opcode.
+  [18:16] bcc   ALU branch condition code.
+  [15:14] maw   Memory access width.
+  [13:13] icall Is call instruction.
+  [12:12] rdlr  RD is link register.
+  [11:11] mstr  Memory store.
+  [10:10] mldr  Memory load.
+  [9:9]   op2rb ALU operand 2 is RB.
+  [8:8]   op1rb ALU operand 1 is RB.
+  [7:7]   op1ra ALU operand 1 is RA.
+  [6:6]   upcc  Update ALU condition codes.
+  [5:5]   wrrd  Write to destination register (RD).
+  [4:0]   aluop ALU opcode.
 """
 
 IMM13 = 0
@@ -43,19 +43,19 @@ itab = instructions.instructions
 rom_entries = {}
 
 field_shifts = {
-    'valid': 20,
-    'imsel': 18,
-    'bcc':   15,
-    'maw':   13,
-    'icall': 12,
-    'rdlr':  11,
-    'mstr':  10,
-    'mldr':  9,
-    'op2rb': 8,
-    'op1rb': 7,
-    'op1ra': 6,
-    'upcc':  5,
-    'wrrd':  4,
+    'valid': 21,
+    'imsel': 19,
+    'bcc':   16,
+    'maw':   14,
+    'icall': 13,
+    'rdlr':  12,
+    'mstr':  11,
+    'mldr':  10,
+    'op2rb': 9,
+    'op1rb': 8,
+    'op1ra': 7,
+    'upcc':  6,
+    'wrrd':  5,
     'aluop': 0
 }
 

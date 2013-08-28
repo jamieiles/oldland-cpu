@@ -6,7 +6,7 @@ module oldland_exec(input wire		clk,
 		    input wire [31:0]	pc_plus_4,
 		    input wire [3:0]	rd_sel,
 		    input wire		update_rd,
-		    input wire [3:0]	alu_opc,
+		    input wire [4:0]	alu_opc,
 		    input wire		alu_op1_ra,
 		    input wire		alu_op1_rb,
 		    input wire		alu_op2_rb,
@@ -62,22 +62,22 @@ always @(*) begin
 	alu_c = 1'b0;
 
 	case (alu_opc)
-	4'b0000: {alu_c, alu_q} = op1 + op2;
-	4'b0001: {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
-	4'b0010: {alu_c, alu_q} = op1 - op2;
-	4'b0011: {alu_c, alu_q} = op1 - op2 + {31'b0, c_flag};
-	4'b0100: {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
-	4'b0101: alu_q = op1 >> op2[4:0];
-	4'b0110: alu_q = op1 & op2;
-	4'b0111: alu_q = op1 ^ op2;
-	4'b1000: alu_q = op1 & ~(1 << op2[4:0]);
-	4'b1001: alu_q = op1 | (1 << op2[4:0]);
-	4'b1010: alu_q = op1 | op2;
-	4'b1011: alu_q = op2;
-	4'b1100: {alu_c, alu_q} = op1 - op2;
-	4'b1101: alu_q = op1 | {16'b0, op2[15:0]};
-	4'b1110: alu_q = op1 >>> op2;
-	4'b1111: alu_q = op1;
+	5'b00000: {alu_c, alu_q} = op1 + op2;
+	5'b00001: {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
+	5'b00010: {alu_c, alu_q} = op1 - op2;
+	5'b00011: {alu_c, alu_q} = op1 - op2 + {31'b0, c_flag};
+	5'b00100: {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
+	5'b00101: alu_q = op1 >> op2[4:0];
+	5'b00110: alu_q = op1 & op2;
+	5'b00111: alu_q = op1 ^ op2;
+	5'b01000: alu_q = op1 & ~(1 << op2[4:0]);
+	5'b01001: alu_q = op1 | (1 << op2[4:0]);
+	5'b01010: alu_q = op1 | op2;
+	5'b01011: alu_q = op2;
+	5'b01100: {alu_c, alu_q} = op1 - op2;
+	5'b01101: alu_q = op1 | {16'b0, op2[15:0]};
+	5'b01110: alu_q = op1 >>> op2;
+	5'b01111: alu_q = op1;
 	default: alu_q = 32'b0;
 	endcase
 end

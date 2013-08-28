@@ -39,7 +39,7 @@ reg [3:0]	e_rb_sel = 4'b0;
 wire [3:0]	de_rd_sel;
 wire		de_update_rd;
 wire [31:0]	de_imm32;
-wire [3:0]	de_alu_opc;
+wire [4:0]	de_alu_opc;
 wire [2:0]	de_branch_condition;
 wire		de_alu_op1_ra;
 wire		de_alu_op1_rb;
