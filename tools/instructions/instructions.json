@@ -56,7 +56,7 @@
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
             "description": "Rd := Ra + OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C", "O"]
+            "flags_updated": ["C"]
         },
         "addc": {
             "class": 0,
@@ -64,7 +64,7 @@
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
             "description": "Rd := Ra + OP2 + C, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C", "O"]
+            "flags_updated": ["C"]
         },
         "sub": {
             "class": 0,
@@ -72,7 +72,7 @@
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
             "description": "Rd := Ra - OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C", "O"]
+            "flags_updated": ["C"]
         },
         "subc": {
             "class": 0,
@@ -80,63 +80,56 @@
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
             "description": "Rd := Ra - OP2 + C, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C", "O"]
+            "flags_updated": ["C"]
         },
         "lsl": {
             "class": 0,
             "opcode": 4,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra << OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C"]
+            "description": "Rd := Ra << OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "lsr": {
             "class": 0,
             "opcode": 5,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra >> OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C"]
+            "description": "Rd := Ra >> OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "and": {
             "class": 0,
             "opcode": 6,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra & OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z", "C"]
+            "description": "Rd := Ra & OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "xor": {
             "class": 0,
             "opcode": 7,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra ^ OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z"]
+            "description": "Rd := Ra ^ OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "bic": {
             "class": 0,
             "opcode": 8,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra &= ~(1 << OP2), OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z"]
+            "description": "Rd := Ra &= ~(1 << OP2), OP2 may either be a register or a 16-bit signed immediate."
         },
         "bst": {
             "class": 0,
             "opcode": 9,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra |= (1 << OP2), OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z"]
+            "description": "Rd := Ra |= (1 << OP2), OP2 may either be a register or a 16-bit signed immediate."
         },
         "or": {
             "class": 0,
             "opcode": 10,
             "format": [["rd"], ["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra | OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z"]
+            "description": "Rd := Ra | OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "cmp": {
             "class": 0,
@@ -151,8 +144,7 @@
             "opcode": 14,
             "format": [["ra"], ["imm13", "rb"]],
             "formatsel": 12,
-            "description": "Rd := Ra ASR OP2, OP2 may either be a register or a 16-bit signed immediate.",
-            "flags_updated": ["Z"]
+            "description": "Rd := Ra ASR OP2, OP2 may either be a register or a 16-bit signed immediate."
         },
         "call": {
             "class": 1,
@@ -177,25 +169,29 @@
             "class": 1,
             "opcode": 5,
             "format": [["imm24", "rb"]],
-            "formatsel": 25
+            "formatsel": 25,
+	    "branch_cc": 1
 	},
 	"beq": {
             "class": 1,
             "opcode": 6,
             "format": [["imm24", "rb"]],
-            "formatsel": 25
+            "formatsel": 25,
+	    "branch_cc": 2
 	},
 	"bgt": {
             "class": 1,
             "opcode": 7,
             "format": [["imm24", "rb"]],
-            "formatsel": 25
+            "formatsel": 25,
+	    "branch_cc": 3
 	},
 	"blt": {
             "class": 1,
             "opcode": 8,
             "format": [["imm24", "rb"]],
-            "formatsel": 25
+            "formatsel": 25,
+	    "branch_cc": 4
 	},
         "ldr32": {
             "class": 2,
