@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include <argp.h>
 #include <assert.h>
 #include <err.h>
 #include <errno.h>
@@ -28,6 +29,10 @@
 #ifndef INSTALL_PATH
 #define INSTALL_PATH "/usr/local"
 #endif /* !INSTALL_PATH */
+
+const char *argp_program_version = "0.1";
+const char *argp_program_bug_address = "jamie@jamieiles.com";
+static char doc[] = "Oldland CPU debugger.";
 
 struct target {
 	int fd;
@@ -363,15 +368,10 @@ static int lua_write_reg(lua_State *L)
 	return 0;
 }
 
-static void push_testpoint(lua_State *L, size_t idx,
-			   const struct testpoint *tp)
+static void push_testpoint(lua_State *L, const struct testpoint *tp)
 {
-	lua_pushinteger(L, idx);
-	lua_newtable(L);
-
-	lua_pushstring(L, "address");
 	lua_pushinteger(L, tp->addr);
-	lua_settable(L, -3);
+	lua_newtable(L);
 
 	lua_pushstring(L, "type");
 	lua_pushinteger(L, tp->type);
@@ -406,7 +406,7 @@ static int lua_loadelf(lua_State *L)
 
 	lua_newtable(L);
 	for (n = 0; n < nr_testpoints; ++n)
-		push_testpoint(L, n, &testpoints[n]);
+		push_testpoint(L, &testpoints[n]);
 
 	lua_setglobal(L, "testpoints");
 
@@ -478,17 +478,8 @@ static void sigint_handler(int s)
 		dbg_stop(target);
 }
 
-int main(void)
+static void run_interactive(lua_State *L)
 {
-	lua_State *L = luaL_newstate();
-
-	assert(L);
-
-	luaL_openlibs(L);
-	luaL_newlib(L, dbg_funcs);
-	lua_setglobal(L, "target");
-	load_support(L);
-
 	stifle_history(1024);
 
 	signal(SIGINT, sigint_handler);
@@ -504,6 +495,65 @@ int main(void)
 
 		add_history(line);
 	}
+}
+
+static void run_command_script(lua_State *L, const char *path)
+{
+	if (luaL_dofile(L, path))
+		errx(1, "failed to run command script %s", path);
+	exit(EXIT_SUCCESS);
+}
+
+static struct argp_option options[] = {
+	{"command", 'x', "FILE", 0 },
+	{}
+};
+
+struct arguments {
+	const char *command_script;
+};
+
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
+{
+	struct arguments *args = state->input;
+
+	switch (key) {
+	case 'x':
+		args->command_script = arg;
+		break;
+	case ARGP_KEY_ARG:
+	case ARGP_KEY_END:
+		break;
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+
+	return 0;
+}
+
+static struct argp argp = { options, parse_opt, NULL, doc };
+
+int main(int argc, char *argv[])
+{
+	struct arguments args = {};
+
+	argp_parse(&argp, argc, argv, 0, 0, &args);
+
+	lua_State *L = luaL_newstate();
+
+	assert(L);
+
+	luaL_openlibs(L);
+	luaL_newlib(L, dbg_funcs);
+	lua_setglobal(L, "target");
+	load_support(L);
+
+	if (args.command_script)
+		run_command_script(L, args.command_script);
+	else
+		run_interactive(L);
+
+	fflush(stdout);
 
 	return 0;
 }
