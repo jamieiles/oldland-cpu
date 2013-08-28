@@ -1,0 +1,201 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+HERE = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(HERE, '..', 'instructions'))
+
+import instructions
+
+"""
+Given the instruction class, opcode, and format select bit, output the correct
+decode bits in a format suitable for insertion as a ROM.
+
+ROM outputs:
+  [20]    valid Valid instruction
+  [19:18] imsel Immediate select:
+                2'b00: imm13
+                2'b01: imm24
+                2'b10: hi16
+                2'b11: lo16
+  [17:15] bcc   ALU branch condition code.
+  [14:13] maw   Memory access width.
+  [12:12] icall Is call instruction.
+  [11:11] rdlr  RD is link register.
+  [10:10] mstr  Memory store.
+  [9:9]   mldr  Memory load.
+  [8:8]   op2rb ALU operand 2 is RB.
+  [7:7]   op1rb ALU operand 1 is RB.
+  [6:6]   op1ra ALU operand 1 is RA.
+  [5:5]   upcc  Update ALU condition codes.
+  [4:4]   wrrd  Write to destination register (RD).
+  [3:0]   aluop ALU opcode.
+"""
+
+IMM13 = 0
+IMM24 = 1
+HI16  = 2
+LO16  = 3
+
+itab = instructions.instructions
+
+rom_entries = {}
+
+field_shifts = {
+    'valid': 20,
+    'imsel': 18,
+    'bcc':   15,
+    'maw':   13,
+    'icall': 12,
+    'rdlr':  11,
+    'mstr':  10,
+    'mldr':  9,
+    'op2rb': 8,
+    'op1rb': 7,
+    'op1ra': 6,
+    'upcc':  5,
+    'wrrd':  4,
+    'aluop': 0
+}
+
+def is_arith_instruction(instr):
+    return instr['class'] == 0
+
+def is_branch_instruction(instr):
+    return instr['class'] == 1
+
+def is_mem_instruction(instr):
+    return instr['class'] == 2
+
+def is_misc_instruction(instr):
+    return instr['class'] == 3
+
+def add_arith_instruction(opcode, idef):
+    flags_updated = idef.get('flags_updated', '')
+    rom_entries[(opcode, 'register')] = {
+        'valid': 1,
+        'op2rb': 1,
+        'op1ra': 1,
+        'wrrd':  opcode != 'cmp',
+        'aluop': idef['opcode'],
+        'upcc':  'Z' in flags_updated or 'O' in flags_updated
+    }
+    rom_entries[(opcode, 'immediate')] = {
+        'valid': 1,
+        'imsel': IMM13,
+        'op1ra': 1,
+        'wrrd':  opcode != 'cmp',
+        'aluop': idef['opcode'],
+        'upcc':  'Z' in flags_updated or 'O' in flags_updated
+    }
+
+def add_branch_instruction(opcode, idef):
+    cc = idef.get('branch_cc', '7')
+    rom_entries[(opcode, 'register')] = {
+        'valid': 1,
+        'bcc':   int(cc),
+        'icall': opcode == 'call',
+        'rdlr':  opcode == 'call',
+        'op1ra': 1,
+        'wrrd':  opcode == 'call',
+        'aluop': 0xf
+    }
+    # Return to immediate isn't a real instruction, trap it.
+    if opcode != 'ret':
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'imsel': IMM24,
+            'bcc':   int(cc),
+            'icall': opcode == 'call',
+            'rdlr':  opcode == 'call',
+            'wrrd':  opcode == 'call',
+            'aluop': 0x0
+        }
+
+def add_mem_instruction(opcode, idef):
+    def access_width(opcode):
+        return int({
+            'ldr32': 2,
+            'str32': 2,
+            'ldr16': 1,
+            'str16': 1,
+            'ldr8':  0,
+            'str8':  0.
+        }[opcode])
+
+    rom_entries[(opcode, 'register')] = {
+        'valid': 1,
+        'maw':   access_width(opcode),
+        'mstr':  'str' in opcode,
+        'mldr':  'ldr' in opcode,
+        'op1ra': 1,
+        'aluop': 0,
+    }
+    # PC-relative load/store.
+    rom_entries[(opcode, 'immediate')] = {
+        'valid': 1,
+        'maw':   access_width(opcode),
+        'mstr':  'str' in opcode,
+        'mldr':  'ldr' in opcode,
+        'aluop': 0,
+    }
+
+def add_misc_instruction(opcode, idef):
+    if opcode in ['movhi', 'orlo']:
+        """
+        movhi and orlo are special in that they have 16-bit immediates that
+        also cover bit 25 so we need to insert this one twice in case the high
+        bit of the immediate is set.
+        """
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'imsel': HI16 if opcode == 'movhi' else LO16,
+            'op1rb': opcode == 'orlo',
+            'wrrd':  1,
+            'aluop': idef['opcode'],
+        }
+        rom_entries[(opcode, 'register')] = {
+            'valid': 1,
+            'imsel': HI16 if opcode == 'movhi' else LO16,
+            'op1rb': opcode == 'orlo',
+            'wrrd':  1,
+            'aluop': idef['opcode'],
+        }
+    elif opcode in ['bkp', 'nop']:
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+        }
+
+for opcode, idef in itab.items():
+    if is_arith_instruction(idef):
+        add_arith_instruction(opcode, idef)
+    if is_branch_instruction(idef):
+        add_branch_instruction(opcode, idef)
+    if is_mem_instruction(idef):
+        add_mem_instruction(opcode, idef)
+    if is_misc_instruction(idef):
+        add_misc_instruction(opcode, idef)
+
+def dump_rom(rom):
+    print('@00000000')
+    for v in rom:
+        print('{0:08x}'.format(v))
+
+def build_rom():
+    # All instructions are initially invalid
+    rom = [0 for i in range(1 << 7)]
+
+    for entry, bits in rom_entries.items():
+        cls = itab[entry[0]]['class']
+        opc = itab[entry[0]]['opcode']
+        address = (cls << 5) | (opc << 1) | (entry[1] == 'register')
+
+        data = 0
+        for k, v in bits.items():
+            data |= v << field_shifts[k]
+        rom[address] = data
+
+    return rom
+
+dump_rom(build_rom())

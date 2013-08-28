@@ -3,10 +3,6 @@
  * Generate a variety of control signals from the input selection.  These
  * control signals include register selection, ALU opcode + operand selection
  * and load/store signals.
- *
- * Also perform the operand fetch for the case of registers.  So combinational
- * logic for the register fetch, everything else needs to be registered for
- * use in the execute cycle.
  */
 module oldland_decode(input wire clk,
 		      input wire [31:0] instr,
@@ -29,100 +25,70 @@ module oldland_decode(input wire clk,
 		      output reg is_call,
 		      output reg update_flags);
 
-wire [1:0] _class = instr[31:30];
-wire [3:0] opcode = instr[29:26];
+wire [6:0]      addr = instr[31:25];
 
-/* Sign extended immediates. */
-wire [31:0] imm13 = {{19{instr[24]}}, instr[24:12]};
-wire [31:0] imm16 = {{16{instr[25]}}, instr[25:10]};
-wire [31:0] imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
+reg [31:0]      microcode[127:0];
+wire [31:0]     uc_val = microcode[addr];
+
+wire            valid = uc_val[20];
+wire [1:0]      imsel = uc_val[19:18];
+wire            rd_is_lr = uc_val[11];
+
+wire [31:0]     imm13 = {{19{instr[24]}}, instr[24:12]};
+wire [31:0]     imm24 = {{6{instr[23]}}, instr[23:0], 2'b00};
+wire [31:0]     hi16 = {instr[25:10], 16'b0};
+wire [31:0]     lo16 = {16'b0, instr[25:10]};
 
 assign ra_sel = instr[11:8];
 assign rb_sel = instr[7:4];
 
 initial begin
-	alu_opc = 4'b0;
+	$readmemh("decode.hex", microcode);
+	rd_sel = 4'b0;
 	update_rd = 1'b0;
+	alu_opc = 4'b0;
 	branch_condition = 3'b0;
-	imm32 = 32'b0;
 	alu_op1_ra = 1'b0;
 	alu_op1_rb = 1'b0;
 	alu_op2_rb = 1'b0;
 	mem_load = 1'b0;
 	mem_store = 1'b0;
 	mem_width = 2'b0;
-	rd_sel = 4'b0;
 	pc_plus_4_out = 32'b0;
+	instr_class = 2'b0;
 	is_call = 1'b0;
-	instr_class = 2'b00;
 	update_flags = 1'b0;
 end
 
 always @(posedge clk) begin
-	branch_condition <= 3'b0;
+        branch_condition <= uc_val[17:15];
+        mem_width <= uc_val[14:13];
+        is_call <= uc_val[12];
+        mem_store <= uc_val[10];
+        mem_load <= uc_val[9];
+        alu_op2_rb <= uc_val[8];
+        alu_op1_rb <= uc_val[7];
+        alu_op1_ra <= uc_val[6];
+        update_flags <= uc_val[5];
+        update_rd <= uc_val[4];
+        alu_opc <= uc_val[3:0];
 
-	if (_class == `CLASS_BRANCH) begin
-		case (opcode)
-		`OPCODE_BNE: branch_condition <= 3'b001;
-		`OPCODE_BEQ: branch_condition <= 3'b010;
-		`OPCODE_BGT: branch_condition <= 3'b011;
-		`OPCODE_BLT: branch_condition <= 3'b100;
-		default: branch_condition <= 3'b111;
-		endcase
-	end
+	instr_class <= instr[31:30];
 end
 
-always @(posedge clk) begin
-	/* Branch to Ra is special - just bypass Ra through the ALU. */
-	alu_opc <= _class == `CLASS_ARITH ? opcode :
-		(_class == `CLASS_MISC && (opcode == `OPCODE_MOVHI || opcode == `OPCODE_ORLO)) ? opcode :
-		(_class == `CLASS_BRANCH && instr[25]) ? 4'b1111 :
-		4'b0000;
-	/*
-	* Whether we store the result of the ALU operation in the destination
-	* register or not.  This is almost all arithmetic operations apart from cmp
-	* where we intentionally discard the result and load operations where the
-	* register is update by the LSU later.
-	*/
-	update_rd <= (_class == `CLASS_ARITH && opcode != `OPCODE_CMP) ||
-		(_class == `CLASS_MISC && (opcode == `OPCODE_MOVHI || opcode == `OPCODE_ORLO)) ||
-		(_class == `CLASS_BRANCH && opcode == `OPCODE_CALL);
-	update_flags <= _class == `CLASS_ARITH && opcode == `OPCODE_CMP;
-
-	/*
-	* The output immediate - either one of the sign extended immediates or
-	* a special case for movhi - the 16 bit immediate shifted left 16 bits.
-	*/
-	imm32 <= (_class == `CLASS_BRANCH) ? imm24 :
-		(_class == `CLASS_MISC && opcode == `OPCODE_MOVHI) ? {instr[25:10], 16'b0} :
-		(_class == `CLASS_MISC && opcode == `OPCODE_ORLO) ? {16'b0, instr[25:10]} :
-		imm13;
-
-	alu_op1_ra <= (_class == `CLASS_ARITH || _class == `CLASS_MEM ||
-		       (_class == `CLASS_BRANCH && instr[25]));
-	alu_op1_rb <= _class == `CLASS_MISC && opcode == `OPCODE_ORLO;
-	alu_op2_rb <= (_class == `CLASS_ARITH && instr[25]);
-
-	mem_load <= _class == `CLASS_MEM && instr[28] == 1'b0;
-	mem_store <= _class == `CLASS_MEM && instr[28] == 1'b1;
-
-	rd_sel <= (_class == `CLASS_BRANCH && opcode == `OPCODE_CALL) ?
-		4'he : instr[3:0];
-	instr_class <= _class;
-
-	is_call <= _class == `CLASS_BRANCH && opcode == `OPCODE_CALL;
-end
+always @(posedge clk)
+	rd_sel <= rd_is_lr ? 4'he : instr[3:0];
 
 always @(posedge clk) begin
-	case (instr[27:26])
-	2'b00: mem_width <= 2'b10;
-	2'b01: mem_width <= 2'b01;
-	2'b10: mem_width <= 2'b00;
-	default: mem_width <= 2'b00;
+	case (imsel)
+	2'b00: imm32 <= imm13;
+	2'b01: imm32 <= imm24;
+	2'b10: imm32 <= hi16;
+	2'b11: imm32 <= lo16;
 	endcase
 end
 
-/* Register the PC + 4 for PC relative accesses in the execute stage. */
-always @(posedge clk) pc_plus_4_out <= pc_plus_4;
+always @(posedge clk)
+	pc_plus_4_out <= pc_plus_4;
 
 endmodule
