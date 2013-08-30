@@ -13,6 +13,9 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
+  [24]    rfe   Is return-from-exception.
+  [23]    swi   Is software interrupt.
+  [22]    wcr   Write control register.
   [21]    valid Valid instruction
   [20:19] imsel Immediate select:
                 2'b00: imm13
@@ -43,6 +46,9 @@ itab = instructions.instructions
 rom_entries = {}
 
 field_shifts = {
+    'rfe':   24,
+    'swi':   23,
+    'wcr':   22,
     'valid': 21,
     'imsel': 19,
     'bcc':   16,
@@ -92,17 +98,22 @@ def add_arith_instruction(opcode, idef):
 
 def add_branch_instruction(opcode, idef):
     cc = idef.get('branch_cc', '7')
-    rom_entries[(opcode, 'register')] = {
-        'valid': 1,
-        'bcc':   int(cc),
-        'icall': opcode == 'call',
-        'rdlr':  opcode == 'call',
-        'op1ra': 1,
-        'wrrd':  opcode == 'call',
-        'aluop': 0xf
-    }
+    if opcode not in ['swi', 'rfe']:
+        rom_entries[(opcode, 'register')] = {
+            'valid': 1,
+            'bcc':   int(cc),
+            'icall': opcode == 'call',
+            'rdlr':  opcode == 'call',
+            'op1ra': 1,
+            'wrrd':  opcode == 'call',
+            'aluop': 0xf
+        }
     # Return to immediate isn't a real instruction, trap it.
     if opcode != 'ret':
+        alu_opcodes = {
+            'swi': 0x11,
+            'rfe': 0x12,
+        }
         rom_entries[(opcode, 'immediate')] = {
             'valid': 1,
             'imsel': IMM24,
@@ -110,7 +121,9 @@ def add_branch_instruction(opcode, idef):
             'icall': opcode == 'call',
             'rdlr':  opcode == 'call',
             'wrrd':  opcode == 'call',
-            'aluop': 0x0
+            'aluop': alu_opcodes.get(opcode, 0x0),
+            'swi':   opcode == 'swi',
+            'rfe':   opcode == 'rfe'
         }
 
 def add_mem_instruction(opcode, idef):
@@ -165,6 +178,14 @@ def add_misc_instruction(opcode, idef):
     elif opcode in ['bkp', 'nop']:
         rom_entries[(opcode, 'immediate')] = {
             'valid': 1,
+        }
+    elif opcode in ['gcr', 'scr']:
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'wcr':   opcode == 'scr',
+            'op1ra': opcode == 'scr', # cr[N] := ra
+            'wrrd':  opcode == 'gcr', # rd := cr[N]
+            'aluop': 0x10,
         }
 
 for opcode, idef in itab.items():

@@ -28,7 +28,11 @@ module oldland_decode(input wire	clk,
 		      output reg [31:0] pc_plus_4_out,
 		      output reg [1:0]	instr_class,
 		      output reg	is_call,
-		      output reg	update_flags);
+		      output reg	update_flags,
+                      output reg [2:0]  cr_sel,
+                      output reg        write_cr,
+                      output reg        is_swi,
+		      output reg	is_rfe);
 
 wire [6:0]      addr = instr[31:25];
 
@@ -63,9 +67,16 @@ initial begin
 	instr_class = 2'b0;
 	is_call = 1'b0;
 	update_flags = 1'b0;
+        cr_sel = 3'b0;
+        write_cr = 1'b0;
+        is_swi = 1'b0;
+	is_rfe = 1'b0;
 end
 
 always @(posedge clk) begin
+	is_rfe <= uc_val[24];
+        is_swi <= uc_val[23];
+	write_cr <= uc_val[22];
         branch_condition <= uc_val[18:16];
         mem_width <= uc_val[15:14];
         is_call <= uc_val[13];
@@ -79,6 +90,7 @@ always @(posedge clk) begin
         alu_opc <= uc_val[4:0];
 
 	instr_class <= instr[31:30];
+	cr_sel <= instr[14:12];
 end
 
 always @(posedge clk)

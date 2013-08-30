@@ -241,6 +241,17 @@ const struct oldland_instruction oldland_instructions_0[16] = {
 };
 
 const struct oldland_instruction oldland_instructions_1[16] = {
+        [OPCODE_SWI] = {
+                .name = "swi",
+                .class = 1,
+                .opcode = OPCODE_SWI,
+                .constbits = 0x00000000,
+                .nr_operands = 1,
+                .op1 = {&operands[OPERAND_IMM13]},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = -1,
+        }, 
         [OPCODE_BLT] = {
                 .name = "blt",
                 .class = 1,
@@ -306,6 +317,17 @@ const struct oldland_instruction oldland_instructions_1[16] = {
                 .op2 = {},
                 .op3 = {},
                 .formatsel = 25,
+        }, 
+        [OPCODE_RFE] = {
+                .name = "rfe",
+                .class = 1,
+                .opcode = OPCODE_RFE,
+                .constbits = 0x00000000,
+                .nr_operands = 0,
+                .op1 = {},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = -1,
         }, 
         [OPCODE_BEQ] = {
                 .name = "beq",
@@ -390,6 +412,28 @@ const struct oldland_instruction oldland_instructions_2[16] = {
 };
 
 const struct oldland_instruction oldland_instructions_3[16] = {
+        [OPCODE_SCR] = {
+                .name = "scr",
+                .class = 3,
+                .opcode = OPCODE_SCR,
+                .constbits = 0x00000000,
+                .nr_operands = 2,
+                .op1 = {&operands[OPERAND_IMM13]},
+                .op2 = {&operands[OPERAND_RA]},
+                .op3 = {},
+                .formatsel = -1,
+        }, 
+        [OPCODE_GCR] = {
+                .name = "gcr",
+                .class = 3,
+                .opcode = OPCODE_GCR,
+                .constbits = 0x00000000,
+                .nr_operands = 2,
+                .op1 = {&operands[OPERAND_RD]},
+                .op2 = {&operands[OPERAND_IMM13]},
+                .op3 = {},
+                .formatsel = -1,
+        }, 
         [OPCODE_BKP] = {
                 .name = "bkp",
                 .class = 3,

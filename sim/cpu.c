@@ -15,6 +15,30 @@
 #include "trace.h"
 #include "oldland-types.h"
 
+enum instruction_class {
+	INSTR_ARITHMETIC,
+	INSTR_BRANCH,
+	INSTR_LDR_STR,
+	INSTR_MISC,
+};
+
+enum exception_vector {
+	VECTOR_RESET		= 0x00,
+	VECTOR_ILEGAL_INSTR	= 0x04,
+	VECTOR_SWI		= 0x08,
+	VECTOR_IRQ		= 0x0c,
+	VECTOR_IFETCH_ABORT	= 0x10,
+	VECTOR_DATA_ABORT	= 0x14,
+};
+
+enum control_register {
+	CR_VECTOR_ADDRESS	= 0,
+	CR_PSR			= 1,
+	CR_SAVED_PSR		= 2,
+	CR_FAULT_ADDRESS	= 3,
+	NUM_CONTROL_REGS
+};
+
 struct cpu {
 	uint32_t pc;
 	uint32_t next_pc;
@@ -30,6 +54,7 @@ struct cpu {
 	struct mem_map *mem;
 	FILE *trace_file;
 	unsigned long long cycle_count;
+        uint32_t control_regs[NUM_CONTROL_REGS];
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -65,13 +90,6 @@ int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
 {
 	return mem_map_write(c->mem, addr, nbits, v);
 }
-
-enum instruction_class {
-	INSTR_ARITHMETIC,
-	INSTR_BRANCH,
-	INSTR_LDR_STR,
-	INSTR_MISC,
-};
 
 static inline enum instruction_class instr_class(uint32_t instr)
 {
@@ -164,7 +182,7 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 	rb = instr_rb(instr);
 	rd = instr_rd(instr);
 	imm13 = ((int32_t)instr_imm13(instr) << 19) >> 19;
-	op2 = (instr & (1 << 9)) ? c->regs[rb] : imm13;
+	op2 = (instr & (1 << 25)) ? c->regs[rb] : imm13;
 
 	switch (instr_opc(instr)) {
 	case OPCODE_ADD:
@@ -221,6 +239,30 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		cpu_wr_reg(c, rd, result & 0xffffffff);
 }
 
+static uint32_t current_psr(const struct cpu *c)
+{
+	return c->flagsbf.z | (c->flagsbf.c << 1);
+}
+
+enum psr_flags {
+	PSR_Z	= (1 << 0),
+	PSR_C	= (1 << 1),
+	PSR_I	= (1 << 2),
+	PSR_U	= (1 << 3),
+};
+
+static void set_psr(struct cpu *c, uint32_t psr)
+{
+	c->flagsw = psr & (PSR_C | PSR_Z);
+}
+
+static void do_vector(struct cpu *c, enum exception_vector vector)
+{
+	c->control_regs[CR_SAVED_PSR] = current_psr(c);
+	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
+}
+
 static void emul_branch(struct cpu *c, uint32_t instr)
 {
 	enum regs rb = instr_rb(instr);
@@ -259,6 +301,13 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		break;
 	case OPCODE_RET:
 		cpu_set_next_pc(c, c->regs[6]);
+		break;
+	case OPCODE_SWI:
+		do_vector(c, VECTOR_SWI);
+		break;
+	case OPCODE_RFE:
+		cpu_set_next_pc(c, c->control_regs[CR_FAULT_ADDRESS]);
+		set_psr(c, c->control_regs[CR_SAVED_PSR]);
 		break;
 	default:
 		die("invalid branch opcode %u (%08x)\n", instr_opc(instr),
@@ -338,7 +387,9 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 static void emul_misc(struct cpu *c, uint32_t instr)
 {
 	int32_t imm16 = (int32_t)instr_imm16(instr);
+	int32_t imm13 = (int32_t)instr_imm13(instr);
 	uint64_t result;
+	enum regs ra = instr_ra(instr);
 	enum regs rb = instr_rb(instr);
 	enum regs rd = instr_rd(instr);
 
@@ -353,11 +404,18 @@ static void emul_misc(struct cpu *c, uint32_t instr)
 		result = imm16 << 16;
 		cpu_wr_reg(c, rd, result & 0xffffffff);
 		break;
+        case OPCODE_SCR:
+                if (imm13 < NUM_CONTROL_REGS)
+                        c->control_regs[imm13] = c->regs[ra];
+                break;
+        case OPCODE_GCR:
+                if (imm13 < NUM_CONTROL_REGS)
+                        cpu_wr_reg(c, rd, c->control_regs[imm13]);
+                break;
 	default:
 		die("invalid misc opcode %u (%08x)\n", instr_opc(instr),
 		    instr);
 	}
-
 }
 
 static void emul_insn(struct cpu *c, uint32_t instr)

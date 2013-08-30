@@ -250,6 +250,32 @@
             "opcode": 13,
             "format": [["rd"], ["rb"], ["imm16"]],
             "description": "Rd := Rb | imm16."
+        },
+        "gcr": {
+            "class": 3,
+            "opcode": 1,
+            "format": [["rd"], ["imm13"]],
+            "description": "Rd := control register N."
+        },
+        "scr": {
+            "class": 3,
+            "opcode": 2,
+            "format": [["imm13"], ["ra"]],
+            "description": "Control register N := ra."
+        },
+        "swi": {
+            "class": 1,
+            "opcode": 15,
+            "format": [["imm13"]],
+            "description": "Raise SWI imm13.",
+            "comment": "marked as a branch so we get the stalling logic for free."
+        },
+        "rfe": {
+            "class": 1,
+            "opcode": 2,
+            "format": [],
+            "description": "Return from exception.",
+            "comment": "marked as a branch so we get the stalling logic for free."
         }
     }
 }

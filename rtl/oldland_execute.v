@@ -17,6 +17,8 @@ module oldland_exec(input wire		clk,
 		    input wire [1:0]	instr_class,
 		    input wire		is_call,
 		    input wire		update_flags,
+                    input wire [2:0]    cr_sel,
+                    input wire          write_cr,
 		    output reg		branch_taken,
 		    output reg [31:0]	alu_out,
 		    output reg		mem_load_out,
@@ -28,7 +30,9 @@ module oldland_exec(input wire		clk,
 		    output reg		stall_clear,
 		    output reg [31:0]	mar,
 		    output reg [31:0]	mdr,
-		    output reg		mem_wr_en);
+		    output reg		mem_wr_en,
+                    input wire          is_swi,
+		    input wire		is_rfe);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -42,6 +46,13 @@ reg		branch_condition_met = 1'b0;
 /* Status registers, not accessible by the programmer interface. */
 reg		c_flag = 1'b0;
 reg		z_flag = 1'b0;
+
+reg [25:0]      vector_addr = 26'b0;
+
+wire [1:0]      psr = {c_flag, z_flag};
+
+reg [1:0]       saved_psr = 2'b0;
+reg [31:0]      fault_address = 32'b0;
 
 initial begin
 	branch_taken = 1'b0;
@@ -78,6 +89,21 @@ always @(*) begin
 	5'b01101: alu_q = op1 | {16'b0, op2[15:0]};
 	5'b01110: alu_q = op1 >>> op2;
 	5'b01111: alu_q = op1;
+	5'b10000: begin
+                if (cr_sel == 3'b000) begin
+                        alu_q = {vector_addr, 6'b0};
+                end else if (cr_sel == 3'h1) begin
+                        alu_q = {30'b0, c_flag, z_flag};
+                end else if (cr_sel == 3'h2) begin
+                        alu_q = {30'b0, saved_psr};
+                end else if (cr_sel == 3'h3) begin
+                        alu_q = fault_address;
+                end else begin
+                        alu_q = 32'b0;
+                end
+	end
+        5'b10001: alu_q = {vector_addr, 6'h8};
+	5'b10010: alu_q = fault_address;
 	default: alu_q = 32'b0;
 	endcase
 end
@@ -93,6 +119,26 @@ always @(*) begin
 	endcase
 end
 
+/* CR0: exception vector table base address. */
+always @(posedge clk)
+        if (write_cr && cr_sel == 3'h0)
+                vector_addr <= ra[31:6];
+
+/* CR2: saved PSR. */
+always @(posedge clk) begin
+        if (is_swi)
+                saved_psr <= psr;
+        else if (write_cr && cr_sel == 3'h2)
+                saved_psr <= ra[1:0];
+end
+
+/* CR3: fault address register. */
+always @(posedge clk)
+        if (is_swi)
+                fault_address <= pc_plus_4;
+	else if (write_cr && cr_sel == 3'h3)
+		fault_address <= ra;
+
 always @(posedge clk) begin
 	alu_out <= alu_q;
 	wr_result <= update_rd;
@@ -103,12 +149,24 @@ always @(posedge clk) begin
 		c_flag <= alu_c;
 	end
 
+	if (is_rfe) begin
+		c_flag <= saved_psr[1];
+		z_flag <= saved_psr[0];
+	end
+
+        /* CR1: PSR. */
+        if (write_cr && cr_sel == 3'h1) begin
+                c_flag <= ra[1];
+                z_flag <= ra[0];
+        end
+
 	wr_val <= is_call ? pc_plus_4 :
 		  mem_store ? op2 : alu_q;
 end
 
 always @(posedge clk) begin
-	branch_taken <= instr_class == `CLASS_BRANCH && branch_condition_met;
+	branch_taken <= instr_class == `CLASS_BRANCH &&
+                (branch_condition_met || is_swi || is_rfe);
 	stall_clear <= instr_class == `CLASS_BRANCH;
 end
 

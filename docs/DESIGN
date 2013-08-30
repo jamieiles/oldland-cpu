@@ -82,11 +82,13 @@ ASR 	 0  0  1  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb 
 
 CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  1  0  x  x  x  x  x  x  x  x
+RFE	 0  1  0  0  1  0  0  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
 B	 0  1  0  1  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+SWI	 0  1  1  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x  x  x
 
 LDR	 1  0  0  0  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
 LDR16	 1  0  0  0  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
@@ -97,6 +99,8 @@ STR16	 1  0  0  1  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb
 STR8	 1  0  0  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
 
 BKP	 1  1  0  0  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x
+GCR	 1  1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
+SCR	 1  1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
 MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd
 ORLO	 1  1  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x rb rb rb rb rd rd rd rd
 NOP	 1  1  1  1  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
@@ -134,3 +138,64 @@ updated with branch target.
 
 Memory accesses can take a variable number of cycles (cache misses/peripherals
 etc).  Stall until access completed.
+
+Exception Handling
+------------------
+
+Exception handlers are defined in a table of jumps to handlers:
+
+0x00:	reset
+0x04:	illegal instruction
+0x08:	software interrupt
+0x0c:	hardware interrupt
+0x10:	instruction fetch abort
+0x14:	data abort
+
+The table must be aligned to a 64 byte boundary.
+
+The address of the table is stored in control register 0, so to set the table:
+
+	movhi	$r0, %hi(ex_table)
+	orlo	$r0, $r0, %lo(ex_table)
+	scr	0, $r0
+
+On exception entry the CPU enters the exception handling mode and stores the
+contents of the current mode PSR into the saved PSR control register.  The
+fault address is stored in cr4 and the cpu jumps to the correct exception
+handler.
+
+To return from the exception the RFE instruction restores the saved PSR from
+the saved registers and sets the PC to the faulting address (which can be
+modified in the exception handler).
+
+$sp is banked between user/supervisor mode to make handling of exceptions more
+convenient and there are a pair of instructions for reading/writing the
+usermode $sp, only from supervisor mode.  There are only 2 processor modes.
+
+IRQ entry:
+  - discard instructions in fetch and decode stages
+  - move current $sp into saved_sp
+  - move current psr into saved_psr
+  - store pc_plus_4 at execute stage into fault_address
+  - disable irqs in psr
+  - set branch enable and branch destination to the irq entry
+
+RFE implementation:
+  - discard instructions in fetch and decode stages.
+  - move saved sp into $sp
+  - moved saved_psr into psr
+  - move fault_address into pc (handler should have adjusted it).
+
+- Control registers:
+  cr0:	exception table base address
+	[31:6]: exception table base address[31:6]
+	[5:0]:  reserved, SBZ
+  cr1:	PSR
+	[31:4]: reserved, SBZ
+	[3:3]:  user mode
+	[2:2]:  irqs enabled
+	[1:1]:  carry flag
+	[0:0]:  zero flag
+  cr2:	saved PSR
+  cr3:	fault address register
+	[31:0]: fault address

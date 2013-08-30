@@ -53,8 +53,12 @@ wire [1:0]	de_class;
 wire		de_is_call;
 wire [1:0]	de_mem_width;
 wire		de_update_flags;
+wire [2:0]      de_cr_sel;
+wire            de_write_cr;
 reg [31:0]	de_ra = 32'b0;
 reg [31:0]	de_rb = 32'b0;
+wire            de_is_swi;
+wire            de_is_rfe;
 
 /* Execute -> memory signals. */
 wire [31:0]	em_alu_out;
@@ -154,7 +158,11 @@ oldland_decode	decode(.clk(clk),
 		       .instr_class(de_class),
 		       .is_call(de_is_call),
 		       .mem_width(de_mem_width),
-		       .update_flags(de_update_flags));
+		       .update_flags(de_update_flags),
+                       .cr_sel(de_cr_sel),
+                       .write_cr(de_write_cr),
+                       .is_swi(de_is_swi),
+		       .is_rfe(de_is_rfe));
 
 oldland_exec	execute(.clk(clk),
 			.ra(de_ra),
@@ -185,7 +193,11 @@ oldland_exec	execute(.clk(clk),
 			.update_flags(de_update_flags),
 			.mar(em_mar),
 			.mdr(em_mdr),
-			.mem_wr_en(em_mem_wr_en));
+			.mem_wr_en(em_mem_wr_en),
+                        .cr_sel(de_cr_sel),
+                        .write_cr(de_write_cr),
+                        .is_swi(de_is_swi),
+			.is_rfe(de_is_rfe));
 
 oldland_memory	mem(.clk(clk),
 		    .load(em_mem_load),
