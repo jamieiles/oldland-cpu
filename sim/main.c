@@ -1,8 +1,10 @@
-#define DEBUG
-
 #define _GNU_SOURCE
 #include <assert.h>
+#include <err.h>
+#include <errno.h>
 #include <libgen.h>
+#include <netdb.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,150 +13,307 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <lua5.2/lua.h>
-#include <lua5.2/lauxlib.h>
-#include <lua5.2/lualib.h>
+#include <sys/epoll.h>
+#include <sys/uio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include "cpu.h"
 #include "internal.h"
-#include "io.h"
-#include "trace.h"
 
-static lua_State *lua_interp;
-bool interactive_mode = false;
+#include "../debugger/protocol.h"
 
-static const char *test_get_bin(const char *test_file)
+struct debug_data {
+	int sock_fd;
+	int epoll_fd;
+	int client_fd;
+	int pending;
+	int more_data;
+	pthread_mutex_t lock;
+
+	uint32_t debug_regs[4];
+};
+
+static int get_request(struct debug_data *d, struct dbg_request *req)
 {
-	char *ret = NULL;
+	ssize_t br;
+	int rc = -EAGAIN;
 
-	lua_getglobal(lua_interp, "BINARY");
-	if (!lua_isnil(lua_interp, -1)) {
-		char *tmp = strdup(test_file);
+	pthread_mutex_lock(&d->lock);
 
-		assert(tmp != NULL);
-		if (asprintf(&ret, "%s/%s", dirname(tmp),
-			     lua_tolstring(lua_interp, -1, NULL)) < 0)
-			die("failed to allocate binary path\n");
-		free(tmp);
+	if (d->client_fd < 0)
+		goto out;
+
+	if (!d->more_data)
+		goto out;
+
+	br = read(d->client_fd, req, sizeof(*req));
+	if (br < 0 && errno == EAGAIN) {
+		d->more_data = 0;
+	} else if (br != sizeof(*req)) {
+		d->more_data = 0;
+		rc = -EIO;
+	} else {
+		rc = 0;
 	}
 
-	lua_pop(lua_interp, 1);
+out:
+	pthread_mutex_unlock(&d->lock);
 
-	return ret;
+	return rc;
 }
 
-static int lua_sim_err(lua_State *L)
+static int send_response(struct debug_data *d, const struct dbg_response *resp)
 {
-	const char *msg = lua_tolstring(L, -1, NULL);
+	ssize_t bs;
+	struct iovec iov = {
+		.iov_base = (void *)resp,
+		.iov_len = sizeof(*resp)
+	};
 
-	die("%s\n", msg);
+	bs = writev(d->client_fd, &iov, 1);
+	if (bs < 0 && errno == EAGAIN)
+		return -EAGAIN;
+	else if (bs != sizeof(*resp))
+		return -EIO;
 
 	return 0;
 }
 
-static const struct luaL_Reg sim_funcs[] = {
-	{ "err", lua_sim_err },
-	{}
-};
-
-static lua_State *init_test_script(const char *test_file)
+static void enable_reuseaddr(int fd)
 {
-	lua_State *L = luaL_newstate();
+	int val = 1;
 
-	assert(L);
-	luaL_openlibs(L);
-	luaL_newlib(L, sim_funcs);
-	lua_setglobal(L, "sim");
-
-	if (luaL_dofile(L, test_file))
-		die("failed to load test %s (%s)\n", test_file,
-		    lua_tostring(L, -1));
-
-	return L;
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)))
+		err(1, "failed to enable SO_REUSEADDR");
 }
 
-static void validate_result(struct cpu *c)
+static int spawn_server(void)
 {
-	if (!lua_interp)
-		return;
+	struct addrinfo *result, *rp, hints = {
+		.ai_family	= AF_INET,
+		.ai_socktype	= SOCK_STREAM,
+		.ai_flags	= AI_PASSIVE,
+	};
+	int s, fd;
 
-	lua_getglobal(lua_interp, "validate_result");
-	if (!lua_isnil(lua_interp, -1))
-		lua_call(lua_interp, 0, 0);
-	else
-		lua_pop(lua_interp, 1);
-}
+	s = getaddrinfo(NULL, "36000", &hints, &result);
+	if (s)
+		err(1, "getaddrinfo failed");
 
-void cpu_mem_write_hook(struct cpu *c, physaddr_t addr, unsigned int nr_bits,
-			uint32_t val)
-{
-	if (!lua_interp)
-		return;
+	for (rp = result; rp; rp = rp->ai_next) {
+		fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (fd < 0)
+			continue;
 
-	lua_getglobal(lua_interp, "data_write_hook");
-	if (lua_isnil(lua_interp, -1)) {
-		lua_pop(lua_interp, 1);
-		return;
+		enable_reuseaddr(fd);
+
+		if (!bind(fd, rp->ai_addr, rp->ai_addrlen))
+			break;
+
+		close(fd);
 	}
 
-	lua_pushinteger(lua_interp, addr);
-	lua_pushinteger(lua_interp, nr_bits);
-	lua_pushinteger(lua_interp, val);
-	lua_call(lua_interp, 3, 0);
+	if (!rp)
+		err(1, "failed to bind server");
+
+	freeaddrinfo(result);
+
+	if (listen(fd, 1))
+		err(1, "failed to listen on socket");
+
+	return fd;
 }
 
-int run_test(const char *test_file)
+static int establish_connection(struct debug_data *data)
 {
-	struct cpu *c;
-	int err;
+	struct epoll_event event = {
+		.events = EPOLLIN | EPOLLRDHUP | EPOLLET,
+		.data.ptr = data,
+	};
+	int client = accept4(data->sock_fd, NULL, NULL, SOCK_NONBLOCK);
+	if (client < 0)
+		return -EAGAIN;
 
-	lua_interp = init_test_script(test_file);
-	assert(lua_interp);
+	if (epoll_ctl(data->epoll_fd, EPOLL_CTL_ADD, client, &event)) {
+		warn("failed to add client to epoll (%d)", client);
+		close(client);
+		return -EAGAIN;
+	}
 
-	c = new_cpu(test_get_bin(test_file));
-	printf("Oldland CPU simulator\n");
+	pthread_mutex_lock(&data->lock);
+	data->client_fd = client;
+	pthread_mutex_unlock(&data->lock);
 
-	do {
-		err = cpu_cycle(c);
-	} while (err == 0);
-
-	printf("[%s]\n", err == SIM_SUCCESS ? "SUCCESS" : "FAIL");
-	if (err == SIM_SUCCESS)
-		validate_result(c);
-
-	lua_close(lua_interp);
-
-	return err == SIM_SUCCESS ? EXIT_SUCCESS : EXIT_FAILURE;
+	return 0;
 }
 
-int run_interactive(const char *binary)
+static void close_connection(struct debug_data *data)
 {
-	struct cpu *c;
-	int err = 0;
+	epoll_ctl(data->epoll_fd, EPOLL_CTL_DEL, data->client_fd, NULL);
 
-	interactive_mode = true;
+	pthread_mutex_lock(&data->lock);
+	shutdown(data->client_fd, SHUT_RDWR);
+	close(data->client_fd);
+	data->client_fd = -1;
+	pthread_mutex_unlock(&data->lock);
+}
 
-	c = new_cpu(binary);
-	printf("Oldland CPU simulator\n");
+static void *server_thread(void *d)
+{
+	struct debug_data *data = d;
 
-	while (!err)
-		err = cpu_cycle(c);
+	for (;;) {
+		if (establish_connection(d))
+			continue;
 
-	printf("[%s]\n", err == SIM_SUCCESS ? "SUCCESS" : "FAIL");
+		for (;;) {
+			struct epoll_event revent;
+			int nevents;
 
-	return err == SIM_SUCCESS ? EXIT_SUCCESS : EXIT_FAILURE;
+			nevents = epoll_wait(data->epoll_fd, &revent, 1, -1);
+			if (nevents < 0)
+				err(1, "epoll_wait() failed");
+
+			if (nevents) {
+				if (revent.events & (EPOLLRDHUP | EPOLLHUP))
+					break;
+
+				if (revent.events & EPOLLIN)
+					__sync_val_compare_and_swap(&data->pending, 0, 1);
+			}
+		}
+
+		close_connection(data);
+	}
+
+	return NULL;
+}
+
+static struct debug_data *start_server(void)
+{
+	pthread_t thread;
+	struct debug_data *data;
+
+	data = calloc(1, sizeof(*data));
+	if (!data)
+		err(1, "failed to allocate data");
+
+	data->sock_fd = spawn_server();
+	data->epoll_fd = epoll_create(1);
+	data->client_fd = -1;
+	if (data->epoll_fd < 0)
+		err(1, "failed to create epoll fd");
+	pthread_mutex_init(&data->lock, NULL);
+
+	if (pthread_create(&thread, NULL, server_thread, data))
+		err(1, "failed to spawn server thread");
+
+	return data;
+}
+
+static enum {
+	SIM_STATE_STOPPED,
+	SIM_STATE_RUNNING,
+} sim_state = SIM_STATE_STOPPED;
+
+static void handle_req(struct debug_data *debug, struct dbg_request *req,
+		       struct cpu *cpu)
+{
+	struct dbg_response resp = { .status = req->addr > 3 ? -EINVAL : 0 };
+
+	if (!req->read_not_write)
+		debug->debug_regs[req->addr & 0x3] = req->value;
+
+	if (req->addr == REG_CMD && !req->read_not_write) {
+		switch (debug->debug_regs[REG_CMD]) {
+		case CMD_STOP:
+			sim_state = SIM_STATE_STOPPED;
+			break;
+		case CMD_RUN:
+			sim_state = SIM_STATE_RUNNING;
+			break;
+		case CMD_STEP:
+			sim_state = SIM_STATE_STOPPED;
+			cpu_cycle(cpu);
+			break;
+		case CMD_READ_REG:
+			resp.status = cpu_read_reg(cpu,
+						   debug->debug_regs[REG_ADDRESS],
+						   &debug->debug_regs[REG_RDATA]);
+			break;
+		case CMD_WRITE_REG:
+			resp.status = cpu_write_reg(cpu,
+						    debug->debug_regs[REG_ADDRESS],
+						    debug->debug_regs[REG_WDATA]);
+			break;
+		case CMD_RMEM32:
+			resp.status = cpu_read_mem(cpu,
+						   debug->debug_regs[REG_ADDRESS],
+						   &debug->debug_regs[REG_RDATA],
+						   32);
+			break;
+		case CMD_WMEM32:
+			resp.status = cpu_write_mem(cpu,
+						    debug->debug_regs[REG_ADDRESS],
+						    debug->debug_regs[REG_WDATA],
+						    32);
+			break;
+		case CMD_RMEM16:
+			resp.status = cpu_read_mem(cpu,
+						   debug->debug_regs[REG_ADDRESS],
+						   &debug->debug_regs[REG_RDATA],
+						   16);
+			break;
+		case CMD_WMEM16:
+			resp.status = cpu_write_mem(cpu,
+						    debug->debug_regs[REG_ADDRESS],
+						    debug->debug_regs[REG_WDATA],
+						    16);
+			break;
+		case CMD_RMEM8:
+			resp.status = cpu_read_mem(cpu,
+						   debug->debug_regs[REG_ADDRESS],
+						   &debug->debug_regs[REG_RDATA],
+						   8);
+			break;
+		case CMD_WMEM8:
+			resp.status = cpu_write_mem(cpu,
+						    debug->debug_regs[REG_ADDRESS],
+						    debug->debug_regs[REG_WDATA],
+						    8);
+			break;
+		case CMD_SIM_TERM:
+			exit(EXIT_SUCCESS);
+		default:
+			resp.status = -EINVAL;
+		}
+	}
+
+	if (req->read_not_write)
+		resp.data = debug->debug_regs[req->addr & 0x3];
+
+	send_response(debug, &resp);
 }
 
 int main(int argc, char *argv[])
 {
-	if (argc < 2)
-		die("usage: %s [TEST_FILE] [-i BINARY]\n", argv[0]);
+	struct cpu *cpu = new_cpu(NULL);
+	struct debug_data *debug = start_server();
 
-	if (strcmp(argv[1], "-i"))
-		return run_test(argv[1]);
+	for (;;) {
+		struct dbg_request req;
 
-	if (argc < 3)
-		die("no binary supplied\n");
+		if (!debug->more_data &&
+		    __sync_val_compare_and_swap(&debug->pending, 1, 0) == 0)
+			debug->more_data = 1;
 
-	return run_interactive(argv[2]);
+		if (!get_request(debug, &req))
+			handle_req(debug, &req, cpu);
+
+		if (sim_state == SIM_STATE_RUNNING)
+			cpu_cycle(cpu);
+	}
+
+	return 0;
 }

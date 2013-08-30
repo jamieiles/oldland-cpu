@@ -31,6 +31,40 @@ struct cpu {
 	unsigned long long cycle_count;
 };
 
+int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
+{
+	if (regnum >= 17)
+		return -1;
+	if (regnum == 16)
+		*v = c->pc;
+	else
+		*v = c->regs[regnum];
+
+	return 0;
+}
+
+int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
+{
+	if (regnum >= 17)
+		return -1;
+	if (regnum == 16)
+		c->pc = v;
+	else
+		c->regs[regnum] = v;
+
+	return 0;
+}
+
+int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits)
+{
+	return mem_map_read(c->mem, addr, nbits, v);
+}
+
+int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
+{
+	return mem_map_write(c->mem, addr, nbits, v);
+}
+
 enum instruction_class {
 	INSTR_ARITHMETIC,
 	INSTR_BRANCH,
@@ -70,7 +104,7 @@ static inline uint16_t instr_imm16(uint32_t instr)
 
 static inline uint16_t instr_imm13(uint32_t instr)
 {
-	return (instr >> 13) & 0x1fff;
+	return (instr >> 12) & 0x1fff;
 }
 
 static inline uint32_t instr_imm24(uint32_t instr)
@@ -229,16 +263,11 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 	}
 }
 
-extern void cpu_mem_write_hook(struct cpu *c, physaddr_t addr,
-			       unsigned int nr_bits, uint32_t val);
-
 static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 			     unsigned int nr_bits, uint32_t val)
 {
 	trace(c->trace_file, TRACE_DADDR, addr);
 	trace(c->trace_file, TRACE_DOUT, val);
-
-	cpu_mem_write_hook(c, addr, nr_bits, val);
 
 	return mem_map_write(c->mem, addr, nr_bits, val);
 }
@@ -349,7 +378,7 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 	}
 }
 
-uint32_t cpu_cycle(struct cpu *c)
+int cpu_cycle(struct cpu *c)
 {
 	uint32_t instr;
 	int err;
@@ -362,12 +391,9 @@ uint32_t cpu_cycle(struct cpu *c)
 	assert(!err);
 	trace(c->trace_file, TRACE_INSTR, instr);
 
-	if (instr == SIM_SUCCESS || instr == SIM_FAIL)
-		return instr;
-
 	emul_insn(c, instr);
 
 	c->pc = c->next_pc;
 
-	return SIM_CONTINUE;
+	return 0;
 }
