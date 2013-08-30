@@ -10,7 +10,11 @@ enum regs {
 	R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, FP, LR, SP, PC
 };
 
-struct cpu *new_cpu(const char *binary);
+enum cpu_flags {
+	CPU_NOTRACE = 1 << 0,
+};
+
+struct cpu *new_cpu(const char *binary, int flags);
 int cpu_cycle(struct cpu *c);
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v);
 int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v);

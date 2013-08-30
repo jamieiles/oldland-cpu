@@ -298,8 +298,16 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 
 int main(int argc, char *argv[])
 {
-	struct cpu *cpu = new_cpu(NULL);
+	struct cpu *cpu;
 	struct debug_data *debug = start_server();
+	int i, cpu_flags = CPU_NOTRACE;
+
+	for (i = 0; i < argc; ++i)
+		if (!strcmp(argv[i], "--debug") ||
+		    !strcmp(argv[i], "-d"))
+			cpu_flags &= ~CPU_NOTRACE;
+
+	cpu = new_cpu(NULL, cpu_flags);
 
 	for (;;) {
 		struct dbg_request req;

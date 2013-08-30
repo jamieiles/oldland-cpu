@@ -38,6 +38,9 @@ struct {
 
 void trace(FILE *trace_file, enum trace_points tp, uint32_t val)
 {
+	if (!trace_file)
+		return;
+
 	if (trace_defs[tp].width == 1) {
 		fprintf(trace_file, "%d%c\n", !!val, trace_defs[tp].id);
 	} else {

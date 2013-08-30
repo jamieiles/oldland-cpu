@@ -123,14 +123,16 @@ static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 	c->next_pc = v;
 }
 
-struct cpu *new_cpu(const char *binary)
+struct cpu *new_cpu(const char *binary, int flags)
 {
 	int err;
 	struct cpu *c;
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
-	c->trace_file = init_trace_file();
+
+	if (!(flags & CPU_NOTRACE))
+		c->trace_file = init_trace_file();
 
 	c->mem = mem_map_new();
 	assert(c->mem);
@@ -385,10 +387,12 @@ int cpu_cycle(struct cpu *c)
 
 	c->next_pc = c->pc + 4;
 
-	fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
+	if (c->trace_file)
+		fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
 	trace(c->trace_file, TRACE_PC, c->pc);
 	err = mem_map_read(c->mem, c->pc, 32, &instr);
 	assert(!err);
+	if (c->trace_file)
 	trace(c->trace_file, TRACE_INSTR, instr);
 
 	emul_insn(c, instr);
