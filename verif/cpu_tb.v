@@ -27,7 +27,7 @@ wire [31:0]	dbg_din;
 wire [31:0]	dbg_dout;
 wire		dbg_wr_en;
 wire		dbg_req;
-wire		dbg_acl;
+wire		dbg_ack;
 
 reg [8:0]	uart_buf = 9'b0;
 
