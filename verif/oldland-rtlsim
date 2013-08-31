@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-import subprocess
+import os
 import sys
 
 MODULE_PATH = '%INSTALL_PATH%/lib'
@@ -20,7 +20,8 @@ def main(args):
 
     rom_file = '{0}{1}'.format(ROM_PATH,
                                 opts.bootrom if opts.bootrom else DEFAULT_ROM)
-    cmd = ['vvp', '-n', '-M{0}'.format(MODULE_PATH)] + ['-m{0}'.format(m) for m in MODULES] + \
+    cmd = ['/usr/bin/vvp', '-n',
+           '-M{0}'.format(MODULE_PATH)] + ['-m{0}'.format(m) for m in MODULES] + \
           ['%INSTALL_PATH%/lib/keynsham.vvp', '-lxt2', '+romfile={0}'.format(rom_file)]
     if opts.interactive:
         cmd += ['+interactive']
@@ -29,7 +30,7 @@ def main(args):
     if opts.ramfile:
         cmd += ['+ramfile={0}'.format(opts.ramfile)]
     try:
-        subprocess.check_call(cmd)
+        os.execv('/usr/bin/vvp', cmd)
     except KeyboardInterrupt:
         pass
 
