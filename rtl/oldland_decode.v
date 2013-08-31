@@ -1,4 +1,9 @@
 `include "oldland_defines.v"
+
+`ifndef OLDLAND_ROM_PATH
+`define OLDLAND_ROM_PATH "./"
+`endif
+
 /*
  * Generate a variety of control signals from the input selection.  These
  * control signals include register selection, ALU opcode + operand selection
@@ -43,7 +48,7 @@ assign		ra_sel = instr[11:8];
 assign		rb_sel = instr[7:4];
 
 initial begin
-	$readmemh("decode.hex", microcode);
+	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode);
 	rd_sel = 4'b0;
 	update_rd = 1'b0;
 	alu_opc = 4'b0;
