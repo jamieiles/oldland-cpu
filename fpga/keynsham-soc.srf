@@ -21,3 +21,6 @@
 { "" "" "" "Pin \"s_clken\" is stuck at VCC" {  } {  } 0 13410 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "PLL \"sys_pll:pll\|altpll:altpll_component\|sys_pll_altpll:auto_generated\|pll1\" output port clk\[1\] feeds output pin \"sdr_clk~output\" via non-dedicated routing -- jitter performance depends on switching rate of other design elements. Use PLL dedicated clock outputs to ensure jitter performance" {  } {  } 0 15064 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "18 pins must meet Altera requirements for 3.3-, 3.0-, and 2.5-V interfaces. For more information, refer to AN 447: Interfacing Cyclone IV E Devices with 3.3/3.0/2.5-V LVTTL/LVCMOS I/O Systems." {  } {  } 0 169177 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
