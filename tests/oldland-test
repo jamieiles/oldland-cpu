@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+from multiprocessing import Process
+import os
+import signal
+import subprocess
+import sys
+import time
+
+from junit_xml import TestSuite, TestCase
+
+def find_test_files():
+    for _, _, filenames in os.walk(TEST_PATH):
+        def is_test(fn):
+            return fn.endswith('.lua') and fn != 'common.lua'
+        return filter(is_test, filenames)
+
+TEST_PATH = '%TEST_PATH%'
+SIMULATORS = 'oldland-sim oldland-rtlsim'.split()
+TEST_FILES = find_test_files()
+
+def sim_runner(simname):
+    sim = subprocess.Popen([simname])
+
+    try:
+        sim.communicate()
+    except KeyboardInterrupt:
+        sim.terminate()
+
+def run_test(simulator, test_file):
+    runner = Process(target = sim_runner, args = (simulator,))
+    runner.start()
+    # For the RTL simulation it can take a while to initialize and open the
+    # debugger socket.
+    time.sleep(1)
+    debugger = subprocess.Popen(['oldland-debug', '-x',
+                                os.path.join(TEST_PATH, test_file)],
+                                stdout = subprocess.PIPE,
+                                stderr = subprocess.PIPE, cwd = TEST_PATH)
+    stdout, stderr = debugger.communicate()
+    os.kill(runner.pid, signal.SIGINT)
+
+    tc = TestCase(test_file, test_file, 0, stdout)
+    if debugger.returncode:
+        tc.add_failure_info('test returned {0}'.format(debugger.returncode),
+                            stderr)
+    return tc
+
+def main():
+    suites = []
+    for sim in SIMULATORS:
+        cases = []
+        for t in TEST_FILES:
+            cases.append(run_test(sim, t))
+        suites.append(TestSuite(sim, cases))
+
+    with open('oldland-test.xml', 'w') as output:
+        output.write(TestSuite.to_xml_string(suites))
+
+if __name__ == '__main__':
+    sys.exit(main())
