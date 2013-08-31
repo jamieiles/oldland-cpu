@@ -1,10 +1,12 @@
--- Perform some additions and branches close together making sure that result
--- forwarding works as expected.
-require "bit32"
+require "common"
 
-CYCLE_LIMIT = 100
-BINARY = "addbranch.bin"
+MAX_CYCLE_COUNT = 1000
 
-function run()
-	run_cpu()
+connect("localhost", "36000")
+loadelf("addbranch")
+
+tp = run_to_tp()
+if not tp or tp.type ~= TP_SUCCESS then
+	print(string.format("unexpected testpoint at %08x", target.read_reg(16)))
+	return -1
 end

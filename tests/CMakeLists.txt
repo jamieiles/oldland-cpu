@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 2.6)
+
+add_subdirectory(addbranch)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
+		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"
+			${CMAKE_CURRENT_SOURCE_DIR}/oldland-test >
+			${CMAKE_CURRENT_BINARY_DIR}/oldland-test
+		   DEPENDS oldland-test)
+add_custom_target(test ALL DEPENDS oldland-test)
+
+install(FILES common.lua DESTINATION lib/oldland/tests)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-test DESTINATION bin)

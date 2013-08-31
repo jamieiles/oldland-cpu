@@ -1,0 +1,16 @@
+macro(oldland_test test_name)
+add_custom_command(OUTPUT ${test_name}.o
+		   COMMAND oldland-elf-as -c ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.s
+			-o ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o
+			-I ${CMAKE_CURRENT_SOURCE_DIR}/../target
+		   DEPENDS ${test_name}.s)
+add_custom_target(addbranch ALL
+		  COMMAND oldland-elf-ld ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o
+			-o ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+			-x ${CMAKE_CURRENT_SOURCE_DIR}/../target/sim.x
+		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+	DESTINATION lib/oldland/tests)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.lua
+	DESTINATION lib/oldland/tests)
+endmacro(oldland_test)
