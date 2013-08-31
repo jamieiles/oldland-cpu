@@ -4,7 +4,7 @@ add_custom_command(OUTPUT ${test_name}.o
 			-o ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o
 			-I ${CMAKE_CURRENT_SOURCE_DIR}/../target
 		   DEPENDS ${test_name}.s)
-add_custom_target(addbranch ALL
+add_custom_target(${test_name} ALL
 		  COMMAND oldland-elf-ld ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o
 			-o ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
 			-x ${CMAKE_CURRENT_SOURCE_DIR}/../target/sim.x
