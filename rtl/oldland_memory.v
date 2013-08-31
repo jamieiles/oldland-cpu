@@ -13,7 +13,7 @@ module oldland_memory(input wire		clk,
 		      output wire [3:0]		rd_sel_out,
 		      output wire		complete,
 		      /* Signals to data bus */
-		      output wire [31:0]	d_addr,
+		      output wire [29:0]	d_addr,
 		      output reg [3:0]		d_bytesel,
 		      output wire		d_wr_en,
 		      output reg [31:0]		d_wr_val,
@@ -38,7 +38,7 @@ reg [31:0] mem_rd_val;
 wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
 
 wire [1:0] byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];
-assign d_addr = dbg_en ? {dbg_addr[31:2], 2'b00} : {addr[31:2], 2'b00};
+assign d_addr = dbg_en ? dbg_addr[31:2] : addr[31:2];
 assign d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
 assign d_access = dbg_en ? dbg_access : (load | store);
 

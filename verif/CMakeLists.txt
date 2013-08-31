@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(OldlandRTLSim)
 add_custom_target(keynsham ALL
-		  COMMAND iverilog -c ${CMAKE_CURRENT_SOURCE_DIR}/oldland.cf
+		  COMMAND iverilog -Wall -c ${CMAKE_CURRENT_SOURCE_DIR}/oldland.cf
 			-DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\"
 			-o ${CMAKE_CURRENT_BINARY_DIR}/keynsham.vvp
 		  DEPENDS oldland.cf

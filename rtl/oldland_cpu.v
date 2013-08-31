@@ -1,9 +1,9 @@
 module oldland_cpu(input wire		clk,
 		   /* Instruction bus. */
-		   output wire [31:0]	i_addr,
+		   output wire [29:0]	i_addr,
 		   input wire [31:0]	i_data,
 		   /* Data bus. */
-		   output wire [31:0]	d_addr,
+		   output wire [29:0]	d_addr,
 		   output wire [3:0]	d_bytesel,
 		   output wire		d_wr_en,
 		   output wire [31:0]	d_wr_val,

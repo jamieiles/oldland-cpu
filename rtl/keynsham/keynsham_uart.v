@@ -1,7 +1,7 @@
 module keynsham_uart(input wire		clk,
 		     input wire		bus_access,
 		     input wire		bus_cs,
-		     input wire [31:0]	bus_addr,
+		     input wire [29:0]	bus_addr,
 		     input wire [31:0]	bus_wr_val,
 		     input wire		bus_wr_en,
 		     input wire [3:0]	bus_bytesel,
@@ -43,16 +43,16 @@ always @(posedge clk) begin
 	uart_rdy_clr <= 1'b0;
 
 	if (bus_access && bus_cs && bus_wr_en) begin
-		if (bus_addr[3:2] == 2'b00) begin
+		if (bus_addr[1:0] == 2'b00) begin
 			/* Data register write. */
 			uart_din <= bus_wr_val[7:0];
 			uart_write <= 1'b1;
 		end
 	end else if (bus_access && bus_cs) begin
-		if (bus_addr[3:2] == 2'b00) begin
+		if (bus_addr[1:0] == 2'b00) begin
 			bus_data <= {24'b0, uart_dout};
 			uart_rdy_clr <= 1'b1;
-		end else if (bus_addr[3:2] == 2'b01) begin
+		end else if (bus_addr[1:0] == 2'b01) begin
 			/* Status register read. */
 			bus_data <= status_reg;
 		end

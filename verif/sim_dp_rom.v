@@ -1,9 +1,9 @@
 module sim_dp_rom(input wire		clk,
-		  input wire [31:0]	i_addr,
+		  input wire [6:0]	i_addr,
 		  output reg [31:0]	i_data,
 		  input wire		d_access,
 		  input wire		d_cs,
-		  input wire [31:0]	d_addr,
+		  input wire [6:0]	d_addr,
 		  input wire [3:0]	d_bytesel,
 		  output reg [31:0]	d_data,
 		  output reg		d_ack);
@@ -24,19 +24,19 @@ initial begin
 end
 
 always @(posedge clk) begin
-	i_data <= { rom[i_addr + 3],
-		    rom[i_addr + 2],
-		    rom[i_addr + 1],
-		    rom[i_addr + 0] };
+	i_data <= { rom[{i_addr, 2'b00} + 3],
+		    rom[{i_addr, 2'b00} + 2],
+		    rom[{i_addr, 2'b00} + 1],
+		    rom[{i_addr, 2'b00} + 0] };
 	if (d_access && d_cs) begin
 		if (d_bytesel[3])
-			d_data[31:24] <= rom[d_addr + 3];
+			d_data[31:24] <= rom[{d_addr, 2'b00} + 3];
 		if (d_bytesel[2])
-			d_data[23:16] <= rom[d_addr + 2];
+			d_data[23:16] <= rom[{d_addr, 2'b00} + 2];
 		if (d_bytesel[1])
-			d_data[15:8] <= rom[d_addr + 1];
+			d_data[15:8] <= rom[{d_addr, 2'b00} + 1];
 		if (d_bytesel[0])
-			d_data[7:0] <= rom[d_addr + 0];
+			d_data[7:0] <= rom[{d_addr, 2'b00} + 0];
 	end else begin
 		d_data <= 32'b0;
 	end

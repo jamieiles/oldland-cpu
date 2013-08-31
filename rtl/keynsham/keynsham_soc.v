@@ -24,9 +24,9 @@ module keynsham_soc(input wire		clk,
 		    input wire		dbg_req,
 		    output wire		dbg_ack);
 
-wire [31:0]	i_addr;
+wire [29:0]	i_addr;
 reg [31:0]	i_data = 32'b0;
-wire [31:0]	d_addr;
+wire [29:0]	d_addr;
 reg [31:0]	d_data = 32'b0;
 wire [31:0]	d_wr_val;
 wire [3:0]	d_bytesel;
@@ -58,13 +58,13 @@ wire		sdram_error;
  * 0x80000000 -- 0x80000fff: UART0.
  * 0x80001000 -- 0x80001fff: SDRAM controller.
  */
-wire		ram_cs		= d_addr[31:12]	== 20'h00000;
-wire		ram_i_cs	= i_addr[31:12]	== 20'h00000;
-wire		rom_cs		= d_addr[31:12]	== 20'h10000;
-wire		rom_i_cs	= i_addr[31:12]	== 20'h10000;
-wire		sdram_cs	= d_addr[31:25] == 7'b0010000;
-wire		sdram_ctrl_cs	= d_addr[31:12] == 20'h80001;
-wire		uart_cs		= d_addr[31:12] == 20'h80000;
+wire		ram_cs		= d_addr[29:10]	== 20'h00000;
+wire		ram_i_cs	= i_addr[29:10]	== 20'h00000;
+wire		rom_cs		= d_addr[29:10]	== 20'h10000;
+wire		rom_i_cs	= i_addr[29:10]	== 20'h10000;
+wire		sdram_cs	= d_addr[29:23] == 7'b0010000;
+wire		sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
+wire		uart_cs		= d_addr[29:10] == 20'h80000;
 
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
@@ -73,11 +73,11 @@ wire d_ack = uart_ack | ram_ack | sdram_ack | rom_ack;
 wire d_error = uart_error | sdram_error;
 
 keynsham_ram	ram(.clk(clk),
-		    .i_addr(i_addr),
+		    .i_addr(i_addr[10:0]),
 		    .i_data(i_ram_data),
 		    .d_access(d_access),
 		    .d_cs(ram_cs),
-		    .d_addr(d_addr),
+		    .d_addr(d_addr[10:0]),
 		    .d_data(ram_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_val(d_wr_val),
@@ -85,11 +85,11 @@ keynsham_ram	ram(.clk(clk),
 		    .d_ack(ram_ack));
 
 keynsham_bootrom rom(.clk(clk),
-		     .i_addr(i_addr),
+		     .i_addr(i_addr[6:0]),
 		     .i_data(i_rom_data),
 		     .d_access(d_access),
 		     .d_cs(rom_cs),
-		     .d_addr(d_addr),
+		     .d_addr(d_addr[6:0]),
 		     .d_data(rom_data),
 		     .d_bytesel(d_bytesel),
 		     .d_ack(rom_ack));

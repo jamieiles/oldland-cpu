@@ -25,7 +25,7 @@ module oldland_fetch(input wire		clk,
 		     input wire		branch_taken,
 		     output wire [31:0]	pc_plus_4,
 		     output wire [31:0] instr,
-		     output wire [31:0] fetch_addr,
+		     output wire [29:0] fetch_addr,
 		     input wire [31:0]	fetch_data,
 		     input wire		run,
 		     output reg		stopped,
@@ -51,7 +51,8 @@ assign		instr = stalled || stopping ? `INSTR_NOP : fetch_data;
 reg		stopping = 1'b0;
 reg [2:0]	stop_ctr = 3'd5;
 
-assign		fetch_addr = stalling || stopping || !run ? pc : next_pc;
+assign		fetch_addr = stalling || stopping || !run ?
+			pc[31:2] : next_pc[31:2];
 
 initial		stopped	= 1'b0;
 

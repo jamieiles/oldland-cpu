@@ -2,7 +2,7 @@ module keynsham_sdram(input wire		clk,
 		      input wire		bus_access,
 		      input wire		sdram_cs,
 		      input wire		ctrl_cs,
-		      input wire [31:0] 	bus_addr,
+		      input wire [29:0] 	bus_addr,
 		      input wire [31:0] 	bus_wr_val,
 		      input wire		bus_wr_en,
 		      input wire [3:0]		bus_bytesel,
@@ -19,7 +19,7 @@ module keynsham_sdram(input wire		clk,
 		      inout [15:0]		s_data,
 		      output wire [1:0]		s_banksel);
 
-wire [31:0]	bridge_addr;
+wire [30:0]	bridge_addr;
 wire [15:0]	bridge_wdata;
 wire [15:0]	bridge_rdata;
 wire		bridge_wr_en;
