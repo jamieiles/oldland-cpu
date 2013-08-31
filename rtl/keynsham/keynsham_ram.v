@@ -32,7 +32,7 @@ ram		mem(.clock(clk),
 		    .address_a(i_addr[11:2]), /* Word addressed with byte enables. */
 		    .data_a(32'b0),
 		    .byteena_a(d_bytesel),
-		    .wren_a(0),
+		    .wren_a(1'b0),
 		    .q_a(i_data),
 		    .address_b(d_addr[11:2]), /* Word addressed with byte enables. */
 		    .data_b(d_wr_val),

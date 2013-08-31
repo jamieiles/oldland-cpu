@@ -35,7 +35,6 @@ reg [31:0] wr_val_bypass;
 reg update_rd_bypass = 1'b0;
 reg [31:0] mem_rd_val;
 
-wire [31:0] address = dbg_en ? dbg_addr : addr;
 wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
 
 wire [1:0] byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];

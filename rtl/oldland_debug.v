@@ -109,7 +109,6 @@ initial begin
 end
 
 always @(*) begin
-	mem_width = 2'b10;
 	mem_wr_en = 1'b0;
 
 	case (debug_cmd)
@@ -128,10 +127,15 @@ always @(*) begin
 	CMD_RMEM32: mem_width = 2'b10;
 	CMD_RMEM16: mem_width = 2'b01;
 	CMD_RMEM8: mem_width = 2'b00;
+	default: begin
+		mem_width = 2'b10;
+		mem_wr_en = 1'b0;
+	end
 	endcase
 end
 
 always @(*) begin
+	ctl_din = 32'b0;
 	ctl_addr = 2'b00;
 	ctl_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
@@ -233,7 +237,6 @@ end
 
 always @(posedge clk) begin
 	ack_internal <= 1'b0;
-	dbg_reg_wr_en <= 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
