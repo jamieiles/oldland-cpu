@@ -50,6 +50,13 @@ wire		sdram_ack;
 wire		sdram_error;
 
 /*
+ * For invalid addresses - ack so we don't stall the CPU on a bus access and
+ * set the error bit.
+ */
+reg		default_ack = 1'b0;
+reg		default_error = 1'b0;
+
+/*
  * Memory map:
  *
  * 0x00000000 -- 0x00000fff: On chip memory.
@@ -66,11 +73,14 @@ wire		sdram_cs	= d_addr[29:23] == 7'b0010000;
 wire		sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
 wire		uart_cs		= d_addr[29:10] == 20'h80000;
 
+wire		default_cs	= ~(ram_cs | rom_cs | sdram_cs |
+				    sdram_ctrl_cs | uart_cs);
+
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
 
-wire d_ack = uart_ack | ram_ack | sdram_ack | rom_ack;
-wire d_error = uart_error | sdram_error;
+wire d_ack = uart_ack | ram_ack | sdram_ack | rom_ack | default_ack;
+wire d_error = uart_error | sdram_error | default_error;
 
 keynsham_ram	ram(.clk(clk),
 		    .i_addr(i_addr[10:0]),
@@ -163,6 +173,11 @@ end
 always @(posedge clk) begin
 	ram_i_out_cs <= ram_i_cs;
 	rom_i_out_cs <= rom_i_cs;
+end
+
+always @(posedge clk) begin
+	default_ack <= d_access && default_cs;
+	default_error <= d_access && default_cs;
 end
 
 always @(*) begin

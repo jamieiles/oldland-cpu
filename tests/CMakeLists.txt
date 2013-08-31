@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(addbranch)
+add_subdirectory(badaddr)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"
