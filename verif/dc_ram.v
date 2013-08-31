@@ -12,7 +12,7 @@ module dc_ram(input wire			clk_a,
 parameter addr_bits = 32;
 parameter data_bits = 32;
 
-reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0];
+(* ramstyle = "M10K" *) reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0];
 
 always @(posedge clk_a) begin
 	if (wr_en_a)
