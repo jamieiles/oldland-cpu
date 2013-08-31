@@ -56,5 +56,9 @@ def main():
     with open('oldland-test.xml', 'w') as output:
         output.write(TestSuite.to_xml_string(suites))
 
+    all_cases = [c for ts in suites for c in ts.test_cases]
+    num_failures = len(filter(lambda x: x.is_failure(), all_cases))
+    print '\n{0}/{1} failures'.format(num_failures, len(all_cases))
+
 if __name__ == '__main__':
     sys.exit(main())
