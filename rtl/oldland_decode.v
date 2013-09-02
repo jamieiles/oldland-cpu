@@ -48,7 +48,7 @@ assign		ra_sel = instr[11:8];
 assign		rb_sel = instr[7:4];
 
 initial begin
-	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode);
+	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode, 0, 127);
 	rd_sel = 4'b0;
 	update_rd = 1'b0;
 	alu_opc = 4'b0;
