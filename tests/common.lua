@@ -24,3 +24,18 @@ function run_to_tp()
 		end
 	end
 end
+
+function run_testpoints(expected_testpoints)
+	for _, v in pairs(expected_testpoints) do
+		tp = run_to_tp()
+		if not tp or
+		tp.type ~= v[1] or
+		tp.tag ~= v[2] then
+			print(string.format("unexpected testpoint at %08x",
+				target.read_reg(16)))
+			return -1
+		end
+	end
+
+	return 0
+end
