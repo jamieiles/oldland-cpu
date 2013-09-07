@@ -452,7 +452,7 @@ int cpu_cycle(struct cpu *c)
 	err = mem_map_read(c->mem, c->pc, 32, &instr);
 	assert(!err);
 	if (c->trace_file)
-	trace(c->trace_file, TRACE_INSTR, instr);
+		trace(c->trace_file, TRACE_INSTR, instr);
 
 	emul_insn(c, instr);
 
