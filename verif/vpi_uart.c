@@ -13,6 +13,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -21,6 +22,20 @@
 struct uart_data {
 	int fd;
 };
+
+static int sim_interactive(void)
+{
+	int i;
+	s_vpi_vlog_info info;
+
+	vpi_get_vlog_info(&info);
+
+	for (i = 0; i < info.argc; ++i)
+		if (!strcmp(info.argv[i], "+interactive"))
+			return 1;
+
+	return 0;
+}
 
 static int create_pts(void)
 {
@@ -42,7 +57,8 @@ static int create_pts(void)
 	if (tcsetattr(pts, TCSANOW, &termios))
 		err(1, "failed to set termios");
 
-	printf("pts: %s\n", ptsname(pts));
+	if (sim_interactive())
+		printf("pts: %s\n", ptsname(pts));
 
 	return pts;
 }
