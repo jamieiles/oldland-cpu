@@ -25,16 +25,28 @@ function run_to_tp()
 	end
 end
 
+function tp_type(typ)
+        if tp.type == TP_SUCCESS then return "SUCCESS" end
+        if tp.type == TP_FAILURE then return "FAILURE" end
+        if tp.type == TP_USER then return "USER" end
+        return "???"
+end
+
 function run_testpoints(expected_testpoints)
 	for _, v in pairs(expected_testpoints) do
 		tp = run_to_tp()
 		if not tp or
 		tp.type ~= v[1] or
 		tp.tag ~= v[2] then
-			print(string.format("unexpected testpoint at %08x",
-				target.read_reg(16)))
+			print(string.format("unexpected testpoint %s:%u at %08x",
+                                            tp_type(tp.type), tp.tag,
+                                            target.read_reg(16)))
 			return -1
 		end
+
+                print(string.format("hit tp %s:%u", tp_type(tp.type), tp.tag))
+
+                if v[3] and v[3]() then return -1 end
 	end
 
 	return 0
