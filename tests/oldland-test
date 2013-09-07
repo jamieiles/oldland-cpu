@@ -6,6 +6,12 @@ import subprocess
 import sys
 import time
 
+try:
+    from termcolor import cprint
+except ImportError:
+    def cprint(msg, color):
+        print(msg)
+
 from junit_xml import TestSuite, TestCase
 
 def find_test_files():
@@ -49,6 +55,10 @@ def run_test(simulator, test_file):
     if debugger.returncode:
         tc.add_failure_info('test returned {0}'.format(debugger.returncode),
                             stderr)
+
+    cprint('{0}::{1}'.format(simulator, test_file),
+           'red' if debugger.returncode else 'green')
+
     return tc
 
 def main():
