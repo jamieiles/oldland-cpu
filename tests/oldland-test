@@ -17,9 +17,12 @@ def find_test_files():
 TEST_PATH = '%TEST_PATH%'
 SIMULATORS = 'oldland-sim oldland-rtlsim'.split()
 TEST_FILES = find_test_files()
+SIM_ARGS = {
+    'oldland-rtlsim': ['--bootrom', 'sim.hex']
+}
 
-def sim_runner(simname):
-    sim = subprocess.Popen([simname])
+def sim_runner(kargs):
+    sim = subprocess.Popen(list(kargs))
 
     try:
         sim.communicate()
@@ -27,7 +30,10 @@ def sim_runner(simname):
         sim.terminate()
 
 def run_test(simulator, test_file):
-    runner = Process(target = sim_runner, args = (simulator,))
+    simargs = [simulator]
+    if simulator in SIM_ARGS:
+        simargs += SIM_ARGS[simulator]
+    runner = Process(target = sim_runner, args = (simargs,))
     runner.start()
     # For the RTL simulation it can take a while to initialize and open the
     # debugger socket.
