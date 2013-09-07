@@ -2,6 +2,7 @@
 from multiprocessing import Process
 import os
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -35,6 +36,18 @@ def sim_runner(kargs):
     except KeyboardInterrupt:
         sim.terminate()
 
+def wait_until_active():
+    while True:
+        try:
+            s = socket.create_connection(("localhost", "36000"), 0.05)
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
+            time.sleep(0.1)
+            return
+        except socket.error:
+            pass
+
+
 def run_test(simulator, test_file):
     simargs = [simulator]
     if simulator in SIM_ARGS:
@@ -43,7 +56,7 @@ def run_test(simulator, test_file):
     runner.start()
     # For the RTL simulation it can take a while to initialize and open the
     # debugger socket.
-    time.sleep(1)
+    wait_until_active()
     debugger = subprocess.Popen(['oldland-debug', '-x',
                                 os.path.join(TEST_PATH, test_file)],
                                 stdout = subprocess.PIPE,
