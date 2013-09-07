@@ -31,7 +31,9 @@ module oldland_fetch(input wire		clk,
 		     output reg		stopped,
 		     output wire [31:0] dbg_pc,
 		     input wire		dbg_pc_wr_en,
-		     input wire [31:0]	dbg_pc_wr_val);
+		     input wire [31:0]	dbg_pc_wr_val,
+		     input wire [25:0]	vector_base,
+		     input wire		illegal_instr);
 
 reg [31:0]	pc = `OLDLAND_RESET_ADDR;
 
@@ -47,7 +49,8 @@ assign		dbg_pc = pc;
  */
 reg		stalled	= 1'b0;
 wire		stalling = (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
-assign		instr = stalled || stopping ? `INSTR_NOP : fetch_data;
+assign		instr = stalled || stopping || 0 ? `INSTR_NOP :
+			fetch_data;
 reg		stopping = 1'b0;
 reg [2:0]	stop_ctr = 3'd5;
 
@@ -59,6 +62,8 @@ initial		stopped	= 1'b0;
 always @(*) begin
 	if (dbg_pc_wr_en)
 		next_pc = dbg_pc_wr_val;
+	else if (illegal_instr)
+		next_pc = {vector_base, 6'h4};
 	else if (branch_taken)
 		next_pc = branch_pc;
 	else

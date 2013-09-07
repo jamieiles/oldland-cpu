@@ -32,7 +32,8 @@ module oldland_decode(input wire	clk,
                       output reg [2:0]  cr_sel,
                       output reg        write_cr,
                       output reg        is_swi,
-		      output reg	is_rfe);
+		      output reg	is_rfe,
+		      output wire	illegal_instr);
 
 wire [6:0]      addr = instr[31:25];
 
@@ -50,6 +51,8 @@ wire [31:0]     lo16 = {16'b0, instr[25:10]};
 
 assign		ra_sel = instr[11:8];
 assign		rb_sel = instr[7:4];
+
+assign		illegal_instr = ~valid;
 
 initial begin
 	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode, 0, 127);

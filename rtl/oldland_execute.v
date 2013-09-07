@@ -32,7 +32,8 @@ module oldland_exec(input wire		clk,
 		    output reg [31:0]	mdr,
 		    output reg		mem_wr_en,
                     input wire          is_swi,
-		    input wire		is_rfe);
+		    input wire		is_rfe,
+		    output wire [25:0]	vector_base);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -53,6 +54,8 @@ wire [1:0]      psr = {c_flag, z_flag};
 
 reg [1:0]       saved_psr = 2'b0;
 reg [31:0]      fault_address = 32'b0;
+
+assign		vector_base = vector_addr;
 
 initial begin
 	branch_taken = 1'b0;

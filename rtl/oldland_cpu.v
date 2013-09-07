@@ -59,6 +59,7 @@ reg [31:0]	de_ra = 32'b0;
 reg [31:0]	de_rb = 32'b0;
 wire            de_is_swi;
 wire            de_is_rfe;
+wire		df_illegal_instr;
 
 /* Execute -> memory signals. */
 wire [31:0]	em_alu_out;
@@ -71,6 +72,7 @@ wire [1:0]	em_mem_width;
 wire [31:0]	em_mar;
 wire [31:0]	em_mdr;
 wire		em_mem_wr_en;
+wire [25:0]	e_vector_base;
 
 /* Memory -> writeback signals. */
 wire [31:0]	mw_wr_val;
@@ -137,7 +139,9 @@ oldland_fetch	fetch(.clk(clk),
 		      .stopped(cpu_stopped),
 		      .dbg_pc(dbg_pc),
 		      .dbg_pc_wr_en(dbg_pc_wr_en),
-		      .dbg_pc_wr_val(dbg_pc_wr_val));
+		      .dbg_pc_wr_val(dbg_pc_wr_val),
+		      .illegal_instr(df_illegal_instr),
+		      .vector_base(e_vector_base));
 
 oldland_decode	decode(.clk(clk),
 		       .instr(fd_instr),
@@ -162,7 +166,8 @@ oldland_decode	decode(.clk(clk),
                        .cr_sel(de_cr_sel),
                        .write_cr(de_write_cr),
                        .is_swi(de_is_swi),
-		       .is_rfe(de_is_rfe));
+		       .is_rfe(de_is_rfe),
+		       .illegal_instr(df_illegal_instr));
 
 oldland_exec	execute(.clk(clk),
 			.ra(de_ra),
@@ -197,7 +202,8 @@ oldland_exec	execute(.clk(clk),
                         .cr_sel(de_cr_sel),
                         .write_cr(de_write_cr),
                         .is_swi(de_is_swi),
-			.is_rfe(de_is_rfe));
+			.is_rfe(de_is_rfe),
+			.vector_base(e_vector_base));
 
 oldland_memory	mem(.clk(clk),
 		    .load(em_mem_load),

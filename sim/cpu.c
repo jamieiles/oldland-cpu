@@ -24,7 +24,7 @@ enum instruction_class {
 
 enum exception_vector {
 	VECTOR_RESET		= 0x00,
-	VECTOR_ILEGAL_INSTR	= 0x04,
+	VECTOR_ILLEGAL_INSTR	= 0x04,
 	VECTOR_SWI		= 0x08,
 	VECTOR_IRQ		= 0x0c,
 	VECTOR_IFETCH_ABORT	= 0x10,
@@ -171,6 +171,30 @@ struct cpu *new_cpu(const char *binary, int flags)
 	return c;
 }
 
+static uint32_t current_psr(const struct cpu *c)
+{
+	return c->flagsbf.z | (c->flagsbf.c << 1);
+}
+
+enum psr_flags {
+	PSR_Z	= (1 << 0),
+	PSR_C	= (1 << 1),
+	PSR_I	= (1 << 2),
+	PSR_U	= (1 << 3),
+};
+
+static void set_psr(struct cpu *c, uint32_t psr)
+{
+	c->flagsw = psr & (PSR_C | PSR_Z);
+}
+
+static void do_vector(struct cpu *c, enum exception_vector vector)
+{
+	c->control_regs[CR_SAVED_PSR] = current_psr(c);
+	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
+}
+
 static void emul_arithmetic(struct cpu *c, uint32_t instr)
 {
 	enum regs ra, rb, rd;
@@ -225,8 +249,8 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		result = (uint64_t)c->regs[ra] | op2;
 		break;
 	default:
-		die("invalid arithmetic opcode %u (%08x)\n", instr_opc(instr),
-		    instr);
+		do_vector(c, VECTOR_ILLEGAL_INSTR);
+		return;
 	}
 
 	if (instr_opc(instr) == OPCODE_CMP) {
@@ -237,30 +261,6 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 
 	if (instr_opc(instr) != OPCODE_CMP)
 		cpu_wr_reg(c, rd, result & 0xffffffff);
-}
-
-static uint32_t current_psr(const struct cpu *c)
-{
-	return c->flagsbf.z | (c->flagsbf.c << 1);
-}
-
-enum psr_flags {
-	PSR_Z	= (1 << 0),
-	PSR_C	= (1 << 1),
-	PSR_I	= (1 << 2),
-	PSR_U	= (1 << 3),
-};
-
-static void set_psr(struct cpu *c, uint32_t psr)
-{
-	c->flagsw = psr & (PSR_C | PSR_Z);
-}
-
-static void do_vector(struct cpu *c, enum exception_vector vector)
-{
-	c->control_regs[CR_SAVED_PSR] = current_psr(c);
-	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
-	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
 }
 
 static void emul_branch(struct cpu *c, uint32_t instr)
@@ -310,8 +310,7 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		set_psr(c, c->control_regs[CR_SAVED_PSR]);
 		break;
 	default:
-		die("invalid branch opcode %u (%08x)\n", instr_opc(instr),
-		    instr);
+		do_vector(c, VECTOR_ILLEGAL_INSTR);
 	}
 }
 
@@ -379,8 +378,7 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 			warnx("failed to write 32 bits @%08x\n", addr);
 		break;
 	default:
-		die("invalid load/store opcode %u (%08x)\n", instr_opc(instr),
-		    instr);
+		do_vector(c, VECTOR_ILLEGAL_INSTR);
 	}
 }
 
@@ -413,8 +411,7 @@ static void emul_misc(struct cpu *c, uint32_t instr)
                         cpu_wr_reg(c, rd, c->control_regs[imm13]);
                 break;
 	default:
-		die("invalid misc opcode %u (%08x)\n", instr_opc(instr),
-		    instr);
+		do_vector(c, VECTOR_ILLEGAL_INSTR);
 	}
 }
 
@@ -434,8 +431,7 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 		emul_misc(c, instr);
 		break;
 	default:
-		die("invalid instruction class %u (%08x)\n",
-		    instr_class(instr), instr);
+		do_vector(c, VECTOR_ILLEGAL_INSTR);
 	}
 }
 
