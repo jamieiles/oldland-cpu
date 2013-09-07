@@ -25,7 +25,7 @@ module keynsham_soc(input wire		clk,
 		    output wire		dbg_ack);
 
 wire [29:0]	i_addr;
-reg [31:0]	i_data = 32'b0;
+reg [31:0]	i_data = `INSTR_NOP;
 wire [29:0]	d_addr;
 reg [31:0]	d_data = 32'b0;
 wire [31:0]	d_wr_val;
@@ -186,7 +186,7 @@ always @(*) begin
 	else if (rom_i_out_cs)
 		i_data = i_rom_data;
 	else
-		i_data = 32'b0;
+		i_data = `INSTR_NOP;
 end
 
 endmodule
