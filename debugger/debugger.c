@@ -527,8 +527,10 @@ static void run_command_script(lua_State *L, const char *path)
 	fflush(stdout);
 	fflush(stderr);
 
-	if (luaL_dofile(L, path))
-		errx(1, "failed to run command script %s", path);
+	if (luaL_dofile(L, path)) {
+		warnx("failed to run command script %s", path);
+		fprintf(stderr, "%s\n", lua_tostring(L, -1));
+	}
 
 	fflush(stdout);
 	fflush(stderr);
