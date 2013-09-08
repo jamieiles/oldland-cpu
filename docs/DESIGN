@@ -199,3 +199,4 @@ RFE implementation:
   cr2:	saved PSR
   cr3:	fault address register
 	[31:0]: fault address
+  cr4:	data fault address

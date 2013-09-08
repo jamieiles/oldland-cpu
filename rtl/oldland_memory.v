@@ -12,6 +12,7 @@ module oldland_memory(input wire		clk,
 		      output wire		update_rd_out,
 		      output wire [3:0]		rd_sel_out,
 		      output wire		complete,
+		      output wire		data_abort,
 		      /* Signals to data bus */
 		      output wire [29:0]	d_addr,
 		      output reg [3:0]		d_bytesel,
@@ -49,12 +50,14 @@ reg [31:0] rd_mask = 32'b0;
 wire [1:0] mem_width = dbg_en ? dbg_width : width;
 
 assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
-assign complete = d_ack;
-assign update_rd_out = complete && !dbg_en ? mem_update_rd : update_rd_bypass;
+assign complete = d_ack | d_error;
+assign update_rd_out = complete && !dbg_en && !d_error ? mem_update_rd :
+	update_rd_bypass;
 assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
 
 assign dbg_rd_val = mem_rd_val;
 assign dbg_compl = complete;
+assign data_abort = d_error;
 
 initial begin
 	wr_val_bypass = 32'b0;

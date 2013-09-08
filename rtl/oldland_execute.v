@@ -33,7 +33,9 @@ module oldland_exec(input wire		clk,
 		    output reg		mem_wr_en,
                     input wire          is_swi,
 		    input wire		is_rfe,
-		    output wire [25:0]	vector_base);
+		    output wire [25:0]	vector_base,
+		    output reg [31:0]	pc_plus_4_out,
+		    input wire		data_abort);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -54,6 +56,7 @@ wire [1:0]      psr = {c_flag, z_flag};
 
 reg [1:0]       saved_psr = 2'b0;
 reg [31:0]      fault_address = 32'b0;
+reg [31:0]	data_fault_address = 32'b0;
 
 assign		vector_base = vector_addr;
 
@@ -70,6 +73,7 @@ initial begin
 	mar = 32'b0;
 	mdr = 32'b0;
 	mem_wr_en = 1'b0;
+	pc_plus_4_out = 32'b0;
 end
 
 always @(*) begin
@@ -101,6 +105,8 @@ always @(*) begin
                         alu_q = {30'b0, saved_psr};
                 end else if (cr_sel == 3'h3) begin
                         alu_q = fault_address;
+		end else if (cr_sel == 3'h4) begin
+			alu_q = data_fault_address;
                 end else begin
                         alu_q = 32'b0;
                 end
@@ -137,10 +143,17 @@ end
 
 /* CR3: fault address register. */
 always @(posedge clk)
-        if (is_swi)
+        if (is_swi || data_abort)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)
 		fault_address <= ra;
+
+/* CR4: data fault address register. */
+always @(posedge clk)
+	if (data_abort)
+		data_fault_address <= mar;
+	else if (write_cr && cr_sel == 3'h4)
+		data_fault_address <= ra;
 
 always @(posedge clk) begin
 	alu_out <= alu_q;
@@ -185,6 +198,7 @@ always @(posedge clk) begin
 	end
 
 	mem_wr_en <= mem_store;
+	pc_plus_4_out <= pc_plus_4;
 end
 
 endmodule

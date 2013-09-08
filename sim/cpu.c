@@ -36,6 +36,7 @@ enum control_register {
 	CR_PSR			= 1,
 	CR_SAVED_PSR		= 2,
 	CR_FAULT_ADDRESS	= 3,
+	CR_DATA_FAULT_ADDRESS	= 4,
 	NUM_CONTROL_REGS
 };
 
@@ -328,7 +329,7 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	int32_t imm13 = instr_imm13(instr);
 	uint32_t addr, v = 0;
 	enum regs ra = instr_ra(instr), rb = instr_rb(instr), rd = instr_rd(instr);
-	int err;
+	int err = 0;
 
 	/* Sign extend. */
 	imm13 <<= 20;
@@ -343,42 +344,38 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 	switch (instr_opc(instr)) {
 	case OPCODE_LDR8:
 		err = mem_map_read(c->mem, addr, 8, &v);
-		if (err)
-			warnx("failed to read 8 bits @%08x\n", addr);
-		cpu_wr_reg(c, rd, v & 0xff);
+		if (!err)
+			cpu_wr_reg(c, rd, v & 0xff);
 		break;
 	case OPCODE_LDR16:
 		err = mem_map_read(c->mem, addr, 16, &v);
-		if (err)
-			warnx("failed to read 16 bits @%08x\n", addr);
-		cpu_wr_reg(c, rd, v & 0xffff);
+		if (!err)
+			cpu_wr_reg(c, rd, v & 0xffff);
 		break;
 	case OPCODE_LDR32:
 		err = mem_map_read(c->mem, addr, 32, &v);
-		if (err)
-			warnx("failed to read 32 bits @%08x\n", addr);
-		cpu_wr_reg(c, rd, v);
+		if (!err)
+			cpu_wr_reg(c, rd, v);
 		break;
 	case OPCODE_STR8:
 		v = c->regs[rb] & 0xff;
 		err = cpu_mem_map_write(c, addr, 8, v);
-		if (err)
-			warnx("failed to write 8 bits @%08x\n", addr);
 		break;
 	case OPCODE_STR16:
 		v = c->regs[rb] & 0xffff;
 		err = cpu_mem_map_write(c, addr, 16, v);
-		if (err)
-			warnx("failed to write 16 bits @%08x\n", addr);
 		break;
 	case OPCODE_STR32:
 		v = c->regs[rb];
 		err = cpu_mem_map_write(c, addr, 32, v);
-		if (err)
-			warnx("failed to write 32 bits @%08x\n", addr);
 		break;
 	default:
 		do_vector(c, VECTOR_ILLEGAL_INSTR);
+	}
+
+	if (err) {
+		c->control_regs[CR_DATA_FAULT_ADDRESS] = addr;
+		do_vector(c, VECTOR_DATA_ABORT);
 	}
 }
 
