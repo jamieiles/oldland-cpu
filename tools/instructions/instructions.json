@@ -196,37 +196,37 @@
         "ldr32": {
             "class": 2,
             "opcode": 0,
-            "format": [["rd"], ["imm13", "index"]],
+            "format": [["rd"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "ldr16": {
             "class": 2,
             "opcode": 1,
-            "format": [["rd"], ["imm13", "index"]],
+            "format": [["rd"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "ldr8": {
             "class": 2,
             "opcode": 2,
-            "format": [["rd"], ["imm13", "index"]],
+            "format": [["rd"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "str32": {
             "class": 2,
             "opcode": 4,
-            "format": [["rb"], ["imm13", "index"]],
+            "format": [["rb"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "str16": {
             "class": 2,
             "opcode": 5,
-            "format": [["rb"], ["imm13", "index"]],
+            "format": [["rb"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "str8": {
             "class": 2,
             "opcode": 6,
-            "format": [["rb"], ["imm13", "index"]],
+            "format": [["rb"], ["imm13pc", "index"]],
             "formatsel": 25
         },
         "bkp": {
