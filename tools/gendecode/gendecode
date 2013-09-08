@@ -104,7 +104,7 @@ def add_branch_instruction(opcode, idef):
             'bcc':   int(cc),
             'icall': opcode == 'call',
             'rdlr':  opcode == 'call',
-            'op1ra': 1,
+            'op1rb': 1,
             'wrrd':  opcode == 'call',
             'aluop': 0xf
         }
