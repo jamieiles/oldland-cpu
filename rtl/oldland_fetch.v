@@ -20,6 +20,9 @@
  * to continue new instructions.
  */
 module oldland_fetch(input wire		clk,
+		     output reg		i_access,
+		     input wire		i_ack,
+		     input wire		i_error,
 		     input wire		stall_clear,
 		     input wire [31:0]	branch_pc,
 		     input wire		branch_taken,
@@ -49,7 +52,7 @@ assign		dbg_pc = pc;
  */
 reg		stalled	= 1'b0;
 wire		stalling = (^instr[31:30] == 1'b1 || stalled) && !stall_clear;
-assign		instr = stalled || stopping || 0 ? `INSTR_NOP :
+assign		instr = stalled || stopping ? `INSTR_NOP :
 			fetch_data;
 reg		stopping = 1'b0;
 reg [2:0]	stop_ctr = 3'd5;
@@ -57,11 +60,16 @@ reg [2:0]	stop_ctr = 3'd5;
 assign		fetch_addr = stalling || stopping || !run ?
 			pc[31:2] : next_pc[31:2];
 
-initial		stopped	= 1'b0;
+initial	begin
+	i_access = 1'b0;
+	stopped	= 1'b0;
+end
 
 always @(*) begin
 	if (dbg_pc_wr_en)
 		next_pc = dbg_pc_wr_val;
+	else if (i_error)
+		next_pc = {vector_base, 6'h10};
 	else if (illegal_instr)
 		next_pc = {vector_base, 6'h4};
 	else if (branch_taken)
@@ -73,13 +81,17 @@ end
 always @(posedge clk)
 	if (dbg_pc_wr_en)
 		pc <= dbg_pc_wr_val;
+	else if (i_error)
+		pc <= {vector_base, 6'h10};
 	else if (!stalling && !stopping)
 		pc <= next_pc;
 
 always @(posedge clk) begin
+	i_access <= (!stalled || stopping);
+
 	if (stalling)
 		stalled <= 1'b1;
-	else if (stall_clear)
+	else if (stall_clear || i_error)
 		stalled <= 1'b0;
 
 	if (!run && !stalling)

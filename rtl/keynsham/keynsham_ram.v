@@ -1,6 +1,11 @@
 module keynsham_ram(input wire		clk,
+		    /* Instruction bus. */
+		    input wire		i_access,
+		    input wire		i_cs,
 		    input wire [10:0]	i_addr,
 		    output wire [31:0]	i_data,
+		    output wire		i_ack,
+		    /* Data bus. */
 		    input wire		d_access,
 		    input wire		d_cs,
 		    input wire [10:0]	d_addr,
@@ -13,8 +18,11 @@ module keynsham_ram(input wire		clk,
 `ifdef __ICARUS__
 
 sim_dp_ram	mem(.clk(clk),
+		    .i_access(i_access),
+		    .i_cs(i_cs),
 		    .i_addr(i_addr[10:0]),
 		    .i_data(i_data),
+		    .i_ack(i_ack),
 		    .d_access(d_access),
 		    .d_cs(d_cs),
 		    .d_addr(d_addr[10:0]),
@@ -25,8 +33,11 @@ sim_dp_ram	mem(.clk(clk),
 		    .d_ack(d_ack));
 `else /* Altera FPGA */
 
-reg		ram_ack = 1'b0;
-assign		d_ack = ram_ack;
+reg		d_ram_ack = 1'b0;
+assign		d_ack = d_ram_ack;
+
+reg		i_ram_ack = 1'b0;
+assign		i_ack = i_ram_ack;
 
 ram		mem(.clock(clk),
 		    .address_a(i_addr[10:0]), /* Word addressed with byte enables. */
@@ -41,7 +52,10 @@ ram		mem(.clock(clk),
 		    .q_b(d_data));
 
 always @(posedge clk)
-	ram_ack <= d_access && d_cs;
+	d_ram_ack <= d_access && d_cs;
+
+always @(posedge clk)
+	i_ram_ack <= i_access && i_cs;
 
 `endif /* __ICARUS__ */
 

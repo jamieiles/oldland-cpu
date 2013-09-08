@@ -1,7 +1,10 @@
 module oldland_cpu(input wire		clk,
 		   /* Instruction bus. */
+		   output wire		i_access,
 		   output wire [29:0]	i_addr,
 		   input wire [31:0]	i_data,
+		   input wire		i_ack,
+		   input wire		i_error,
 		   /* Data bus. */
 		   output wire [29:0]	d_addr,
 		   output wire [3:0]	d_bytesel,
@@ -128,6 +131,9 @@ oldland_debug	debug(.clk(clk),
 		      .dbg_pc_wr_en(dbg_pc_wr_en));
 
 oldland_fetch	fetch(.clk(clk),
+		      .i_access(i_access),
+		      .i_ack(i_ack),
+		      .i_error(i_error),
 		      .stall_clear(stall_clear),
 		      .branch_pc(em_alu_out),
 		      .branch_taken(ef_branch_taken),

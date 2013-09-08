@@ -1,6 +1,11 @@
 module sim_dp_ram(input wire		clk,
+		  /* Instruction bus. */
+		  input wire		i_access,
+		  input wire		i_cs,
 		  input wire [10:0]	i_addr,
 		  output reg [31:0]	i_data,
+		  output reg		i_ack,
+		  /* Data bus. */
 		  input wire		d_access,
 		  input wire		d_cs,
 		  input wire [10:0]	d_addr,
@@ -24,6 +29,7 @@ initial begin
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;
 	d_ack = 1'b0;
+	i_ack = 1'b0;
 end
 
 always @(posedge clk) begin
@@ -56,5 +62,8 @@ always @(posedge clk) begin
 
 	d_ack <= d_access && d_cs;
 end
+
+always @(posedge clk)
+	i_ack <= i_access && i_cs;
 
 endmodule

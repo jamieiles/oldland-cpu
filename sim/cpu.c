@@ -438,15 +438,14 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 int cpu_cycle(struct cpu *c)
 {
 	uint32_t instr;
-	int err;
 
 	c->next_pc = c->pc + 4;
 
 	if (c->trace_file)
 		fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
 	trace(c->trace_file, TRACE_PC, c->pc);
-	err = mem_map_read(c->mem, c->pc, 32, &instr);
-	assert(!err);
+	if (mem_map_read(c->mem, c->pc, 32, &instr))
+		do_vector(c, VECTOR_IFETCH_ABORT);
 	if (c->trace_file)
 		trace(c->trace_file, TRACE_INSTR, instr);
 

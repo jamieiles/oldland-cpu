@@ -13,6 +13,7 @@ function run_to_tp()
 		target.step()
 		cycle_count = cycle_count + 1
 		if _G['MAX_CYCLE_COUNT'] and cycle_count > MAX_CYCLE_COUNT then
+                        print("Maximum cycle count exceeded")
 			break
 		end
 
@@ -38,9 +39,13 @@ function run_testpoints(expected_testpoints)
 		if not tp or
 		tp.type ~= v[1] or
 		tp.tag ~= v[2] then
-			print(string.format("unexpected testpoint %s:%u at %08x",
-                                            tp_type(tp.type), tp.tag,
-                                            target.read_reg(16)))
+                        if tp then
+                                print(string.format("unexpected testpoint %s:%u at %08x",
+                                                    tp_type(tp.type), tp.tag,
+                                                    target.read_reg(16)))
+                        else
+                                print("No testpoint hit")
+                        end
 			return -1
 		end
 
