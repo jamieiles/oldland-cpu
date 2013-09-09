@@ -329,6 +329,24 @@ static struct debug_data *start_server(void)
 	return data;
 }
 
+static void notify_runner(void)
+{
+	int fd;
+	char *fifo_name = getenv("SIM_NOTIFY_FIFO");
+
+	if (!fifo_name)
+		return;
+
+	fd = open(fifo_name, O_WRONLY);
+	if (fd < 0)
+		err(1, "failed to open notifcation fifo");
+
+	if (write(fd, "O", 1) != 1)
+		err(1, "failed to write notification byte");
+
+	close(fd);
+}
+
 static void debug_stub_register(void)
 {
 	struct debug_data *data;
@@ -355,6 +373,8 @@ static void debug_stub_register(void)
 	int i;
 
 	data = start_server();
+
+	notify_runner();
 
 	for (i = 0; i < ARRAY_SIZE(tasks); ++i) {
 		tasks[i].user_data = (char *)data;

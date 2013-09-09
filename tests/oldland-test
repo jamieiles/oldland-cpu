@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 from multiprocessing import Process
 import os
-import signal
-import socket
 import subprocess
 import sys
-import time
 
 try:
     from termcolor import cprint
@@ -27,42 +24,41 @@ TEST_FILES = find_test_files()
 SIM_ARGS = {
     'oldland-rtlsim': ['--bootrom', 'sim.hex']
 }
+FIFO_PATH = '/tmp/oldland-test.{0}'.format(os.getpid())
 
 def sim_runner(kargs):
-    sim = subprocess.Popen(list(kargs))
+    sim_env = dict(os.environ)
+    sim_env['SIM_NOTIFY_FIFO'] = FIFO_PATH
 
-    try:
-        sim.communicate()
-    except KeyboardInterrupt:
-        sim.terminate()
+    subprocess.Popen(list(kargs), env = sim_env).communicate()
 
-def wait_until_active():
-    while True:
-        try:
-            s = socket.create_connection(("localhost", "36000"), 0.05)
-            s.shutdown(socket.SHUT_RDWR)
-            s.close()
-            time.sleep(0.1)
-            return
-        except socket.error:
-            pass
-
+def wait_for_sim():
+    fd = os.open(FIFO_PATH, os.O_RDONLY)
+    os.read(fd, 1)
+    os.close(fd)
 
 def run_test(simulator, test_file):
+    try:
+        os.unlink(FIFO_PATH)
+    except:
+        pass
+    os.mkfifo(FIFO_PATH)
+
     simargs = [simulator]
     if simulator in SIM_ARGS:
         simargs += SIM_ARGS[simulator]
     runner = Process(target = sim_runner, args = (simargs,))
     runner.start()
-    # For the RTL simulation it can take a while to initialize and open the
-    # debugger socket.
-    wait_until_active()
+
+    wait_for_sim()
+
     debugger = subprocess.Popen(['oldland-debug', '-x',
                                 os.path.join(TEST_PATH, test_file)],
                                 stdout = subprocess.PIPE,
                                 stderr = subprocess.PIPE, cwd = TEST_PATH)
     stdout, stderr = debugger.communicate()
-    os.kill(runner.pid, signal.SIGINT)
+
+    runner.join()
 
     tc = TestCase(test_file, test_file, 0, stdout)
     if debugger.returncode:
@@ -71,6 +67,7 @@ def run_test(simulator, test_file):
 
     cprint('{0}::{1}'.format(simulator, test_file),
            'red' if debugger.returncode else 'green')
+    os.unlink(FIFO_PATH)
 
     return tc
 

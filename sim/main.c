@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -296,6 +297,24 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 	send_response(debug, &resp);
 }
 
+static void notify_runner(void)
+{
+	int fd;
+	char *fifo_name = getenv("SIM_NOTIFY_FIFO");
+
+	if (!fifo_name)
+		return;
+
+	fd = open(fifo_name, O_WRONLY);
+	if (fd < 0)
+		err(1, "failed to open notifcation fifo");
+
+	if (write(fd, "O", 1) != 1)
+		err(1, "failed to write notification byte");
+
+	close(fd);
+}
+
 int main(int argc, char *argv[])
 {
 	struct cpu *cpu;
@@ -308,6 +327,8 @@ int main(int argc, char *argv[])
 			cpu_flags &= ~CPU_NOTRACE;
 
 	cpu = new_cpu(NULL, cpu_flags);
+
+	notify_runner();
 
 	for (;;) {
 		struct dbg_request req;
