@@ -20,6 +20,7 @@ enum operand_type {
 };
 
 enum { OPCODE_AND = 6 };
+enum { OPCODE_BLTS = 10 };
 enum { OPCODE_LSL = 4 };
 enum { OPCODE_LSR = 5 };
 enum { OPCODE_SUBC = 3 };
@@ -40,6 +41,7 @@ enum { OPCODE_BNE = 5 };
 enum { OPCODE_ASR = 14 };
 enum { OPCODE_BST = 9 };
 enum { OPCODE_BIC = 8 };
+enum { OPCODE_BGTS = 9 };
 enum { OPCODE_BKP = 0 };
 enum { OPCODE_STR16 = 5 };
 enum { OPCODE_ORLO = 13 };

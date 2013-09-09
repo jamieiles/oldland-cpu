@@ -43,12 +43,16 @@ wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
 reg [31:0]	alu_q = 32'b0;
 reg		alu_c = 1'b0;
 wire		alu_z = (op1 ^ op2) == 32'b0;
+reg		alu_n = 1'b0;
+reg		alu_o = 1'b0;
 
 reg		branch_condition_met = 1'b0;
 
 /* Status registers, not accessible by the programmer interface. */
 reg		c_flag = 1'b0;
 reg		z_flag = 1'b0;
+reg		o_flag = 1'b0;
+reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
@@ -83,7 +87,7 @@ always @(*) begin
 	5'b00000: {alu_c, alu_q} = op1 + op2;
 	5'b00001: {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
 	5'b00010: {alu_c, alu_q} = op1 - op2;
-	5'b00011: {alu_c, alu_q} = op1 - op2 + {31'b0, c_flag};
+	5'b00011: {alu_c, alu_q} = op1 - op2 - {31'b0, c_flag};
 	5'b00100: {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
 	5'b00101: alu_q = op1 >> op2[4:0];
 	5'b00110: alu_q = op1 & op2;
@@ -92,7 +96,11 @@ always @(*) begin
 	5'b01001: alu_q = op1 | (1 << op2[4:0]);
 	5'b01010: alu_q = op1 | op2;
 	5'b01011: alu_q = op2;
-	5'b01100: {alu_c, alu_q} = op1 - op2;
+	5'b01100: begin
+		{alu_c, alu_q} = op1 - op2;
+		alu_o = op1[31] ^ op2[31] && alu_q[31] == op2[31];
+		alu_n = alu_q[31];
+	end
 	5'b01101: alu_q = op1 | {16'b0, op2[15:0]};
 	5'b01110: alu_q = op1 >>> op2;
 	5'b01111: alu_q = op1;
@@ -100,7 +108,7 @@ always @(*) begin
                 if (cr_sel == 3'b000) begin
                         alu_q = {vector_addr, 6'b0};
                 end else if (cr_sel == 3'h1) begin
-                        alu_q = {30'b0, c_flag, z_flag};
+                        alu_q = {28'b0, n_flag, o_flag, c_flag, z_flag};
                 end else if (cr_sel == 3'h2) begin
                         alu_q = {30'b0, saved_psr};
                 end else if (cr_sel == 3'h3) begin
@@ -124,6 +132,8 @@ always @(*) begin
 	3'b010: branch_condition_met = z_flag;
 	3'b011: branch_condition_met = !c_flag;
 	3'b100: branch_condition_met = c_flag;
+	3'b101: branch_condition_met = !z_flag && (n_flag == o_flag);
+	3'b110: branch_condition_met = n_flag != o_flag;
 	default: branch_condition_met = 1'b0;
 	endcase
 end
@@ -163,6 +173,8 @@ always @(posedge clk) begin
 	if (update_flags) begin
 		z_flag <= alu_z;
 		c_flag <= alu_c;
+		n_flag <= alu_n;
+		o_flag <= alu_o;
 	end
 
 	if (is_rfe) begin
@@ -172,6 +184,8 @@ always @(posedge clk) begin
 
         /* CR1: PSR. */
         if (write_cr && cr_sel == 3'h1) begin
+		n_flag <= ra[3];
+		o_flag <= ra[2];
                 c_flag <= ra[1];
                 z_flag <= ra[0];
         end

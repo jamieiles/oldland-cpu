@@ -47,6 +47,8 @@ struct cpu {
 	union {
 		uint32_t flagsw;
 		struct {
+			unsigned n:1;
+			unsigned o:1;
 			unsigned z:1;
 			unsigned c:1;
 		} flagsbf;
@@ -174,7 +176,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 
 static uint32_t current_psr(const struct cpu *c)
 {
-	return c->flagsbf.z | (c->flagsbf.c << 1);
+	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2);
 }
 
 enum psr_flags {
@@ -202,6 +204,7 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 	int32_t imm13;
 	uint64_t op2;
 	uint64_t result = 0;
+	bool upc = false, upz = false, upo = false, upn = false;
 
 	ra = instr_ra(instr);
 	rb = instr_rb(instr);
@@ -211,19 +214,26 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 
 	switch (instr_opc(instr)) {
 	case OPCODE_ADD:
+		upc = true;
 		result = (uint64_t)c->regs[ra] + op2;
 		break;
 	case OPCODE_ADDC:
-		result = (uint64_t)c->regs[ra] + op2 + c->flagsbf.c;
+		upc = true;
+		op2 += c->flagsbf.c;
+		result = (uint64_t)c->regs[ra] + op2;
 		break;
 	case OPCODE_CMP:
+		upc = upz = upo = upn = true;
 		result = (uint64_t)c->regs[ra] - op2;
 		break;
 	case OPCODE_SUB:
+		upc = true;
 		result = (uint64_t)c->regs[ra] - op2;
 		break;
 	case OPCODE_SUBC:
-		result = (uint64_t)c->regs[ra] - op2 - !c->flagsbf.c;
+		upc = true;
+		op2 -= c->flagsbf.c;
+		result = (uint64_t)c->regs[ra] - op2;
 		break;
 	case OPCODE_LSL:
 		result = (uint64_t)c->regs[ra] << op2;
@@ -254,9 +264,16 @@ static void emul_arithmetic(struct cpu *c, uint32_t instr)
 		return;
 	}
 
-	if (instr_opc(instr) == OPCODE_CMP) {
-		c->flagsbf.z = !result;
-		c->flagsbf.c = !!(result & (1LLU << 32));
+	if (upc || upz || upo || upn) {
+		if (upz)
+			c->flagsbf.z = !result;
+		if (upc)
+			c->flagsbf.c = !!(result & (1LLU << 32));
+		if (upo)
+			c->flagsbf.o = (c->regs[ra] & 0x80000000) ^ (op2 & 0x80000000) &&
+				(result & 0x80000000) == (op2 & 0x80000000);
+		if (upn)
+			c->flagsbf.n = !!(result & 0x80000000);
 		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
 	}
 
@@ -292,8 +309,16 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		if (!c->flagsbf.c && !c->flagsbf.z)
 			cpu_set_next_pc(c, target);
 		break;
+	case OPCODE_BGTS:
+		if (!c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o))
+			cpu_set_next_pc(c, target);
+		break;
 	case OPCODE_BLT:
 		if (c->flagsbf.c && !c->flagsbf.z)
+			cpu_set_next_pc(c, target);
+		break;
+	case OPCODE_BLTS:
+		if (c->flagsbf.n != c->flagsbf.o)
 			cpu_set_next_pc(c, target);
 		break;
 	case OPCODE_CALL:

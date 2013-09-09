@@ -88,6 +88,8 @@ BNE	 0  1  0  1  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  
 BEQ	 0  1  0  1  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BGT	 0  1  0  1  1  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 BLT	 0  1  1  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BGTS	 0  1  1  0  0  1  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
+BLTS	 0  1  1  0  1  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 SWI	 0  1  1  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x  x  x  x  x
 
 LDR	 1  0  0  0  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x rd rd rd rd
@@ -192,8 +194,10 @@ RFE implementation:
 	[5:0]:  reserved, SBZ
   cr1:	PSR
 	[31:4]: reserved, SBZ
-	[3:3]:  user mode
-	[2:2]:  irqs enabled
+	[5:5]:  user mode
+	[4:4]:  irqs enabled
+	[3:3]:  negative flag
+	[2:2]:  overflow flag
 	[1:1]:  carry flag
 	[0:0]:  zero flag
   cr2:	saved PSR

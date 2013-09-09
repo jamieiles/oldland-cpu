@@ -241,6 +241,17 @@ const struct oldland_instruction oldland_instructions_0[16] = {
 };
 
 const struct oldland_instruction oldland_instructions_1[16] = {
+        [OPCODE_BLTS] = {
+                .name = "blts",
+                .class = 1,
+                .opcode = OPCODE_BLTS,
+                .constbits = 0x00000000,
+                .nr_operands = 1,
+                .op1 = {&operands[OPERAND_IMM24], &operands[OPERAND_RB]},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = 25,
+        }, 
         [OPCODE_SWI] = {
                 .name = "swi",
                 .class = 1,
@@ -289,6 +300,17 @@ const struct oldland_instruction oldland_instructions_1[16] = {
                 .name = "bne",
                 .class = 1,
                 .opcode = OPCODE_BNE,
+                .constbits = 0x00000000,
+                .nr_operands = 1,
+                .op1 = {&operands[OPERAND_IMM24], &operands[OPERAND_RB]},
+                .op2 = {},
+                .op3 = {},
+                .formatsel = 25,
+        }, 
+        [OPCODE_BGTS] = {
+                .name = "bgts",
+                .class = 1,
+                .opcode = OPCODE_BGTS,
                 .constbits = 0x00000000,
                 .nr_operands = 1,
                 .op1 = {&operands[OPERAND_IMM24], &operands[OPERAND_RB]},

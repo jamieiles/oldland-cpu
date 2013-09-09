@@ -6,7 +6,7 @@ connect("localhost", "36000")
 loadelf("branches")
 
 expect_testpoints = {
-	{ TP_SUCCESS, 0 }
+	{ TP_SUCCESS, 0, function () regs() end }
 }
 
 return run_testpoints(expect_testpoints)

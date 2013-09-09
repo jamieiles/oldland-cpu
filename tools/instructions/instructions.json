@@ -193,6 +193,20 @@
             "formatsel": 25,
 	    "branch_cc": 4
 	},
+	"bgts": {
+            "class": 1,
+            "opcode": 9,
+            "format": [["imm24", "rb"]],
+            "formatsel": 25,
+	    "branch_cc": 5
+	},
+	"blts": {
+            "class": 1,
+            "opcode": 10,
+            "format": [["imm24", "rb"]],
+            "formatsel": 25,
+	    "branch_cc": 6
+	},
         "ldr32": {
             "class": 2,
             "opcode": 0,
