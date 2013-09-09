@@ -4,12 +4,12 @@
 
 .macro	TESTPOINT	type, tag
 .if	\type & (TP_SUCCESS | TP_FAILURE)
-1:	b	1b
+10001:	b	10001b
 .else
-1:	nop
+10001:	nop
 .endif
 .pushsection	".testpoints"
-	.long	1b
+	.long	10001b
 	.word	\type
 	.word	\tag
 .popsection
