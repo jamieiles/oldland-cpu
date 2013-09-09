@@ -513,15 +513,6 @@ static void run_interactive(lua_State *L)
 	}
 }
 
-static void close_target(struct target *t)
-{
-	if (!t)
-		return;
-
-	shutdown(t->fd, SHUT_RDWR);
-	close(t->fd);
-}
-
 static void run_command_script(lua_State *L, const char *path)
 {
 	fflush(stdout);
@@ -535,7 +526,7 @@ static void run_command_script(lua_State *L, const char *path)
 	fflush(stdout);
 	fflush(stderr);
 
-	close_target(target);
+	dbg_term(target);
 
 	exit(lua_gettop(L) == 1 ? lua_tointeger(L, 1) : 0);
 }
