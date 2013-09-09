@@ -168,6 +168,35 @@ static int dbg_put_calltf(char *user_data)
 	return 0;
 }
 
+static int dbg_sim_term_calltf(char *user_data)
+{
+	vpiHandle systfref, args_iter;
+	struct t_vpi_value argval = {
+		.format = vpiIntVal,
+	};
+	struct debug_data *debug_data = (struct debug_data *)user_data;
+	struct dbg_response resp;
+
+	systfref = vpi_handle(vpiSysTfCall, NULL);
+	args_iter = vpi_iterate(vpiArgument, systfref);
+
+	vpiHandle argh = vpi_scan(args_iter);
+	vpi_get_value(argh, &argval);
+
+	resp.status = 0;
+	resp.data = argval.value.integer;
+	send_response(debug_data, &resp);
+
+	vpi_free_object(args_iter);
+
+	shutdown(debug_data->client_fd, SHUT_RDWR);
+	close(debug_data->client_fd);
+	close(debug_data->sock_fd);
+	debug_data->client_fd = debug_data->sock_fd = -1;
+
+	return 0;
+}
+
 static void enable_reuseaddr(int fd)
 {
 	int val = 1;
@@ -314,6 +343,12 @@ static void debug_stub_register(void)
 			.type		= vpiSysTask,
 			.tfname		= "$dbg_put",
 			.calltf		= dbg_put_calltf,
+			.sizetf		= 0,
+		},
+		{
+			.type		= vpiSysTask,
+			.tfname		= "$dbg_sim_term",
+			.calltf		= dbg_sim_term_calltf,
 			.sizetf		= 0,
 		},
 	};

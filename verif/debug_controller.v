@@ -31,7 +31,7 @@ always @(posedge clk) begin
 			 * worrying about system level reset.
 			 */
 			if (dbg_addr == 2'b00 && dbg_val == 32'hffffffff) begin
-				$dbg_put(32'b0);
+				$dbg_sim_term(32'b0);
 				$finish;
 			end
 
