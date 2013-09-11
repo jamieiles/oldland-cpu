@@ -157,7 +157,7 @@
             "class": 1,
             "opcode": 1,
             "format": [],
-            "constbits": "0x02000e00"
+            "constbits": "0x020000f0"
         },
 	"b": {
             "class": 1,

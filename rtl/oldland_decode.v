@@ -97,7 +97,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk)
-	rd_sel <= rd_is_lr ? 4'he : instr[3:0];
+	rd_sel <= rd_is_lr ? 4'hf : instr[3:0];
 
 always @(posedge clk) begin
 	case (imsel)

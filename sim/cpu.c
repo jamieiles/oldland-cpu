@@ -322,7 +322,7 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 			cpu_set_next_pc(c, target);
 		break;
 	case OPCODE_CALL:
-		cpu_wr_reg(c, 6, c->pc + 4);
+		cpu_wr_reg(c, 0xf, c->pc + 4);
 		cpu_set_next_pc(c, target);
 		break;
 	case OPCODE_RET:
