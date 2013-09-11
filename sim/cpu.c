@@ -326,7 +326,7 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 		cpu_set_next_pc(c, target);
 		break;
 	case OPCODE_RET:
-		cpu_set_next_pc(c, c->regs[6]);
+		cpu_set_next_pc(c, c->regs[LR]);
 		break;
 	case OPCODE_SWI:
 		do_vector(c, VECTOR_SWI);
