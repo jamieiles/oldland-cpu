@@ -24,3 +24,6 @@
 { "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}

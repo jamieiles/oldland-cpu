@@ -128,6 +128,8 @@ set_global_assignment -name ROUTER_LCELL_INSERTION_AND_LOGIC_DUPLICATION ON
 set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL MAXIMUM
 set_global_assignment -name AUTO_PACKED_REGISTERS_STRATIXII NORMAL
 set_global_assignment -name MUX_RESTRUCTURE OFF
+set_global_assignment -name SYNTH_TIMING_DRIVEN_SYNTHESIS ON
+set_global_assignment -name ALLOW_ANY_RAM_SIZE_FOR_RECOGNITION ON
 set_global_assignment -name VERILOG_FILE toplevel.v
 set_global_assignment -name VERILOG_FILE sys_pll.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland_defines.v
@@ -152,11 +154,10 @@ set_global_assignment -name VERILOG_FILE ../rtl/oldland_debug.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland_cpu.v
 set_global_assignment -name VERILOG_FILE ../rtl/sync2ff.v
 set_global_assignment -name VERILOG_FILE ../verif/dc_ram.v
+set_global_assignment -name VERILOG_FILE bootrom.v
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name MIF_FILE ../rom.mif
 set_global_assignment -name HEX_FILE ../rom2.hex
 set_global_assignment -name QIP_FILE bootrom.qip
 set_global_assignment -name QIP_FILE sys_pll.qip
-set_global_assignment -name SYNTH_TIMING_DRIVEN_SYNTHESIS ON
-set_global_assignment -name ALLOW_ANY_RAM_SIZE_FOR_RECOGNITION ON
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
