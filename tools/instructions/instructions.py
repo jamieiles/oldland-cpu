@@ -8,6 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), 'instructions.json'),
     data = json.loads(itab.read())
     instructions = data['instructions']
     operands = data['operands']
+    alu_opcodes = data['alu_opcodes']
 
 def gen_types(instructions, operands):
     operand_types = 'enum operand_type {\n'

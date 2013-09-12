@@ -96,6 +96,9 @@ def add_arith_instruction(opcode, idef):
         'upcc':  'Z' in flags_updated or 'O' in flags_updated
     }
 
+def alu_opcode_val(name):
+    return int(instructions.alu_opcodes[name], 16)
+
 def add_branch_instruction(opcode, idef):
     cc = idef.get('branch_cc', '7')
     if opcode not in ['swi', 'rfe']:
@@ -106,7 +109,7 @@ def add_branch_instruction(opcode, idef):
             'rdlr':  opcode == 'call',
             'op1rb': 1,
             'wrrd':  opcode == 'call',
-            'aluop': 0xf
+            'aluop': alu_opcode_val('copya')
         }
     # Return to immediate isn't a real instruction, trap it.
     if opcode != 'ret':
@@ -121,7 +124,7 @@ def add_branch_instruction(opcode, idef):
             'icall': opcode == 'call',
             'rdlr':  opcode == 'call',
             'wrrd':  opcode == 'call',
-            'aluop': alu_opcodes.get(opcode, 0x0),
+            'aluop': alu_opcodes.get(opcode, alu_opcode_val('add')),
             'swi':   opcode == 'swi',
             'rfe':   opcode == 'rfe'
         }
@@ -143,7 +146,7 @@ def add_mem_instruction(opcode, idef):
         'mstr':  'str' in opcode,
         'mldr':  'ldr' in opcode,
         'op1ra': 1,
-        'aluop': 0,
+        'aluop': alu_opcode_val('add'),
     }
     # PC-relative load/store.
     rom_entries[(opcode, 'immediate')] = {
@@ -151,7 +154,7 @@ def add_mem_instruction(opcode, idef):
         'maw':   access_width(opcode),
         'mstr':  'str' in opcode,
         'mldr':  'ldr' in opcode,
-        'aluop': 0,
+        'aluop': alu_opcode_val('add'),
     }
 
 def add_misc_instruction(opcode, idef):
@@ -185,7 +188,7 @@ def add_misc_instruction(opcode, idef):
             'wcr':   opcode == 'scr',
             'op1ra': opcode == 'scr', # cr[N] := ra
             'wrrd':  opcode == 'gcr', # rd := cr[N]
-            'aluop': 0x10,
+            'aluop': alu_opcode_val('gcr'),
         }
 
 for opcode, idef in itab.items():

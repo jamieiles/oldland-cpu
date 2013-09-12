@@ -1,4 +1,25 @@
 {
+    "alu_opcodes" : {
+        "add":  "0x00",
+        "addc": "0x01",
+        "sub":  "0x02",
+        "subc": "0x03",
+        "lsl":  "0x04",
+        "lsr":  "0x05",
+        "and":  "0x06",
+        "xor":  "0x07",
+        "bic":  "0x08",
+        "bst":  "0x09",
+        "or":   "0x0a",
+        "copyb":"0x0b",
+        "cmp":  "0x0c",
+        "movhi":"0x0d",
+        "asr":  "0x0e",
+        "copya":"0x0f",
+        "gcr":  "0x10",
+        "swi":  "0x11",
+        "rfe":  "0x12"
+    },
     "operands": {
         "rd": {
             "type": "register",

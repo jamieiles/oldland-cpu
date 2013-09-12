@@ -85,27 +85,27 @@ always @(*) begin
 	alu_c = 1'b0;
 
 	case (alu_opc)
-	5'b00000: {alu_c, alu_q} = op1 + op2;
-	5'b00001: {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
-	5'b00010: {alu_c, alu_q} = op1 - op2;
-	5'b00011: {alu_c, alu_q} = op1 - op2 - {31'b0, c_flag};
-	5'b00100: {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
-	5'b00101: alu_q = op1 >> op2[4:0];
-	5'b00110: alu_q = op1 & op2;
-	5'b00111: alu_q = op1 ^ op2;
-	5'b01000: alu_q = op1 & ~(1 << op2[4:0]);
-	5'b01001: alu_q = op1 | (1 << op2[4:0]);
-	5'b01010: alu_q = op1 | op2;
-	5'b01011: alu_q = op2;
+	`ALU_OPC_ADD:   {alu_c, alu_q} = op1 + op2;
+	`ALU_OPC_ADDC:  {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
+	`ALU_OPC_SUB:   {alu_c, alu_q} = op1 - op2;
+	`ALU_OPC_SUBC:  {alu_c, alu_q} = op1 - op2 - {31'b0, c_flag};
+	`ALU_OPC_LSL:   {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
+	`ALU_OPC_LSR:   alu_q = op1 >> op2[4:0];
+	`ALU_OPC_AND:   alu_q = op1 & op2;
+	`ALU_OPC_XOR:   alu_q = op1 ^ op2;
+        `ALU_OPC_BIC:   alu_q = op1 & ~(1 << op2[4:0]);
+	`ALU_OPC_BST:   alu_q = op1 | (1 << op2[4:0]);
+	`ALU_OPC_OR:    alu_q = op1 | op2;
+	`ALU_OPC_COPYB: alu_q = op2;
 	5'b01100: begin
 		{alu_c, alu_q} = op1 - op2;
 		alu_o = op1[31] ^ op2[31] && alu_q[31] == op2[31];
 		alu_n = alu_q[31];
 	end
-	5'b01101: alu_q = op1 | {16'b0, op2[15:0]};
-	5'b01110: alu_q = op1 >>> op2;
-	5'b01111: alu_q = op1;
-	5'b10000: begin
+	`ALU_OPC_MOVHI: alu_q = op1 | {16'b0, op2[15:0]};
+	`ALU_OPC_ASR:   alu_q = op1 >>> op2;
+	`ALU_OPC_COPYA: alu_q = op1;
+	`ALU_OPC_GCR: begin
                 if (cr_sel == 3'b000) begin
                         alu_q = {vector_addr, 6'b0};
                 end else if (cr_sel == 3'h1) begin
@@ -120,9 +120,9 @@ always @(*) begin
                         alu_q = 32'b0;
                 end
 	end
-        5'b10001: alu_q = {vector_addr, 6'h8};
-	5'b10010: alu_q = fault_address;
-	default: alu_q = 32'b0;
+        `ALU_OPC_SWI:   alu_q = {vector_addr, 6'h8};
+	`ALU_OPC_RFE:   alu_q = fault_address;
+	default:        alu_q = 32'b0;
 	endcase
 end
 
