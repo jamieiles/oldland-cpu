@@ -25,7 +25,9 @@ module oldland_debug(input wire		clk,
 		     /* PC read/write signals. */
 		     input wire [31:0]	dbg_pc,
 		     output reg		dbg_pc_wr_en,
-		     output wire [31:0]	dbg_pc_wr_val);
+		     output wire [31:0]	dbg_pc_wr_val,
+		     /* Reset control. */
+		     output wire	dbg_rst);
 
 localparam STATE_IDLE		= 4'b0000;
 localparam STATE_LOAD_CMD	= 4'b0001;
@@ -39,6 +41,7 @@ localparam STATE_WRITE_REG	= 4'b1111;
 localparam STATE_WAIT_RMEM	= 4'b1110;
 localparam STATE_WAIT_WMEM	= 4'b1100;
 localparam STATE_EXECUTE	= 4'b1000;
+localparam STATE_RESET		= 4'b1001;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
@@ -51,6 +54,7 @@ localparam CMD_RMEM8		= 4'h7;
 localparam CMD_WMEM32		= 4'h8;
 localparam CMD_WMEM16		= 4'h9;
 localparam CMD_WMEM8		= 4'ha;
+localparam CMD_RESET            = 4'hb;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
@@ -63,6 +67,8 @@ reg [3:0]	next_state = STATE_IDLE;
 reg [3:0]	debug_cmd = 4'b0;
 reg [31:0]	debug_addr = 32'b0;
 reg [31:0]	debug_data = 32'b0;
+
+reg [7:0]	reset_count = 8'hff;
 
 wire		req_sync;	/*
 				 * Synchronized from debug to CPU clock.
@@ -77,6 +83,7 @@ assign		dbg_pc_wr_val = debug_data;
 assign		dbg_reg_wr_val = debug_data;
 assign		mem_addr = debug_addr;
 assign		mem_wr_val = debug_data;
+assign		dbg_rst = state == STATE_RESET;
 
 dc_ram		#(.addr_bits(2),
 		  .data_bits(32))
@@ -189,8 +196,14 @@ always @(*) begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
 		end
+		CMD_RESET: begin
+			next_state = STATE_RESET;
+		end
 		default: next_state = STATE_COMPL;
 		endcase
+	end
+	STATE_RESET: begin
+		next_state = |reset_count ? STATE_RESET : STATE_COMPL;
 	end
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
@@ -251,13 +264,20 @@ always @(posedge clk) begin
 		debug_data <= ctl_dout;
 	end
 	STATE_EXECUTE: begin
+		reset_count = 8'hff;
+
 		case (debug_cmd)
 		CMD_HALT: run <= 1'b0;
 		CMD_RUN: run <= 1'b1;
 		CMD_STEP: run <= 1'b1;
+		CMD_RESET: run <= 1'b0;
 		default: begin
 		end
 		endcase
+	end
+	STATE_RESET: begin
+		if (reset_count)
+			reset_count <= reset_count - 8'b1;
 	end
 	STATE_STEP: begin
 		run <= 1'b0;

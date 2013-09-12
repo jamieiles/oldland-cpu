@@ -36,6 +36,7 @@ Command list:
     - Address is the memory address, data word is the value to write.
   0x9:	Write memory 16 bits
   0xa:	Write memory 8 bits
+  0xb:  Reset CPU core
 
 Register/memory operations may only be issued whilst the CPU is stopped.
 

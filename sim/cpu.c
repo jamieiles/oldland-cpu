@@ -480,3 +480,17 @@ out:
 
 	return 0;
 }
+
+void cpu_reset(struct cpu *c)
+{
+	int r;
+
+	c->pc = c->next_pc = 0;
+	for (r = 0; r <= LR; ++r)
+		c->regs[r] = 0;
+	c->flagsw = 0;
+	c->cycle_count = 0;
+
+	for (r = 0; r < NUM_CONTROL_REGS; ++r)
+		c->control_regs[r] = 0;
+}

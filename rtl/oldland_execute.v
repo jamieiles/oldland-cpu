@@ -1,5 +1,6 @@
 `include "oldland_defines.v"
 module oldland_exec(input wire		clk,
+		    input wire		rst,
 		    input wire [31:0]	ra,
 		    input wire [31:0]	rb,
 		    input wire [31:0]	imm32,
@@ -140,12 +141,16 @@ end
 
 /* CR0: exception vector table base address. */
 always @(posedge clk)
-        if (write_cr && cr_sel == 3'h0)
+	if (rst)
+		vector_addr <= 26'b0;
+	else if (write_cr && cr_sel == 3'h0)
                 vector_addr <= ra[31:6];
 
 /* CR2: saved PSR. */
 always @(posedge clk) begin
-        if (is_swi)
+	if (rst)
+		saved_psr <= 2'b0;
+	else if (is_swi)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
                 saved_psr <= ra[1:0];
@@ -153,66 +158,90 @@ end
 
 /* CR3: fault address register. */
 always @(posedge clk)
-        if (is_swi || data_abort)
+	if (rst)
+		fault_address = 32'b0;
+	else if (is_swi || data_abort)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)
 		fault_address <= ra;
 
 /* CR4: data fault address register. */
 always @(posedge clk)
-	if (data_abort)
+	if (rst)
+		data_fault_address <= 32'b0;
+	else if (data_abort)
 		data_fault_address <= mar;
 	else if (write_cr && cr_sel == 3'h4)
 		data_fault_address <= ra;
 
 always @(posedge clk) begin
-	alu_out <= alu_q;
-	wr_result <= update_rd;
-	rd_sel_out <= rd_sel;
+	if (rst) begin
+		alu_out <= 32'b0;
+		wr_result <= 1'b0;
+		z_flag <= 1'b0;
+		c_flag <= 1'b0;
+		n_flag <= 1'b0;
+		o_flag <= 1'b0;
+	end else begin
+		alu_out <= alu_q;
+		wr_result <= update_rd;
+		rd_sel_out <= rd_sel;
 
-	if (update_flags) begin
-		z_flag <= alu_z;
-		c_flag <= alu_c;
-		n_flag <= alu_n;
-		o_flag <= alu_o;
+		if (update_flags) begin
+			z_flag <= alu_z;
+			c_flag <= alu_c;
+			n_flag <= alu_n;
+			o_flag <= alu_o;
+		end
+
+		if (is_rfe) begin
+			c_flag <= saved_psr[1];
+			z_flag <= saved_psr[0];
+		end
+
+		/* CR1: PSR. */
+		if (write_cr && cr_sel == 3'h1) begin
+			n_flag <= ra[3];
+			o_flag <= ra[2];
+			c_flag <= ra[1];
+			z_flag <= ra[0];
+		end
+
+		wr_val <= is_call ? pc_plus_4 :
+			mem_store ? op2 : alu_q;
 	end
-
-	if (is_rfe) begin
-		c_flag <= saved_psr[1];
-		z_flag <= saved_psr[0];
-	end
-
-        /* CR1: PSR. */
-        if (write_cr && cr_sel == 3'h1) begin
-		n_flag <= ra[3];
-		o_flag <= ra[2];
-                c_flag <= ra[1];
-                z_flag <= ra[0];
-        end
-
-	wr_val <= is_call ? pc_plus_4 :
-		  mem_store ? op2 : alu_q;
 end
 
 always @(posedge clk) begin
-	branch_taken <= instr_class == `CLASS_BRANCH &&
-                (branch_condition_met || is_swi || is_rfe);
-	stall_clear <= instr_class == `CLASS_BRANCH;
+	if (rst) begin
+		branch_taken <= 1'b0;
+		stall_clear <= 1'b0;
+	end else begin
+		branch_taken <= instr_class == `CLASS_BRANCH &&
+			(branch_condition_met || is_swi || is_rfe);
+		stall_clear <= instr_class == `CLASS_BRANCH;
+	end
 end
 
 always @(posedge clk) begin
-	mem_load_out <= mem_load;
-	mem_store_out <= mem_store;
+	if (rst) begin
+		mem_load_out <= 1'b0;
+		mem_store_out <= 1'b0;
+		mem_wr_en <= 1'b0;
+	end else begin
+		mem_load_out <= mem_load;
+		mem_store_out <= mem_store;
 
-	if (mem_store || mem_load) begin
-		mem_width_out <= mem_width;
-		mar <= alu_q;
-		if (mem_store)
-			mdr <= rb;
+		if (mem_store || mem_load) begin
+			mem_width_out <= mem_width;
+			mar <= alu_q;
+			if (mem_store)
+				mdr <= rb;
+		end
+
+		mem_wr_en <= mem_store;
+		pc_plus_4_out <= pc_plus_4;
 	end
-
-	mem_wr_en <= mem_store;
-	pc_plus_4_out <= pc_plus_4;
 end
 
 endmodule

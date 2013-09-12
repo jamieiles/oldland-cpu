@@ -10,6 +10,7 @@
  * and load/store signals.
  */
 module oldland_decode(input wire	clk,
+		      input wire	rst,
 		      input wire [31:0] instr,
 		      output wire [3:0] ra_sel,
 		      output wire [3:0] rb_sel,
@@ -77,23 +78,40 @@ initial begin
 end
 
 always @(posedge clk) begin
-	is_rfe <= uc_val[24];
-        is_swi <= uc_val[23];
-	write_cr <= uc_val[22];
-        branch_condition <= uc_val[18:16];
-        mem_width <= uc_val[15:14];
-        is_call <= uc_val[13];
-        mem_store <= uc_val[11];
-        mem_load <= uc_val[10];
-        alu_op2_rb <= uc_val[9];
-        alu_op1_rb <= uc_val[8];
-        alu_op1_ra <= uc_val[7];
-        update_flags <= uc_val[6];
-        update_rd <= uc_val[5];
-        alu_opc <= uc_val[4:0];
+	if (rst) begin
+		/*
+		 * Reset is only concerned with anything that can affect
+		 * state.
+		 */
+		is_rfe <= 1'b0;
+		is_swi <= 1'b0;
+		write_cr <= 1'b0;
+		is_call <= 1'b0;
+		mem_store <= 1'b0;
+		mem_load <= 1'b0;
+		update_flags <= 1'b0;
+		update_rd <= 1'b0;
+		instr_class <= 2'b00;
+		pc_plus_4_out <= 32'b0;
+	end else begin
+		is_rfe <= uc_val[24];
+		is_swi <= uc_val[23];
+		write_cr <= uc_val[22];
+		branch_condition <= uc_val[18:16];
+		mem_width <= uc_val[15:14];
+		is_call <= uc_val[13];
+		mem_store <= uc_val[11];
+		mem_load <= uc_val[10];
+		alu_op2_rb <= uc_val[9];
+		alu_op1_rb <= uc_val[8];
+		alu_op1_ra <= uc_val[7];
+		update_flags <= uc_val[6];
+		update_rd <= uc_val[5];
+		alu_opc <= uc_val[4:0];
 
-	instr_class <= instr[31:30];
-	cr_sel <= instr[14:12];
+		instr_class <= instr[31:30];
+		cr_sel <= instr[14:12];
+	end
 end
 
 always @(posedge clk)

@@ -106,6 +106,7 @@ wire [31:0]	dbg_mem_rd_val;
 wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
+wire		dbg_rst;
 
 oldland_debug	debug(.clk(clk),
 		      .dbg_clk(dbg_clk),
@@ -130,9 +131,11 @@ oldland_debug	debug(.clk(clk),
 		      .dbg_reg_wr_en(dbg_reg_wr_en),
 		      .dbg_pc(dbg_pc),
 		      .dbg_pc_wr_val(dbg_pc_wr_val),
-		      .dbg_pc_wr_en(dbg_pc_wr_en));
+		      .dbg_pc_wr_en(dbg_pc_wr_en),
+		      .dbg_rst(dbg_rst));
 
 oldland_fetch	fetch(.clk(clk),
+		      .rst(dbg_rst),
 		      .i_access(i_access),
 		      .i_ack(i_ack),
 		      .i_error(i_error),
@@ -153,6 +156,7 @@ oldland_fetch	fetch(.clk(clk),
 		      .data_abort(m_data_abort));
 
 oldland_decode	decode(.clk(clk),
+		       .rst(dbg_rst),
 		       .instr(fd_instr),
 		       .ra_sel(d_ra_sel),
 		       .rb_sel(d_rb_sel),
@@ -179,6 +183,7 @@ oldland_decode	decode(.clk(clk),
 		       .illegal_instr(df_illegal_instr));
 
 oldland_exec	execute(.clk(clk),
+			.rst(dbg_rst),
 			.ra(de_ra),
 			.rb(de_rb),
 			.imm32(de_imm32),
@@ -217,6 +222,7 @@ oldland_exec	execute(.clk(clk),
 			.data_abort(m_data_abort));
 
 oldland_memory	mem(.clk(clk),
+		    .rst(dbg_rst),
 		    .load(em_mem_load),
 		    .store(em_mem_store),
 		    .addr(em_mar),

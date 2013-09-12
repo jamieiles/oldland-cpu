@@ -20,6 +20,7 @@
  * to continue new instructions.
  */
 module oldland_fetch(input wire		clk,
+		     input wire		rst,
 		     output reg		i_access,
 		     input wire		i_ack,
 		     input wire		i_error,
@@ -82,31 +83,41 @@ always @(*) begin
 end
 
 always @(posedge clk)
-	if (dbg_pc_wr_en)
+	if (rst)
+		pc <= `OLDLAND_RESET_ADDR;
+	else if (dbg_pc_wr_en)
 		pc <= dbg_pc_wr_val;
 	else if (!stalling && !stopping)
 		pc <= next_pc;
 
 always @(posedge clk) begin
-	i_access <= (!stalled || stopping);
-
-	if (stalling)
-		stalled <= 1'b1;
-	else if (stall_clear || i_error)
+	if (rst) begin
+		i_access <= 1'b0;
 		stalled <= 1'b0;
-
-	if (!run && !stalling)
-		stopping <= 1'b1;
-
-	if (run) begin
 		stopping <= 1'b0;
-		stopped <= 1'b0;
 		stop_ctr <= 3'd5;
+		stopped <= 1'b0;
 	end else begin
-		if (stopping && |stop_ctr && !stalling)
-			stop_ctr <= stop_ctr - 3'b1;
-		if (~|stop_ctr)
-			stopped <= 1'b1;
+		i_access <= (!stalled || stopping);
+
+		if (stalling)
+			stalled <= 1'b1;
+		else if (stall_clear || i_error)
+			stalled <= 1'b0;
+
+		if (!run && !stalling)
+			stopping <= 1'b1;
+
+		if (run) begin
+			stopping <= 1'b0;
+			stopped <= 1'b0;
+			stop_ctr <= 3'd5;
+		end else begin
+			if (stopping && |stop_ctr && !stalling)
+				stop_ctr <= stop_ctr - 3'b1;
+			if (~|stop_ctr)
+				stopped <= 1'b1;
+		end
 	end
 end
 

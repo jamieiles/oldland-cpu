@@ -284,6 +284,9 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 						    debug->debug_regs[REG_WDATA],
 						    8);
 			break;
+		case CMD_RESET:
+			cpu_reset(cpu);
+			break;
 		case CMD_SIM_TERM:
 			exit(EXIT_SUCCESS);
 		default:

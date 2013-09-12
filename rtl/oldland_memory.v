@@ -1,4 +1,5 @@
 module oldland_memory(input wire		clk,
+		      input wire		rst,
 		      input wire		load,
 		      input wire		store,
 		      input wire [31:0] 	addr,
@@ -67,14 +68,19 @@ initial begin
 end
 
 always @(posedge clk) begin
-	update_rd_bypass <= update_rd;
-	wr_val_bypass <= wr_val;
-	rd_sel_out_bypass <= rd_sel;
+	if (rst) begin
+		update_rd_bypass <= 1'b0;
+		mem_update_rd <= 1'b0;
+	end else begin
+		update_rd_bypass <= update_rd;
+		wr_val_bypass <= wr_val;
+		rd_sel_out_bypass <= rd_sel;
 
-	if (load)
-		mem_rd <= rd_sel;
-	if (store || load)
-		mem_update_rd <= load;
+		if (load)
+			mem_rd <= rd_sel;
+		if (store || load)
+			mem_update_rd <= load;
+	end
 end
 
 /* Byte enables and rotated data write value. */
