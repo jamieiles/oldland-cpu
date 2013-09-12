@@ -129,6 +129,16 @@ int dbg_step(const struct target *t)
 	return dbg_write(t, REG_CMD, CMD_STEP);
 }
 
+static int dbg_reset(const struct target *t)
+{
+	int rc = dbg_stop(t);
+
+	if (rc)
+		return rc;
+
+	return dbg_write(t, REG_CMD, CMD_RESET);
+}
+
 int dbg_read_reg(const struct target *t, unsigned reg, uint32_t *val)
 {
 	int rc;
@@ -306,8 +316,7 @@ static int lua_term(lua_State *L)
 {
 	assert_target(L);
 
-	if (dbg_term(target))
-		warnx("failed to terminate simulation");
+	(void)dbg_term(target);
 
 	return 0;
 }
@@ -338,6 +347,16 @@ static int lua_run(lua_State *L)
 		warnx("failed to step target");
 
 	wait_until_stopped(target);
+
+	return 0;
+}
+
+static int lua_reset(lua_State *L)
+{
+	assert_target(L);
+
+	if (dbg_reset(target))
+		warnx("failed to reset target");
 
 	return 0;
 }
@@ -451,6 +470,11 @@ static int lua_connect(lua_State *L)
 		lua_error(L);
 	}
 
+	if (dbg_reset(target)) {
+		lua_pushstring(L, "failed to reset target");
+		lua_error(L);
+	}
+
 	return 0;
 }
 
@@ -469,6 +493,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "loadelf", lua_loadelf },
 	{ "connect", lua_connect },
 	{ "term", lua_term },
+	{ "reset", lua_reset },
 	{}
 };
 
@@ -525,8 +550,6 @@ static void run_command_script(lua_State *L, const char *path)
 
 	fflush(stdout);
 	fflush(stderr);
-
-	dbg_term(target);
 
 	exit(lua_gettop(L) == 1 ? lua_tointeger(L, 1) : 0);
 }

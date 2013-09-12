@@ -7,6 +7,7 @@ write16 = target.write16
 write8 = target.write8
 loadelf = target.loadelf
 connect = target.connect
+reset = target.reset
 
 function read_reg(reg)
 	print(string.format("%08x", target.read_reg(reg)))
