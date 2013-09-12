@@ -83,6 +83,8 @@ end
 
 always @(*) begin
 	alu_c = 1'b0;
+	alu_o = 1'b0;
+	alu_n = 1'b0;
 
 	case (alu_opc)
 	`ALU_OPC_ADD:   {alu_c, alu_q} = op1 + op2;
@@ -159,7 +161,7 @@ end
 /* CR3: fault address register. */
 always @(posedge clk)
 	if (rst)
-		fault_address = 32'b0;
+		fault_address <= 32'b0;
 	else if (is_swi || data_abort)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)

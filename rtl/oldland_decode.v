@@ -92,7 +92,6 @@ always @(posedge clk) begin
 		update_flags <= 1'b0;
 		update_rd <= 1'b0;
 		instr_class <= 2'b00;
-		pc_plus_4_out <= 32'b0;
 	end else begin
 		is_rfe <= uc_val[24];
 		is_swi <= uc_val[23];
@@ -127,6 +126,6 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk)
-	pc_plus_4_out <= pc_plus_4;
+	pc_plus_4_out <= rst ? 32'b0 : pc_plus_4;
 
 endmodule

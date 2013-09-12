@@ -264,7 +264,7 @@ always @(posedge clk) begin
 		debug_data <= ctl_dout;
 	end
 	STATE_EXECUTE: begin
-		reset_count = 8'hff;
+		reset_count <= 8'hff;
 
 		case (debug_cmd)
 		CMD_HALT: run <= 1'b0;
