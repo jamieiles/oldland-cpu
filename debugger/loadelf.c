@@ -140,6 +140,14 @@ static void load_testpoints(const struct elf_info *elf,
 	*nr_testpoints = tp_section->sh_size / sizeof(struct testpoint);
 }
 
+static void init_regs(const struct target *target)
+{
+	int i;
+
+	for (i = 0; i < PC; ++i)
+		dbg_write_reg(target, i, 0);
+}
+
 int load_elf(const struct target *target, const char *path,
 	     struct testpoint **testpoints, size_t *nr_testpoints)
 {
@@ -166,6 +174,7 @@ int load_elf(const struct target *target, const char *path,
 		}
 	}
 
+	init_regs(target);
 	if (dbg_write_reg(target, PC, (uint32_t)elf.ehdr->e_entry))
 		warnx("failed to set PC to entry point %08x",
 		      (uint32_t)elf.ehdr->e_entry);
