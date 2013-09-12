@@ -1,7 +1,6 @@
 module cpu_tb();
 
 reg		clk = 1'b0;
-wire		clk180 = ~clk;
 
 wire		rx;
 wire		tx;
@@ -34,7 +33,7 @@ reg [8:0]	uart_buf = 9'b0;
 mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Addr(s_addr),
 			.Ba(s_banksel),
-			.Clk(clk180),
+			.Clk(clk),
 			.Cke(s_clken),
 			.Cs_n(s_cs_n),
 			.Ras_n(s_ras_n),
