@@ -18,4 +18,5 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 add_custom_target(test ALL DEPENDS oldland-test)
 
 install(FILES common.lua DESTINATION lib/oldland/tests)
+install(FILES terminate.lua DESTINATION lib/oldland/tests)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-test DESTINATION bin)
