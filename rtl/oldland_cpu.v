@@ -255,6 +255,7 @@ oldland_memory	mem(.clk(clk),
 		    .data_abort(m_data_abort));
 
 oldland_regfile	regfile(.clk(clk),
+			.rst(dbg_rst),
 			.ra_sel(d_ra_sel),
 			.rb_sel(d_rb_sel),
 			.rd_sel(mw_rd_sel),

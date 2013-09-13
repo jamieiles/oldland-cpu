@@ -3,5 +3,4 @@
 - I/D arbiter for shared instruction/data memory.
 - gpio for signalling board status.
 - byteswapping in debugger protocol.
-- reset $r0-$lr on CPU reset.
 - include repo git sha1 in bootrom image.
