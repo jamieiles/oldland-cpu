@@ -1,4 +1,3 @@
-- verilog JTAG controller + PLI interface.
 - i+d cache.
 - interrupts.
 - I/D arbiter for shared instruction/data memory.

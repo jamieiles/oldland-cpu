@@ -12,8 +12,6 @@ bootloader (and associated bootrom code).  Documentation is currently sparse
 and there are a few working limitations:
 
 - Only the on-chip memory is connected to the instruction bus.
-- The debug interface is incomplete and not connected to any kind of JTAG for
-the FPGA implementation.
 - There is no hardware multiply implemented yet.
 
 The FPGA target is for a DE0 nano and runs at 50MHz, though it should
