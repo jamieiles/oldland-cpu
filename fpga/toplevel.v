@@ -12,11 +12,26 @@ module toplevel(input wire clk,
 		output wire [1:0] s_banksel,
 		output wire sdr_clk);
 
-wire sys_clk;
+wire		sys_clk;
+wire		dbg_clk;
+wire [1:0]	dbg_addr;
+wire [31:0]	dbg_din;
+wire [31:0]	dbg_dout;
+wire		dbg_wr_en;
+wire		dbg_req;
+wire		dbg_ack;
 
 sys_pll		pll(.inclk0(clk),
 		    .c0(sys_clk),
 		    .c1(sdr_clk));
+
+vjtag_debug	debug(.dbg_clk(dbg_clk),
+		      .dbg_addr(dbg_addr),
+		      .dbg_din(dbg_din),
+		      .dbg_dout(dbg_dout),
+		      .dbg_wr_en(dbg_wr_en),
+		      .dbg_req(dbg_req),
+		      .dbg_ack(dbg_ack));
 
 keynsham_soc	soc(.clk(sys_clk),
 		    .uart_rx(uart_rx),
@@ -30,10 +45,12 @@ keynsham_soc	soc(.clk(sys_clk),
 		    .s_clken(s_clken),
 		    .s_data(s_data),
 		    .s_banksel(s_banksel),
-		    .dbg_clk(1'b0),
-		    .dbg_addr(2'b0),
-		    .dbg_din(32'b0),
-		    .dbg_wr_en(1'b0),
-		    .dbg_req(1'b0));
+		    .dbg_clk(dbg_clk),
+		    .dbg_addr(dbg_addr),
+		    .dbg_din(dbg_din),
+		    .dbg_dout(dbg_dout),
+		    .dbg_wr_en(dbg_wr_en),
+		    .dbg_req(dbg_req),
+		    .dbg_ack(dbg_ack));
 
 endmodule
