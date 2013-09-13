@@ -38,7 +38,10 @@ always @(posedge clk) begin
 			addr <= dbg_addr;
 			write_data <= dbg_val;
 			wr_en <= ~dbg_rnw;
-			req <= dbg_addr[1:0] == 2'b00;
+			if (!dbg_rnw && dbg_addr[1:0] == 2'b00) begin
+				@(posedge clk);
+				req <= dbg_addr[1:0] == 2'b00;
+			end
 
 			/*
 			 * Wait for the read data to be presented at the read
