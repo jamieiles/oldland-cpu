@@ -17,7 +17,38 @@ and there are a few working limitations:
 The FPGA target is for a DE0 nano and runs at 50MHz, though it should
 synthesize at >80MHz at the moment.
 
+Testing
+-------
+
+Grab binutils-oldland from https://github.com/jamieiles/binutils-oldland and
+build with:
+
+  ./configure --target=oldland-elf
+  make all
+  make install
+
+Make sure that the oldland-elf-* tools are in your path and build the CPU +
+tools with:
+
+  mkdir BUILD
+  cmake -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_PREFIX ..
+  make all
+  make install
+
+and add ${INSTALL_PREFIX}/bin to your path.
+
+Run `oldland-test` to run tests on both the instruction set and RTL
+simulations.
+
+Running on hardware
+-------------------
+
+Build the FPGA image in Quartus and load it onto the device.  Run
+oldland-jtagd on the development machine, oldland-debug can then connect to
+the CPU over the virtual JTAG.
+
 Licensing
 ---------
 
-This project is currently licensed under GPLv2.
+This project is currently licensed under GPLv2 except for oldland-jtagd which
+is under the Apache license v2.0.
