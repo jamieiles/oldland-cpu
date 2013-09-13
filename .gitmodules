@@ -7,3 +7,6 @@
 [submodule "rtl/keynsham/oldland-sdram"]
 	path = rtl/keynsham/oldland-sdram
 	url = git@github.com:jamieiles/oldland-sdram
+[submodule "oldland-jtag/jtag"]
+	path = oldland-jtag/jtag
+	url = git@github.com:jamieiles/jtag.git
