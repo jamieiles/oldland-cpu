@@ -76,20 +76,23 @@ def terminate_sim():
                           cwd = TEST_PATH)
 
 def main():
+    sims = ['manual'] if '--manual' in sys.argv else SIMULATORS
     suites = []
-    for sim in SIMULATORS:
-        sim_process = launch_sim(sim)
+    for sim in sims:
+        if sim != 'manual':
+            sim_process = launch_sim(sim)
 
         cases = []
         for t in TEST_FILES:
             cases.append(run_test(sim, t))
         suites.append(TestSuite(sim, cases))
 
-        try:
-            terminate_sim()
-            sim_process.terminate()
-        except:
-            pass
+        if sim != 'manual':
+            try:
+                terminate_sim()
+                sim_process.terminate()
+            except:
+                pass
 
     with open('oldland-test.xml', 'w') as output:
         output.write(TestSuite.to_xml_string(suites))
