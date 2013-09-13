@@ -1,6 +1,7 @@
 module cpu_tb();
 
 reg		clk = 1'b0;
+reg		dbg_clk = 1'b1;
 
 wire		rx;
 wire		tx;
@@ -53,7 +54,7 @@ keynsham_soc	soc(.clk(clk),
 		    .s_clken(s_clken),
 		    .s_data(s_data),
 		    .s_banksel(s_banksel),
-		    .dbg_clk(clk),
+		    .dbg_clk(dbg_clk),
 		    .dbg_addr(dbg_addr),
 		    .dbg_din(dbg_din),
 		    .dbg_dout(dbg_dout),
@@ -71,7 +72,7 @@ uart		tb_uart(.clk_50m(clk),
 			.rdy_clr(rx_rdy_clr),
 			.dout(uart_rx_data));
 
-debug_controller	dbg(.clk(clk),
+debug_controller	dbg(.clk(dbg_clk),
 			    .addr(dbg_addr),
 			    .read_data(dbg_dout),
 			    .write_data(dbg_din),
@@ -92,6 +93,7 @@ initial begin
 end
 
 always #10 clk = ~clk;
+always #25 dbg_clk = ~dbg_clk;
 
 always @(posedge clk) begin
 	if (rx_rdy && !rx_rdy_clr) begin
