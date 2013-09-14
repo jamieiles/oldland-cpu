@@ -45,16 +45,47 @@ and there are a few working limitations:</p>
 
 <ul>
 <li>Only the on-chip memory is connected to the instruction bus.</li>
-<li>The debug interface is incomplete and not connected to any kind of JTAG for
-the FPGA implementation.</li>
 <li>There is no hardware multiply implemented yet.</li>
 </ul><p>The FPGA target is for a DE0 nano and runs at 50MHz, though it should
 synthesize at &gt;80MHz at the moment.</p>
 
 <h2>
+<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>Grab binutils-oldland from <a href="https://github.com/jamieiles/binutils-oldland">https://github.com/jamieiles/binutils-oldland</a> and
+build with:</p>
+
+<pre lang="shell"><code>  ./configure --target=oldland-elf
+  make all
+  make install
+</code></pre>
+
+<p>Make sure that the oldland-elf-* tools are in your path and build the CPU +
+tools with:</p>
+
+<pre lang="shell"><code>  mkdir BUILD
+  cmake -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_PREFIX ..
+  make all
+  make install
+</code></pre>
+
+<p>and add <code>${INSTALL_PREFIX}/bin</code> to your path.</p>
+
+<p>Run <code>oldland-test</code> to run tests on both the instruction set and RTL
+simulations.</p>
+
+<h2>
+<a name="running-on-hardware" class="anchor" href="#running-on-hardware"><span class="octicon octicon-link"></span></a>Running on hardware</h2>
+
+<p>Build the FPGA image in Quartus and load it onto the device.  Run
+oldland-jtagd on the development machine, oldland-debug can then connect to
+the CPU over the virtual JTAG.</p>
+
+<h2>
 <a name="licensing" class="anchor" href="#licensing"><span class="octicon octicon-link"></span></a>Licensing</h2>
 
-<p>This project is currently licensed under GPLv2.</p>
+<p>This project is currently licensed under GPLv2 except for oldland-jtagd which
+is under the Apache license v2.0.</p>
       </section>
     </div>
 
