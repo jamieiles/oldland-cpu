@@ -7,7 +7,7 @@ add_custom_command(OUTPUT ${test_name}.o
 add_custom_target(${test_name} ALL
 		  COMMAND oldland-elf-ld ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o
 			-o ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
-			-x ${CMAKE_CURRENT_SOURCE_DIR}/../target/sim.x
+			-T ${CMAKE_CURRENT_SOURCE_DIR}/../target/sim.x
 		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${test_name}.o)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
 	DESTINATION lib/oldland/tests)
