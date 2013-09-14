@@ -1,5 +1,5 @@
 /* First instruction will be the boot rom at 0x10000000. */
-`define OLDLAND_RESET_ADDR	32'h0ffffffc
+`define OLDLAND_RESET_ADDR	32'h10000000
 
 module keynsham_soc(input wire		clk,
 		    /* UART I/O signals. */
