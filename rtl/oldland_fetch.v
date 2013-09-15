@@ -85,7 +85,7 @@ always @(*) begin
 	else if (branch_taken)
 		next_pc = branch_pc;
 	else if (stall_clear ||
-		 state == STATE_RUNNING && !should_stall)
+		 (i_ack && !should_stall))
 		next_pc = pc_plus_4;
 	else
 		next_pc = pc;
@@ -94,13 +94,22 @@ end
 always @(posedge clk)
 	state <= next_state;
 
+reg		fetching = 1'b0;
+
+always @(posedge clk) begin
+	if (i_access)
+		fetching <= 1'b1;
+	else if (i_ack)
+		fetching <= 1'b0;
+end
+
 always @(*) begin
 	case (state)
 	STATE_RUNNING: begin
 		/* Stall for branches and memory accesses. */
 		if (should_stall)
 			next_state = STATE_STALLED;
-		else if (!run)
+		else if (!run && (i_access | !fetching))
 			next_state = STATE_STOPPING;
 		else
 			next_state = STATE_RUNNING;
@@ -141,7 +150,7 @@ always @(posedge clk) begin
 		pc <= dbg_pc_wr_val;
 	else if (state == STATE_STALLED && stall_clear)
 		pc <= next_pc;
-	else if (state == STATE_RUNNING && i_ack)
+	else if (i_ack)
 		pc <= next_pc;
 end
 
