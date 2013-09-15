@@ -47,9 +47,9 @@ wire [31:0]	uart_data;
 wire		uart_ack;
 wire		uart_error;
 
-wire [31:0]	sdram_data;
-wire		sdram_ack;
-wire		sdram_error;
+wire [31:0]	d_sdram_data;
+wire		d_sdram_ack;
+wire		d_sdram_error;
 
 /*
  * For invalid addresses - ack so we don't stall the CPU on a bus access and
@@ -73,19 +73,19 @@ wire		ram_cs		= d_addr[29:10]	== 20'h00000;
 wire		ram_i_cs	= i_addr[29:10]	== 20'h00000;
 wire		rom_cs		= d_addr[29:10]	== 20'h10000;
 wire		rom_i_cs	= i_addr[29:10]	== 20'h10000;
-wire		sdram_cs	= d_addr[29:23] == 7'b0010000;
-wire		sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
+wire		d_sdram_cs	= d_addr[29:23] == 7'b0010000;
+wire		d_sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
 wire		uart_cs		= d_addr[29:10] == 20'h80000;
 
-wire		d_default_cs	= ~(ram_cs | rom_cs | sdram_cs |
-				    sdram_ctrl_cs | uart_cs);
+wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
+				    d_sdram_ctrl_cs | uart_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs);
 
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
 
-wire d_ack = uart_ack | ram_ack | sdram_ack | rom_ack | d_default_ack;
-wire d_error = uart_error | sdram_error | d_default_error;
+wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | d_default_ack;
+wire d_error = uart_error | d_sdram_error | d_default_error;
 
 wire i_access;
 wire i_ack = i_ram_ack | i_rom_ack | i_default_ack;
@@ -121,15 +121,15 @@ keynsham_bootrom rom(.clk(clk),
 
 keynsham_sdram	sdram(.clk(clk),
 		      .bus_access(d_access),
-		      .sdram_cs(sdram_cs),
-		      .ctrl_cs(sdram_ctrl_cs),
+		      .sdram_cs(d_sdram_cs),
+		      .ctrl_cs(d_sdram_ctrl_cs),
 		      .bus_addr(d_addr),
 		      .bus_wr_val(d_wr_val),
 		      .bus_wr_en(d_wr_en),
 		      .bus_bytesel(d_bytesel),
-		      .bus_error(sdram_error),
-		      .bus_ack(sdram_ack),
-		      .bus_data(sdram_data),
+		      .bus_error(d_sdram_error),
+		      .bus_ack(d_sdram_ack),
+		      .bus_data(d_sdram_data),
 		      .s_ras_n(s_ras_n),
 		      .s_cas_n(s_cas_n),
 		      .s_wr_en(s_wr_en),
@@ -180,8 +180,8 @@ always @(*) begin
 		d_data = ram_data;
 	else if (uart_cs)
 		d_data = uart_data;
-	else if (sdram_cs || sdram_ctrl_cs)
-		d_data = sdram_data;
+	else if (d_sdram_cs || d_sdram_ctrl_cs)
+		d_data = d_sdram_data;
 	else if (rom_cs)
 		d_data = rom_data;
 	else
