@@ -15,6 +15,10 @@
 #include "trace.h"
 #include "oldland-types.h"
 
+#ifndef ROM_FILE
+#define ROM_FILE NULL
+#endif
+
 enum instruction_class {
 	INSTR_ARITHMETIC,
 	INSTR_BRANCH,
@@ -160,6 +164,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	assert(c->mem);
 
 	err = ram_init(c->mem, 0x00000000, 0x10000, binary);
+	assert(!err);
+
+	err = rom_init(c->mem, 0x10000000, 0x1000, ROM_FILE);
 	assert(!err);
 
 	err = ram_init(c->mem, 0x20000000, 32 * 1024 * 1024, NULL);
