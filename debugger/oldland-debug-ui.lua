@@ -34,3 +34,35 @@ function regs()
 		print(string.format("%03s: %08x", name, v))
 	end
 end
+
+function target_read_string(addr)
+	str = ""
+
+	repeat
+		v = target.read8(ptr)
+		if v ~= 0 then
+			str = str .. string.format("%c", v)
+		end
+
+		ptr = ptr + 1
+	until v == 0
+
+	return str
+end
+
+function get_buildid()
+	ptr = 0x10000000 + target.read32(0x10000004)
+
+	return target_read_string(ptr)
+end
+
+function get_build_date()
+	ptr = 0x10000000 + target.read32(0x10000008)
+
+	return target_read_string(ptr)
+end
+
+function report_cpu()
+	print("BuildID:\t" .. get_buildid())
+	print("BuildDate:\t" .. get_build_date())
+end

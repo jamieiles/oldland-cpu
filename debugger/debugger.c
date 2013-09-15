@@ -40,6 +40,7 @@ struct target {
 };
 
 static struct target *target;
+static bool interactive;
 
 const struct target *get_target(void)
 {
@@ -475,6 +476,12 @@ static int lua_connect(lua_State *L)
 		lua_error(L);
 	}
 
+	if (interactive) {
+		lua_getglobal(L, "report_cpu");
+		if (lua_pcall(L, 0, 0, 0))
+			errx(1, "failed to get CPU data (%s)", lua_tostring(L, -1));
+	}
+
 	return 0;
 }
 
@@ -598,10 +605,12 @@ int main(int argc, char *argv[])
 	lua_setglobal(L, "target");
 	load_support(L);
 
-	if (args.command_script)
+	if (args.command_script) {
 		run_command_script(L, args.command_script);
-	else
+	} else {
+		interactive = true;
 		run_interactive(L);
+	}
 
 	fflush(stdout);
 
