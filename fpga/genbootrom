@@ -1,0 +1,24 @@
+#!/bin/bash
+
+touch /tmp/genbootrom
+set -e
+
+SCRIPT_PATH=$(cd $(dirname $0); pwd)
+BOOTROM_DIR="$SCRIPT_PATH/../bootrom"
+TOOL_DIR="$SCRIPT_PATH/../tools"
+
+BUILD_DIR=$(mktemp -d /tmp/oldland-bootrom.XXXXXX)
+
+pushd $SCRIPT_PATH >/dev/null
+$BOOTROM_DIR/gen_build > $BUILD_DIR/build.s
+popd >/dev/null
+
+pushd $BUILD_DIR >/dev/null
+oldland-elf-as -c build.s -o build.o
+oldland-elf-as -c $BOOTROM_DIR/bootrom.s -o bootrom.o
+oldland-elf-ld bootrom.o build.o -o bootrom -T $BOOTROM_DIR/bootrom.x
+oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x200
+$TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
+popd >/dev/null
+
+rm $BUILD_DIR -rf

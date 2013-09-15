@@ -43,8 +43,8 @@ module bootrom (
 	q_a,
 	q_b);
 
-	input	[5:0]  address_a;
-	input	[5:0]  address_b;
+	input	[6:0]  address_a;
+	input	[6:0]  address_b;
 	input	  clock;
 	output	[31:0]  q_a;
 	output	[31:0]  q_b;
@@ -106,16 +106,16 @@ module bootrom (
 ,
 		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_type = "altsyncram",
-		altsyncram_component.numwords_a = 64,
-		altsyncram_component.numwords_b = 64,
+		altsyncram_component.numwords_a = 128,
+		altsyncram_component.numwords_b = 128,
 		altsyncram_component.operation_mode = "BIDIR_DUAL_PORT",
 		altsyncram_component.outdata_aclr_a = "NONE",
 		altsyncram_component.outdata_aclr_b = "NONE",
 		altsyncram_component.outdata_reg_a = "UNREGISTERED",
 		altsyncram_component.outdata_reg_b = "UNREGISTERED",
 		altsyncram_component.power_up_uninitialized = "FALSE",
-		altsyncram_component.widthad_a = 6,
-		altsyncram_component.widthad_b = 6,
+		altsyncram_component.widthad_a = 7,
+		altsyncram_component.widthad_b = 7,
 		altsyncram_component.width_a = 32,
 		altsyncram_component.width_b = 32,
 		altsyncram_component.width_byteena_a = 1,
@@ -158,7 +158,7 @@ endmodule
 // Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 // Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 // Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
-// Retrieval info: PRIVATE: MEMSIZE NUMERIC "2048"
+// Retrieval info: PRIVATE: MEMSIZE NUMERIC "4096"
 // Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
 // Retrieval info: PRIVATE: MIFfilename STRING "bootrom.hex"
 // Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
@@ -195,28 +195,28 @@ endmodule
 // Retrieval info: CONSTANT: INIT_FILE STRING "bootrom.hex"
 // Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
-// Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "64"
-// Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "64"
+// Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "128"
+// Retrieval info: CONSTANT: NUMWORDS_B NUMERIC "128"
 // Retrieval info: CONSTANT: OPERATION_MODE STRING "BIDIR_DUAL_PORT"
 // Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
 // Retrieval info: CONSTANT: OUTDATA_ACLR_B STRING "NONE"
 // Retrieval info: CONSTANT: OUTDATA_REG_A STRING "UNREGISTERED"
 // Retrieval info: CONSTANT: OUTDATA_REG_B STRING "UNREGISTERED"
 // Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
-// Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "6"
-// Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "6"
+// Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "7"
+// Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "7"
 // Retrieval info: CONSTANT: WIDTH_A NUMERIC "32"
 // Retrieval info: CONSTANT: WIDTH_B NUMERIC "32"
 // Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
 // Retrieval info: CONSTANT: WIDTH_BYTEENA_B NUMERIC "1"
 // Retrieval info: CONSTANT: WRCONTROL_WRADDRESS_REG_B STRING "CLOCK0"
-// Retrieval info: USED_PORT: address_a 0 0 6 0 INPUT NODEFVAL "address_a[5..0]"
-// Retrieval info: USED_PORT: address_b 0 0 6 0 INPUT NODEFVAL "address_b[5..0]"
+// Retrieval info: USED_PORT: address_a 0 0 7 0 INPUT NODEFVAL "address_a[6..0]"
+// Retrieval info: USED_PORT: address_b 0 0 7 0 INPUT NODEFVAL "address_b[6..0]"
 // Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
 // Retrieval info: USED_PORT: q_a 0 0 32 0 OUTPUT NODEFVAL "q_a[31..0]"
 // Retrieval info: USED_PORT: q_b 0 0 32 0 OUTPUT NODEFVAL "q_b[31..0]"
-// Retrieval info: CONNECT: @address_a 0 0 6 0 address_a 0 0 6 0
-// Retrieval info: CONNECT: @address_b 0 0 6 0 address_b 0 0 6 0
+// Retrieval info: CONNECT: @address_a 0 0 7 0 address_a 0 0 7 0
+// Retrieval info: CONNECT: @address_b 0 0 7 0 address_b 0 0 7 0
 // Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 // Retrieval info: CONNECT: @data_a 0 0 32 0 GND 0 0 32 0
 // Retrieval info: CONNECT: @data_b 0 0 32 0 GND 0 0 32 0
