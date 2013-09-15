@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+BUILD_ID=$(git rev-parse --verify --short HEAD)
+if git diff-index --name-only HEAD | read dummy; then
+	BUILD_ID="${BUILD_ID}+"
+fi
+DATE=$(date)
+
+cat << EOF
+	.section ".rodata"
+	.balign	4
+.globl cpu_version
+cpu_version:
+	.asciz	"${BUILD_ID}"
+.globl date
+date:
+	.asciz	"${DATE}"
+	.balign	4
+EOF

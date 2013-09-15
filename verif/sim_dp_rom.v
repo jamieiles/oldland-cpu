@@ -13,7 +13,9 @@ module sim_dp_rom(input wire		clk,
 		  output reg [31:0]	d_data,
 		  output reg		d_ack);
 
-reg [7:0]	rom [255:0];
+localparam BOOTROM_BYTES = 512;
+
+reg [7:0]	rom [BOOTROM_BYTES - 1:0];
 reg [8 * 128:0] rom_filename;
 
 initial begin
@@ -22,7 +24,7 @@ initial begin
 		$display("+romfile=PATH_TO_rom.hex required");
 		$finish;
 	end
-	$readmemh(rom_filename, rom, 0, 255);
+	$readmemh(rom_filename, rom, 0, BOOTROM_BYTES - 1);
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;
 	d_ack = 1'b0;

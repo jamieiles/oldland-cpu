@@ -1,5 +1,14 @@
 .globl _start
 _start:
+	b	init
+	/* Offsets from here to the version strings, not executable code. */
+	.long	cpu_version
+	.long	date
+
+init:
+	movhi	$r0, %hi(ex_table)
+	orlo	$r0, $r0, %lo(ex_table)
+	scr	0, $r0
 	/*
 	 * Wait for the SDRAM to be configured.  The controller lives at
 	 * 0x800001000, bit 0 in any register in the 4KB space indicates
@@ -94,3 +103,15 @@ not_empty:
 	bne	not_empty
 
 	ret
+
+bad_vector:
+	b	bad_vector
+
+	.balign	64
+ex_table:
+	b	_start		/* RESET */
+	b	bad_vector	/* ILLEGAL_INSTR */
+	b	bad_vector	/* SWI */
+	b	bad_vector	/* IRQ */
+	b	bad_vector	/* IFETCH_ABORT */
+	b	bad_vector	/* DATA_ABORT */
