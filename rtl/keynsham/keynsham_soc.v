@@ -50,6 +50,9 @@ wire		uart_error;
 wire [31:0]	d_sdram_data;
 wire		d_sdram_ack;
 wire		d_sdram_error;
+wire [31:0]	i_sdram_data;
+wire		i_sdram_ack;
+wire		i_sdram_error;
 
 /*
  * For invalid addresses - ack so we don't stall the CPU on a bus access and
@@ -74,12 +77,13 @@ wire		ram_i_cs	= i_addr[29:10]	== 20'h00000;
 wire		rom_cs		= d_addr[29:10]	== 20'h10000;
 wire		rom_i_cs	= i_addr[29:10]	== 20'h10000;
 wire		d_sdram_cs	= d_addr[29:23] == 7'b0010000;
+wire		i_sdram_cs	= i_addr[29:23] == 7'b0010000;
 wire		d_sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
 wire		uart_cs		= d_addr[29:10] == 20'h80000;
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs);
-wire		i_default_cs	= ~(ram_i_cs | rom_i_cs);
+wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
 
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
@@ -88,8 +92,8 @@ wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | d_default_ack;
 wire d_error = uart_error | d_sdram_error | d_default_error;
 
 wire i_access;
-wire i_ack = i_ram_ack | i_rom_ack | i_default_ack;
-wire i_error = i_default_error;
+wire i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
+wire i_error = i_default_error | i_sdram_error;
 
 keynsham_ram	ram(.clk(clk),
 		    .i_access(i_access),
@@ -120,16 +124,22 @@ keynsham_bootrom rom(.clk(clk),
 		     .d_ack(rom_ack));
 
 keynsham_sdram	sdram(.clk(clk),
-		      .bus_access(d_access),
-		      .sdram_cs(d_sdram_cs),
 		      .ctrl_cs(d_sdram_ctrl_cs),
-		      .bus_addr(d_addr),
-		      .bus_wr_val(d_wr_val),
-		      .bus_wr_en(d_wr_en),
-		      .bus_bytesel(d_bytesel),
-		      .bus_error(d_sdram_error),
-		      .bus_ack(d_sdram_ack),
-		      .bus_data(d_sdram_data),
+		      .d_access(d_access),
+		      .d_cs(d_sdram_cs),
+		      .d_addr(d_addr),
+		      .d_wr_val(d_wr_val),
+		      .d_wr_en(d_wr_en),
+		      .d_bytesel(d_bytesel),
+		      .d_error(d_sdram_error),
+		      .d_ack(d_sdram_ack),
+		      .d_data(d_sdram_data),
+		      .i_access(i_access),
+		      .i_cs(i_sdram_cs),
+		      .i_addr(i_addr),
+		      .i_error(i_sdram_error),
+		      .i_ack(i_sdram_ack),
+		      .i_data(i_sdram_data),
 		      .s_ras_n(s_ras_n),
 		      .s_cas_n(s_cas_n),
 		      .s_wr_en(s_wr_en),
@@ -206,6 +216,8 @@ always @(*) begin
 		i_data = i_ram_data;
 	else if (rom_i_out_cs)
 		i_data = i_rom_data;
+	else if (i_sdram_cs)
+		i_data = i_sdram_data;
 	else
 		i_data = `INSTR_NOP;
 end

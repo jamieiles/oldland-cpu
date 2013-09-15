@@ -10,6 +10,7 @@ add_subdirectory(ldrstr)
 add_subdirectory(branches)
 add_subdirectory(calls)
 add_subdirectory(d_sdram)
+add_subdirectory(i_sdram)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"
