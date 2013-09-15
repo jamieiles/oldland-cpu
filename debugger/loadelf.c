@@ -91,16 +91,49 @@ static int load_section(const struct target *target, uint32_t addr,
 {
 	int ret;
 
-	while (len-- != 0) {
+	/*
+	 * Align the destination to a 32 bit boundary so we can do word
+	 * accesses for performance.
+	 */
+	while (addr & 0x3 && len--) {
 		uint32_t v = *(data++);
 
 		ret = dbg_write8(target, addr++, v);
 		if (ret) {
 			warnx("failed to write to %08x", addr);
-			break;
+			goto out;
 		}
 	}
 
+	/* Now do as many word writes as possible. */
+	while (len >= 4) {
+		uint32_t v;
+
+		memcpy(&v, data, 4);
+
+		ret = dbg_write32(target, addr, v);
+		if (ret) {
+			warnx("faield to write to %08x", addr);
+			goto out;
+		}
+
+		addr += 4;
+		data += 4;
+		len -= 4;
+	}
+
+	/* Finally do any remaining bytes. */
+	while (len--) {
+		uint32_t v = *(data++);
+
+		ret = dbg_write8(target, addr++, v);
+		if (ret) {
+			warnx("failed to write to %08x", addr);
+			goto out;
+		}
+	}
+
+out:
 	return ret;
 }
 
