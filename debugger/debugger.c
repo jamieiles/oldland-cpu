@@ -258,7 +258,7 @@ static int lua_write##width(lua_State *L)					\
 										\
 	assert_target(L);							\
 										\
-	if (lua_gettop(L) != 1) {						\
+	if (lua_gettop(L) != 2) {						\
 		lua_pushstring(L, "no address/value provided");			\
 		lua_error(L);							\
 	}									\
