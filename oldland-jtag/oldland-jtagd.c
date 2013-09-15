@@ -28,6 +28,7 @@ struct debug_data {
 	int sock_fd;
 	int epoll_fd;
 	int client_fd;
+	int cur_ir;
 };
 
 static int get_request(struct debug_data *d, struct dbg_request *req)
@@ -140,14 +141,25 @@ static void close_connection(struct debug_data *data)
 	data->client_fd = -1;
 }
 
+static int set_vir(struct debug_data *debug, int ir)
+{
+	int rc = 0;
+
+	if (debug->cur_ir != ir)
+		rc = jtag_vir(ir);
+	debug->cur_ir = ir;
+
+	return rc;
+}
+
 /* Wait for the current operation to finish. */
-static int wait_complete(void)
+static int wait_complete(struct debug_data *debug)
 {
 	int rc = 0;
 	unsigned result;
 
 	do {
-		if (jtag_vir(0x4) || jtag_vdr(32, 0, &result)) {
+		if (set_vir(debug, 0x4) || jtag_vdr(32, 0, &result)) {
 			rc = -EIO;
 			break;
 		}
@@ -165,22 +177,22 @@ static int handle_req(struct debug_data *debug, struct dbg_request *req)
 	if (!req->read_not_write) {
 		addr |= (1 << 3); /* Write enable. */
 
-		if (jtag_vir(addr) || jtag_vdr(32, req->value, &out)) {
+		if (set_vir(debug, addr) || jtag_vdr(32, req->value, &out)) {
 			warnx("failed to write request");
 			return -EIO;
 		}
 
-		if (wait_complete()) {
+		if (wait_complete(debug)) {
 			warnx("failed to complete request");
 			return -EIO;
 		}
 	} else {
-		if (jtag_vir(addr) || jtag_vdr(32, 0, &out)) {
+		if (set_vir(debug, addr) || jtag_vdr(32, 0, &out)) {
 			warnx("failed to perform read");
 			return -EIO;
 		}
 
-		if (wait_complete()) {
+		if (wait_complete(debug)) {
 			warnx("failed to complete read request");
 			return -EIO;
 		}
@@ -230,6 +242,7 @@ static struct debug_data *start_server(void)
 	if (!data)
 		err(1, "failed to allocate data");
 
+	data->cur_ir = -1;
 	data->sock_fd = spawn_server();
 	data->epoll_fd = epoll_create(1);
 	data->client_fd = -1;
