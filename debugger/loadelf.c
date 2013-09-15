@@ -86,7 +86,7 @@ static void unmap_elf(const struct elf_info *info)
 	close(info->fd);
 }
 
-static int load_section(const struct target *target, uint32_t addr,
+static int load_section(struct target *target, uint32_t addr,
 			const uint8_t *data, size_t len)
 {
 	int ret;
@@ -173,7 +173,7 @@ static void load_testpoints(const struct elf_info *elf,
 	*nr_testpoints = tp_section->sh_size / sizeof(struct testpoint);
 }
 
-static void init_regs(const struct target *target)
+static void init_regs(struct target *target)
 {
 	int i;
 
@@ -181,7 +181,7 @@ static void init_regs(const struct target *target)
 		dbg_write_reg(target, i, 0);
 }
 
-int load_elf(const struct target *target, const char *path,
+int load_elf(struct target *target, const char *path,
 	     struct testpoint **testpoints, size_t *nr_testpoints)
 {
 	struct elf_info elf = {};

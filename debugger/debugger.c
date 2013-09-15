@@ -37,6 +37,12 @@ static char doc[] = "Oldland CPU debugger.";
 struct target {
 	int fd;
 	bool interrupted;
+
+	bool addr_written;
+	uint32_t cached_addr;
+
+	bool wdata_written;
+	uint32_t cached_wdata;
 };
 
 static struct target *target;
@@ -76,7 +82,7 @@ static int target_exchange(const struct target *t,
 	return 0;
 }
 
-static int dbg_write(const struct target *t, enum dbg_reg addr, uint32_t value)
+static int dbg_write(struct target *t, enum dbg_reg addr, uint32_t value)
 {
 	struct dbg_request req = {
 		.addr = addr,
@@ -86,6 +92,20 @@ static int dbg_write(const struct target *t, enum dbg_reg addr, uint32_t value)
 	struct dbg_response resp;
 	int rc;
 
+	if (addr == REG_ADDRESS) {
+		if (value == t->cached_addr && t->addr_written)
+			return 0;
+		t->cached_addr = value;
+		t->addr_written = true;
+	}
+
+	if (addr == REG_WDATA) {
+		if (value == t->cached_wdata && t->wdata_written)
+			return 0;
+		t->cached_wdata = value;
+		t->wdata_written = true;
+	}
+
 	rc = target_exchange(t, &req, &resp);
 	if (!rc)
 		rc = resp.status;
@@ -93,7 +113,7 @@ static int dbg_write(const struct target *t, enum dbg_reg addr, uint32_t value)
 	return rc;
 }
 
-static int dbg_read(const struct target *t, enum dbg_reg addr, uint32_t *value)
+static int dbg_read(struct target *t, enum dbg_reg addr, uint32_t *value)
 {
 	struct dbg_request req = {
 		.addr = addr,
@@ -110,27 +130,27 @@ static int dbg_read(const struct target *t, enum dbg_reg addr, uint32_t *value)
 	return rc;
 }
 
-static int dbg_term(const struct target *t)
+static int dbg_term(struct target *t)
 {
 	return dbg_write(t, REG_CMD, CMD_SIM_TERM);
 }
 
-int dbg_stop(const struct target *t)
+int dbg_stop(struct target *t)
 {
 	return dbg_write(t, REG_CMD, CMD_STOP);
 }
 
-int dbg_run(const struct target *t)
+int dbg_run(struct target *t)
 {
 	return dbg_write(t, REG_CMD, CMD_RUN);
 }
 
-int dbg_step(const struct target *t)
+int dbg_step(struct target *t)
 {
 	return dbg_write(t, REG_CMD, CMD_STEP);
 }
 
-static int dbg_reset(const struct target *t)
+static int dbg_reset(struct target *t)
 {
 	int rc = dbg_stop(t);
 
@@ -140,7 +160,7 @@ static int dbg_reset(const struct target *t)
 	return dbg_write(t, REG_CMD, CMD_RESET);
 }
 
-int dbg_read_reg(const struct target *t, unsigned reg, uint32_t *val)
+int dbg_read_reg(struct target *t, unsigned reg, uint32_t *val)
 {
 	int rc;
 
@@ -163,7 +183,7 @@ static void assert_target(lua_State *L)
 }
 
 #define MEM_READ_FN(width)							\
-int dbg_read##width(const struct target *t, unsigned addr, uint32_t *val)	\
+int dbg_read##width(struct target *t, unsigned addr, uint32_t *val)		\
 {										\
 	int rc;									\
 										\
@@ -200,7 +220,7 @@ static int lua_read##width(lua_State *L)					\
 }
 
 #define MEM_WRITE_FN(width)							\
-int dbg_write##width(const struct target *t, unsigned addr, uint32_t val)	\
+int dbg_write##width(struct target *t, unsigned addr, uint32_t val)		\
 {										\
 	int rc;									\
 										\
@@ -242,7 +262,7 @@ MEM_WRITE_FN(32);
 MEM_WRITE_FN(16);
 MEM_WRITE_FN(8);
 
-int dbg_write_reg(const struct target *t, unsigned reg, uint32_t val)
+int dbg_write_reg(struct target *t, unsigned reg, uint32_t val)
 {
 	int rc;
 
