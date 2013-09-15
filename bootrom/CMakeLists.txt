@@ -28,10 +28,10 @@ add_custom_command(OUTPUT ${bootloader}.o
 		   COMMAND oldland-elf-as ${CMAKE_CURRENT_SOURCE_DIR}/${bootloader}.s -o ${bootloader}.o
 		   DEPENDS ${bootloader}.s)
 add_custom_command(OUTPUT ${bootloader}.bin
-		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.bin -O binary --pad-to=0x100
+		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.bin -O binary --pad-to=0x200
 		   DEPENDS ${bootloader})
 add_custom_command(OUTPUT ${bootloader}.hex
-		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.hex -O verilog --pad-to=0x100
+		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.hex -O verilog --pad-to=0x200
 		   DEPENDS ${bootloader})
 add_custom_command(OUTPUT ${bootloader}.ihex
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeramfile/makeramfile ${bootloader}.bin ${bootloader}.ihex
