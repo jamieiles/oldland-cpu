@@ -2,5 +2,3 @@
 - interrupts.
 - I/D arbiter for shared instruction/data memory.
 - gpio for signalling board status.
-- byteswapping in debugger protocol.
-- include repo git sha1 in bootrom image.
