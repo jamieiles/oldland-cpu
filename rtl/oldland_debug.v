@@ -213,11 +213,9 @@ always @(*) begin
 		next_state = STATE_COMPL;
 	end
 	STATE_WAIT_WMEM: begin
-		mem_access = ~mem_compl;
 		next_state = mem_compl ? STATE_COMPL : STATE_WAIT_WMEM;
 	end
 	STATE_WAIT_RMEM: begin
-		mem_access = ~mem_compl;
 		if (mem_compl) begin
 			ctl_addr = 2'b11;
 			ctl_wr_en = 1'b1;
