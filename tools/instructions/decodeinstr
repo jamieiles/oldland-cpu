@@ -12,7 +12,7 @@ def find_instr(cls, opcode):
 def decode_operand(fmt, instr):
     opdef = instructions.operands[fmt]
     if fmt in ['ra', 'rb', 'rd']:
-        return '$r' + str(((instr >> opdef['bitpos']) & 0x7))
+        return '$r' + str(((instr >> opdef['bitpos']) & 0xf))
     if fmt in ['imm16', 'imm13']:
         return '0x{0:04x}'.format(
             ((instr >> opdef['bitpos']) & (1 << opdef['length']) - 1))
