@@ -230,6 +230,7 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		switch (debug->debug_regs[REG_CMD]) {
 		case CMD_STOP:
 			sim_state = SIM_STATE_STOPPED;
+			cpu_read_reg(cpu, PC, &debug->debug_regs[REG_RDATA]);
 			break;
 		case CMD_RUN:
 			sim_state = SIM_STATE_RUNNING;
@@ -237,6 +238,7 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		case CMD_STEP:
 			sim_state = SIM_STATE_STOPPED;
 			cpu_cycle(cpu);
+			cpu_read_reg(cpu, PC, &debug->debug_regs[REG_RDATA]);
 			break;
 		case CMD_READ_REG:
 			resp.status = cpu_read_reg(cpu,

@@ -43,6 +43,9 @@ struct target {
 
 	bool wdata_written;
 	uint32_t cached_wdata;
+
+	/* Populated when stopped. */
+	uint32_t pc;
 };
 
 static struct target *target;
@@ -137,7 +140,12 @@ static int dbg_term(struct target *t)
 
 int dbg_stop(struct target *t)
 {
-	return dbg_write(t, REG_CMD, CMD_STOP);
+	int rc = dbg_write(t, REG_CMD, CMD_STOP);
+
+	if (!rc)
+		rc = dbg_read(t, REG_RDATA, &t->pc);
+
+	return rc;
 }
 
 int dbg_run(struct target *t)
@@ -147,7 +155,12 @@ int dbg_run(struct target *t)
 
 int dbg_step(struct target *t)
 {
-	return dbg_write(t, REG_CMD, CMD_STEP);
+	int rc = dbg_write(t, REG_CMD, CMD_STEP);
+
+	if (!rc)
+		rc = dbg_read(t, REG_RDATA, &t->pc);
+
+	return rc;
 }
 
 static int dbg_reset(struct target *t)
@@ -163,6 +176,11 @@ static int dbg_reset(struct target *t)
 int dbg_read_reg(struct target *t, unsigned reg, uint32_t *val)
 {
 	int rc;
+
+	if (reg == PC) {
+		*val = t->pc;
+		return 0;
+	}
 
 	rc = dbg_write(t, REG_ADDRESS, reg);
 	if (rc)
@@ -273,7 +291,11 @@ int dbg_write_reg(struct target *t, unsigned reg, uint32_t val)
 	if (rc)
 		return rc;
 
-	return dbg_write(t, REG_CMD, CMD_WRITE_REG);
+	rc = dbg_write(t, REG_CMD, CMD_WRITE_REG);
+	if (!rc && reg == PC)
+		t->pc = val;
+
+	return rc;
 }
 
 int open_server(const char *hostname, const char *port)

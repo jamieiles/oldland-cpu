@@ -232,6 +232,11 @@ always @(*) begin
 	end
 	STATE_WAIT_STOPPED: begin
 		next_state = stopped ? STATE_COMPL : STATE_WAIT_STOPPED;
+		if (stopped) begin
+			ctl_addr = 2'b11;
+			ctl_wr_en = 1'b1;
+			ctl_din = dbg_pc;
+		end
 	end
 	STATE_STORE_REG_RVAL: begin
 		ctl_addr = 2'b11;
