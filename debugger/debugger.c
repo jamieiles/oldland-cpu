@@ -656,6 +656,9 @@ int main(int argc, char *argv[])
 		run_interactive(L);
 	}
 
+	if (target)
+		dbg_run(target);
+
 	fflush(stdout);
 
 	return 0;
