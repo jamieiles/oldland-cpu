@@ -1,4 +1,5 @@
 module oldland_cpu(input wire		clk,
+		   output wire		running,
 		   /* Instruction bus. */
 		   output wire		i_access,
 		   output wire [29:0]	i_addr,
@@ -107,6 +108,8 @@ wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
 wire		dbg_rst;
+
+assign		running = cpu_run;
 
 oldland_debug	debug(.clk(clk),
 		      .dbg_clk(dbg_clk),

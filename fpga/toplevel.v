@@ -10,7 +10,8 @@ module toplevel(input wire clk,
 		output wire s_clken,
 		inout [15:0] s_data,
 		output wire [1:0] s_banksel,
-		output wire sdr_clk);
+		output wire sdr_clk,
+		output reg running);
 
 wire		sys_clk;
 wire		dbg_clk;
@@ -20,6 +21,12 @@ wire [31:0]	dbg_dout;
 wire		dbg_wr_en;
 wire		dbg_req;
 wire		dbg_ack;
+
+wire		cpu_running;
+reg		have_run = 1'b0;
+reg [19:0]	run_counter = 20'hfffff;
+
+initial		running = 1'b1;
 
 sys_pll		pll(.inclk0(clk),
 		    .c0(sys_clk),
@@ -34,6 +41,7 @@ vjtag_debug	debug(.dbg_clk(dbg_clk),
 		      .dbg_ack(dbg_ack));
 
 keynsham_soc	soc(.clk(sys_clk),
+		    .running(cpu_running),
 		    .uart_rx(uart_rx),
 		    .uart_tx(uart_tx),
 		    .s_ras_n(s_ras_n),
@@ -52,5 +60,21 @@ keynsham_soc	soc(.clk(sys_clk),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack));
+
+/*
+ * Make the effects of running a little more visible - if we run for at least
+ * on cycle in 2^20 cycles then trigger the LED for 2^20 cycles.  This means
+ * that there is some visible feedback for a single step and short run periods.
+ */
+always @(posedge clk) begin
+	if (cpu_running)
+		have_run <= 1'b1;
+
+	run_counter <= run_counter - 20'b1;
+	if (run_counter == 20'h0) begin
+		running <= have_run;
+		have_run <= 1'b0;
+	end
+end
 
 endmodule

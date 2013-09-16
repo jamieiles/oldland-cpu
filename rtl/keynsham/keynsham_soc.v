@@ -2,6 +2,7 @@
 `define OLDLAND_RESET_ADDR	32'h10000000
 
 module keynsham_soc(input wire		clk,
+		    output wire		running,
 		    /* UART I/O signals. */
 		    input wire		uart_rx,
 		    output wire		uart_tx,
@@ -164,6 +165,7 @@ keynsham_uart	uart(.clk(clk),
 		     .tx(uart_tx));
 
 oldland_cpu	cpu(.clk(clk),
+		    .running(running),
 		    .i_access(i_access),
 		    .i_addr(i_addr),
 		    .i_data(i_data),
