@@ -298,7 +298,7 @@ static void emul_branch(struct cpu *c, uint32_t instr)
 	imm24 <<= 8;
 	imm24 >>= 8;
 
-	target = (instr & (1 << 25)) ? rb : c->pc + (imm24 << 2) + 4;
+	target = (instr & (1 << 25)) ? c->regs[rb] : c->pc + (imm24 << 2) + 4;
 
 	switch (instr_opc(instr)) {
 	case OPCODE_B:
