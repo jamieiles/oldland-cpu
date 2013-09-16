@@ -1,3 +1,6 @@
+require "math"
+require "io"
+
 step = target.step
 stop = target.stop
 run = target.run
@@ -65,4 +68,37 @@ end
 function report_cpu()
 	print("BuildID:\t" .. get_buildid())
 	print("BuildDate:\t" .. get_build_date())
+end
+
+function dump_mem(start, len)
+	count = 0
+
+	while count < len do
+		row = {}
+		for col = 1, math.min(len - count, 16) do
+			row[col] = target.read8(start + count + col - 1)
+		end
+
+		for i, v in ipairs(row) do
+			io.write(string.format("%02x ", v))
+		end
+
+		for i = math.min(len - count, 16), 16 do
+			io.write("   ")
+		end
+
+		io.write("|")
+		repr = ""
+		for i, v in ipairs(row) do
+			if v < 0x20 or v > 0x7e then
+				v = 0x2e
+			end
+			repr = repr .. string.format("%c", v)
+		end
+		io.write(string.format("%s", repr))
+		io.write("|")
+		io.write("\n")
+
+		count = count + math.min(len - count, 16)
+	end
 end
