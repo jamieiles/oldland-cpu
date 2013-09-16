@@ -562,7 +562,8 @@ static void load_support(lua_State *L)
 
 static void sigint_handler(int s)
 {
-	target->interrupted = true;
+	if (target)
+		target->interrupted = true;
 
 	if (target)
 		dbg_stop(target);
