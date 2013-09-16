@@ -1,7 +1,8 @@
+require "common"
+
 MAX_CYCLE_COUNT = 10000
 
-connect("localhost", "36000")
-loadelf("i_sdram")
+connect_and_load("i_sdram")
 
 expect_testpoints = {
 	{ TP_USER, 0 },

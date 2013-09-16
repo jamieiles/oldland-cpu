@@ -56,3 +56,25 @@ function run_testpoints(expected_testpoints)
 
 	return 0
 end
+
+function connect_test_target()
+	host = "localhost"
+	port = 36000
+
+	host_override = os.getenv("OLDLAND_TARGET")
+	if host_override then
+		host = nil
+		port = nil
+		for i in string.gmatch(host_override,  "[^:]+") do
+			if not host then host = i
+			elseif not port then port = i end
+		end
+	end
+
+	target.connect(host, port)
+end
+
+function connect_and_load(elf)
+	connect_test_target()
+	loadelf(elf)
+end

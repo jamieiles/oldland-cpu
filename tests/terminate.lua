@@ -1,2 +1,4 @@
-connect("localhost", 36000)
+require "common"
+
+connect_test_target()
 target.term()

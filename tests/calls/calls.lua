@@ -2,8 +2,7 @@ require "common"
 
 MAX_CYCLE_COUNT = 1000
 
-connect("localhost", "36000")
-loadelf("calls")
+connect_and_load("calls")
 
 expect_testpoints = {
 	{ TP_USER, 0 },

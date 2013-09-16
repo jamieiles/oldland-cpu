@@ -2,8 +2,7 @@ require "common"
 
 MAX_CYCLE_COUNT = 128
 
-connect("localhost", "36000")
-loadelf("crbasic")
+connect_and_load("crbasic")
 
 expect_testpoints = {
 	{ TP_SUCCESS, 0 },

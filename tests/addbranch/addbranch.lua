@@ -2,8 +2,7 @@ require "common"
 
 MAX_CYCLE_COUNT = 1000
 
-connect("localhost", "36000")
-loadelf("addbranch")
+connect_and_load("addbranch")
 
 expect_testpoints = {
 	{ TP_SUCCESS, 0 }

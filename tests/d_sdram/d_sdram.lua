@@ -2,8 +2,7 @@ require "common"
 
 MAX_CYCLE_COUNT = 10000
 
-connect("localhost", "36000")
-loadelf("d_sdram")
+connect_and_load("d_sdram")
 
 function validate_sdram()
 	addr = 0x20000000
