@@ -11,7 +11,9 @@ _start:
 f1:
 	push		$lr
 	TESTPOINT	TP_USER, 0
-	call		f2
+	movhi		$r4, %hi(f2)
+	orlo		$r4, $r4, %lo(f2)
+	call		$r4
 	TESTPOINT	TP_USER, 3
 	pop		$lr
 	ret
