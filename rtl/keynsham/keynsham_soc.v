@@ -216,7 +216,7 @@ always @(*) begin
 		i_data = i_ram_data;
 	else if (rom_i_out_cs)
 		i_data = i_rom_data;
-	else if (i_sdram_cs)
+	else if (i_sdram_ack)
 		i_data = i_sdram_data;
 	else
 		i_data = `INSTR_NOP;
