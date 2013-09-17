@@ -57,6 +57,7 @@ wire [1:0]	de_class;
 wire		de_is_call;
 wire [1:0]	de_mem_width;
 wire		de_update_flags;
+wire		de_update_carry;
 wire [2:0]      de_cr_sel;
 wire            de_write_cr;
 reg [31:0]	de_ra = 32'b0;
@@ -179,6 +180,7 @@ oldland_decode	decode(.clk(clk),
 		       .is_call(de_is_call),
 		       .mem_width(de_mem_width),
 		       .update_flags(de_update_flags),
+		       .update_carry(de_update_carry),
                        .cr_sel(de_cr_sel),
                        .write_cr(de_write_cr),
                        .is_swi(de_is_swi),
@@ -213,6 +215,7 @@ oldland_exec	execute(.clk(clk),
 			.instr_class(de_class),
 			.is_call(de_is_call),
 			.update_flags(de_update_flags),
+			.update_carry(de_update_carry),
 			.mar(em_mar),
 			.mdr(em_mdr),
 			.mem_wr_en(em_mem_wr_en),

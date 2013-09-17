@@ -17,6 +17,7 @@ module oldland_exec(input wire		clk,
 		    input wire [2:0]	branch_condition,
 		    input wire [1:0]	instr_class,
 		    input wire		is_call,
+		    input wire		update_carry,
 		    input wire		update_flags,
                     input wire [2:0]    cr_sel,
                     input wire          write_cr,
@@ -99,7 +100,7 @@ always @(*) begin
 	`ALU_OPC_BST:   alu_q = op1 | (1 << op2[4:0]);
 	`ALU_OPC_OR:    alu_q = op1 | op2;
 	`ALU_OPC_COPYB: alu_q = op2;
-	5'b01100: begin
+	`ALU_OPC_CMP: begin
 		{alu_c, alu_q} = op1 - op2;
 		alu_o = op1[31] ^ op2[31] && alu_q[31] == op2[31];
 		alu_n = alu_q[31];
@@ -191,10 +192,12 @@ always @(posedge clk) begin
 
 		if (update_flags) begin
 			z_flag <= alu_z;
-			c_flag <= alu_c;
 			n_flag <= alu_n;
 			o_flag <= alu_o;
 		end
+
+		if (update_carry)
+			c_flag <= alu_c;
 
 		if (is_rfe) begin
 			c_flag <= saved_psr[1];

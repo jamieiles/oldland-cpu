@@ -30,6 +30,7 @@ module oldland_decode(input wire	clk,
 		      output reg [1:0]	instr_class,
 		      output reg	is_call,
 		      output reg	update_flags,
+		      output reg	update_carry,
                       output reg [2:0]  cr_sel,
                       output reg        write_cr,
                       output reg        is_swi,
@@ -71,6 +72,7 @@ initial begin
 	instr_class = 2'b0;
 	is_call = 1'b0;
 	update_flags = 1'b0;
+	update_carry = 1'b0;
         cr_sel = 3'b0;
         write_cr = 1'b0;
         is_swi = 1'b0;
@@ -90,9 +92,11 @@ always @(posedge clk) begin
 		mem_store <= 1'b0;
 		mem_load <= 1'b0;
 		update_flags <= 1'b0;
+		update_carry <= 1'b0;
 		update_rd <= 1'b0;
 		instr_class <= 2'b00;
 	end else begin
+		update_carry <= uc_val[25];
 		is_rfe <= uc_val[24];
 		is_swi <= uc_val[23];
 		write_cr <= uc_val[22];

@@ -13,6 +13,7 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
+  [25]    upc   Update carry flag.
   [24]    rfe   Is return-from-exception.
   [23]    swi   Is software interrupt.
   [22]    wcr   Write control register.
@@ -46,6 +47,7 @@ itab = instructions.instructions
 rom_entries = {}
 
 field_shifts = {
+    'upc':   25,
     'rfe':   24,
     'swi':   23,
     'wcr':   22,
@@ -85,7 +87,8 @@ def add_arith_instruction(opcode, idef):
         'op1ra': 1,
         'wrrd':  opcode != 'cmp',
         'aluop': idef['opcode'],
-        'upcc':  'Z' in flags_updated or 'O' in flags_updated
+        'upcc':  'Z' in flags_updated or 'O' in flags_updated,
+        'upc':   'C' in flags_updated
     }
     rom_entries[(opcode, 'immediate')] = {
         'valid': 1,
@@ -93,7 +96,8 @@ def add_arith_instruction(opcode, idef):
         'op1ra': 1,
         'wrrd':  opcode != 'cmp',
         'aluop': idef['opcode'],
-        'upcc':  'Z' in flags_updated or 'O' in flags_updated
+        'upcc':  'Z' in flags_updated or 'O' in flags_updated,
+        'upc':   'C' in flags_updated
     }
 
 def alu_opcode_val(name):
