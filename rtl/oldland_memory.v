@@ -33,32 +33,32 @@ module oldland_memory(input wire		clk,
 		      output wire [31:0]	dbg_rd_val,
 		      output wire		dbg_compl);
 
-reg [31:0] wr_val_bypass;
-reg update_rd_bypass = 1'b0;
-reg [31:0] mem_rd_val;
+reg [31:0]	wr_val_bypass;
+reg		update_rd_bypass = 1'b0;
+reg [31:0]	mem_rd_val;
 
-wire [31:0] wr_data = dbg_en ? dbg_wr_val : mdr;
+wire [31:0]	wr_data = dbg_en ? dbg_wr_val : mdr;
 
-wire [1:0] byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];
-assign d_addr = dbg_en ? dbg_addr[31:2] : addr[31:2];
-assign d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
-assign d_access = dbg_en ? dbg_access : (load | store);
+wire [1:0]	byte_addr = dbg_en ? dbg_addr[1:0] : addr[1:0];
+assign		d_addr = dbg_en ? dbg_addr[31:2] : addr[31:2];
+assign		d_wr_en = dbg_en ? dbg_wr_en : mem_wr_en;
+assign		d_access = dbg_en ? dbg_access : (load | store);
 
-reg [3:0] rd_sel_out_bypass = 4'b0;
-reg [3:0] mem_rd = 4'b0;
-reg mem_update_rd = 1'b0;
-reg [31:0] rd_mask = 32'b0;
-wire [1:0] mem_width = dbg_en ? dbg_width : width;
+reg [3:0]	rd_sel_out_bypass = 4'b0;
+reg [3:0]	mem_rd = 4'b0;
+reg		mem_update_rd = 1'b0;
+reg [31:0]	rd_mask = 32'b0;
+wire [1:0]	mem_width = dbg_en ? dbg_width : width;
 
-assign reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
-assign complete = d_ack | d_error;
-assign update_rd_out = complete && !dbg_en && !d_error ? mem_update_rd :
-	update_rd_bypass;
-assign rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
+assign		reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
+assign		complete = d_ack | d_error;
+assign		update_rd_out = complete && !dbg_en && !d_error ?
+			mem_update_rd : update_rd_bypass;
+assign		rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
 
-assign dbg_rd_val = mem_rd_val;
-assign dbg_compl = complete;
-assign data_abort = d_error;
+assign		dbg_rd_val = mem_rd_val;
+assign		dbg_compl = complete;
+assign		data_abort = d_error;
 
 initial begin
 	wr_val_bypass = 32'b0;
