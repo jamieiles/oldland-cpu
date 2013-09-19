@@ -86,7 +86,6 @@ initial begin
 		$dumpvars(0, cpu_tb);
 	end
 	if (!$test$plusargs("interactive")) begin
-		#15000000;
 		$display();
 		$finish;
 	end
