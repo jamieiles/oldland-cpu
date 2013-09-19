@@ -87,7 +87,6 @@ initial begin
 	end
 	if (!$test$plusargs("interactive")) begin
 		$display();
-		$finish;
 	end
 end
 
