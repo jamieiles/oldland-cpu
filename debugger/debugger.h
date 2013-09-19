@@ -20,7 +20,8 @@ enum regs {
 	FP,
 	SP,
 	LR,
-	PC
+	PC,
+	NR_REGS
 };
 
 enum testpoint_type {
@@ -36,6 +37,7 @@ struct testpoint {
 };
 
 struct target;
+struct regcache;
 
 const struct target *get_target(void);
 
@@ -52,5 +54,11 @@ int dbg_write16(struct target *t, unsigned addr, uint32_t val);
 int dbg_write8(struct target *t, unsigned addr, uint32_t val);
 int load_elf(struct target *t, const char *path,
 	     struct testpoint **testpoints, size_t *nr_testpoints);
+
+struct regcache *regcache_new(struct target *target);
+void regcache_free(struct regcache *r);
+int regcache_sync(struct regcache *r);
+int regcache_read(struct regcache *r, enum regs reg, uint32_t *val);
+int regcache_write(struct regcache *r, enum regs reg, uint32_t val);
 
 #endif /* __DEBUGGER_H__ */

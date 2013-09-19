@@ -46,6 +46,8 @@ struct target {
 
 	/* Populated when stopped. */
 	uint32_t pc;
+
+	struct regcache *regcache;
 };
 
 static struct target *target;
@@ -150,13 +152,20 @@ int dbg_stop(struct target *t)
 
 int dbg_run(struct target *t)
 {
-	return dbg_write(t, REG_CMD, CMD_RUN);
+	int rc = regcache_sync(t->regcache);
+
+	if (!rc)
+		rc = dbg_write(t, REG_CMD, CMD_RUN);
+
+	return rc;
 }
 
 int dbg_step(struct target *t)
 {
-	int rc = dbg_write(t, REG_CMD, CMD_STEP);
+	int rc = regcache_sync(t->regcache);
 
+	if (!rc)
+		rc = dbg_write(t, REG_CMD, CMD_STEP);
 	if (!rc)
 		rc = dbg_read(t, REG_RDATA, &t->pc);
 
@@ -165,8 +174,10 @@ int dbg_step(struct target *t)
 
 static int dbg_reset(struct target *t)
 {
-	int rc = dbg_stop(t);
+	int rc = regcache_sync(t->regcache);
 
+	if (!rc)
+		dbg_stop(t);
 	if (rc)
 		return rc;
 
@@ -342,6 +353,13 @@ static struct target *target_alloc(const char *hostname,
 		t = NULL;
 	}
 
+	t->regcache = regcache_new(t);
+	if (!t->regcache) {
+		close(t->fd);
+		free(t);
+		t = NULL;
+	}
+
 	return t;
 }
 
@@ -417,7 +435,7 @@ static int lua_read_reg(lua_State *L)
 	}
 
 	regnum = lua_tointeger(L, 1);
-	if (dbg_read_reg(target, regnum, &v))
+	if (regcache_read(target->regcache, regnum, &v))
 		warnx("failed to read register %u", (unsigned)regnum);
 	lua_pop(L, 1);
 	lua_pushinteger(L, v);
@@ -438,7 +456,7 @@ static int lua_write_reg(lua_State *L)
 
 	regnum = lua_tointeger(L, 1);
 	val = lua_tointeger(L, 2);
-	if (dbg_write_reg(target, regnum, val))
+	if (regcache_write(target->regcache, regnum, val))
 		warnx("failed to write register %u", (unsigned)regnum);
 	lua_pop(L, 2);
 
