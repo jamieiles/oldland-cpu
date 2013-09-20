@@ -53,11 +53,6 @@ struct target {
 static struct target *target;
 static bool interactive;
 
-const struct target *get_target(void)
-{
-	return target;
-}
-
 static int target_exchange(const struct target *t,
 			   const struct dbg_request *req,
 			   struct dbg_response *resp)

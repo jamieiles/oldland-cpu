@@ -39,8 +39,6 @@ struct testpoint {
 struct target;
 struct regcache;
 
-const struct target *get_target(void);
-
 int dbg_stop(struct target *t);
 int dbg_run(struct target *t);
 int dbg_step(struct target *t);
