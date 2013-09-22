@@ -60,7 +60,7 @@ initial begin
 	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode, 0, 127);
 	rd_sel = 4'b0;
 	update_rd = 1'b0;
-	alu_opc = 4'b0;
+	alu_opc = 5'b0;
 	branch_condition = 3'b0;
 	alu_op1_ra = 1'b0;
 	alu_op1_rb = 1'b0;

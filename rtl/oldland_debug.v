@@ -279,7 +279,7 @@ always @(posedge clk) begin
 		endcase
 	end
 	STATE_RESET: begin
-		if (reset_count)
+		if (|reset_count)
 			reset_count <= reset_count - 8'b1;
 	end
 	STATE_STEP: begin
