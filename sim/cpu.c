@@ -183,19 +183,20 @@ struct cpu *new_cpu(const char *binary, int flags)
 
 static uint32_t current_psr(const struct cpu *c)
 {
-	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2);
+	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
+		(c->flagsbf.n << 3);
 }
 
 enum psr_flags {
 	PSR_Z	= (1 << 0),
 	PSR_C	= (1 << 1),
-	PSR_I	= (1 << 2),
-	PSR_U	= (1 << 3),
+	PSR_O	= (1 << 2),
+	PSR_N	= (1 << 3),
 };
 
 static void set_psr(struct cpu *c, uint32_t psr)
 {
-	c->flagsw = psr & (PSR_C | PSR_Z);
+	c->flagsw = psr & (PSR_C | PSR_Z | PSR_N | PSR_O);
 }
 
 static void do_vector(struct cpu *c, enum exception_vector vector)

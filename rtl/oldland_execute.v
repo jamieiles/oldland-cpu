@@ -58,9 +58,9 @@ reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
-wire [1:0]      psr = {c_flag, z_flag};
+wire [3:0]      psr = {n_flag, o_flag, c_flag, z_flag};
 
-reg [1:0]       saved_psr = 2'b0;
+reg [3:0]       saved_psr = 4'b0;
 reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
@@ -114,7 +114,7 @@ always @(*) begin
                 end else if (cr_sel == 3'h1) begin
                         alu_q = {28'b0, n_flag, o_flag, c_flag, z_flag};
                 end else if (cr_sel == 3'h2) begin
-                        alu_q = {30'b0, saved_psr};
+                        alu_q = {28'b0, saved_psr};
                 end else if (cr_sel == 3'h3) begin
                         alu_q = fault_address;
 		end else if (cr_sel == 3'h4) begin
@@ -152,11 +152,11 @@ always @(posedge clk)
 /* CR2: saved PSR. */
 always @(posedge clk) begin
 	if (rst)
-		saved_psr <= 2'b0;
+		saved_psr <= 4'b0;
 	else if (is_swi)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
-                saved_psr <= ra[1:0];
+                saved_psr <= ra[3:0];
 end
 
 /* CR3: fault address register. */
@@ -200,6 +200,8 @@ always @(posedge clk) begin
 			c_flag <= alu_c;
 
 		if (is_rfe) begin
+			n_flag <= saved_psr[3];
+			o_flag <= saved_psr[2];
 			c_flag <= saved_psr[1];
 			z_flag <= saved_psr[0];
 		end
