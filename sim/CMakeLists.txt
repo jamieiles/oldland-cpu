@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(OldlandSimulator)
 set(CMAKE_C_FLAGS "-ggdb3 -Wall -Werror -O2")
 set(CMAKE_C_FLAGS "-DROM_FILE=\\\"${CMAKE_INSTALL_PREFIX}/lib/sim.bin\\\" ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS "-DMICROCODE_FILE=\\\"${CMAKE_INSTALL_PREFIX}/lib/decode.hex\\\" ${CMAKE_C_FLAGS}")
 
 find_package(Threads)
 

@@ -12,11 +12,16 @@
 #include "cpu.h"
 #include "internal.h"
 #include "io.h"
+#include "microcode.h"
 #include "trace.h"
 #include "oldland-types.h"
 
 #ifndef ROM_FILE
 #define ROM_FILE NULL
+#endif
+
+#ifndef MICROCODE_FILE
+#define MICROCODE_FILE NULL
 #endif
 
 enum instruction_class {
@@ -44,6 +49,8 @@ enum control_register {
 	NUM_CONTROL_REGS
 };
 
+#define MICROCODE_NR_WORDS	(1 << 7)
+
 struct cpu {
 	uint32_t pc;
 	uint32_t next_pc;
@@ -62,6 +69,7 @@ struct cpu {
 	FILE *trace_file;
 	unsigned long long cycle_count;
         uint32_t control_regs[NUM_CONTROL_REGS];
+	uint32_t ucode[MICROCODE_NR_WORDS];
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -149,6 +157,38 @@ static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 	c->next_pc = v;
 }
 
+static int load_microcode(struct cpu *c, const char *path)
+{
+	FILE *fp = fopen(path, "r");
+	unsigned m = 0;
+
+	if (!fp)
+		return -1;
+
+	while (!feof(fp)) {
+		/* microcode lines should be 8 hex chars + newline. */
+		char buf[16];
+		char *end;
+		uint32_t v;
+
+		if (!fgets(buf, sizeof(buf), fp))
+			break;
+
+		v = strtoul(buf, &end, 16);
+		if (end == buf)
+			continue;
+
+		if (m == MICROCODE_NR_WORDS)
+			errx(1, "malformed microcode file, too many words");
+
+		c->ucode[m++] = v;
+	}
+
+	fclose(fp);
+
+	return 0;
+}
+
 struct cpu *new_cpu(const char *binary, int flags)
 {
 	int err;
@@ -176,6 +216,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	assert(!err);
 
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
+	assert(!err);
+
+	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
 
 	return c;
@@ -206,148 +249,6 @@ static void do_vector(struct cpu *c, enum exception_vector vector)
 	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
 }
 
-static void emul_arithmetic(struct cpu *c, uint32_t instr)
-{
-	enum regs ra, rb, rd;
-	int32_t imm13;
-	uint64_t op2;
-	uint64_t result = 0;
-	bool upc = false, upz = false, upo = false, upn = false;
-
-	ra = instr_ra(instr);
-	rb = instr_rb(instr);
-	rd = instr_rd(instr);
-	imm13 = ((int32_t)instr_imm13(instr) << 19) >> 19;
-	op2 = (instr & (1 << 25)) ? c->regs[rb] : imm13;
-
-	switch (instr_opc(instr)) {
-	case OPCODE_ADD:
-		upc = true;
-		result = (uint64_t)c->regs[ra] + op2;
-		break;
-	case OPCODE_ADDC:
-		upc = true;
-		op2 += c->flagsbf.c;
-		result = (uint64_t)c->regs[ra] + op2;
-		break;
-	case OPCODE_CMP:
-		upc = upz = upo = upn = true;
-		result = (uint64_t)c->regs[ra] - op2;
-		break;
-	case OPCODE_SUB:
-		upc = true;
-		result = (uint64_t)c->regs[ra] - op2;
-		break;
-	case OPCODE_SUBC:
-		upc = true;
-		op2 -= c->flagsbf.c;
-		result = (uint64_t)c->regs[ra] - op2;
-		break;
-	case OPCODE_LSL:
-		result = (uint64_t)c->regs[ra] << op2;
-		break;
-	case OPCODE_ASR:
-		result = (uint64_t)(int32_t)c->regs[ra] >> op2;
-		break;
-	case OPCODE_LSR:
-		result = (uint64_t)c->regs[ra] >> op2;
-		break;
-	case OPCODE_AND:
-		result = (uint64_t)c->regs[ra] & op2;
-		break;
-	case OPCODE_XOR:
-		result = (uint64_t)c->regs[ra] ^ op2;
-		break;
-	case OPCODE_BIC:
-		result = (uint64_t)c->regs[ra] & ~(1 << (op2 % 32));
-		break;
-	case OPCODE_BST:
-		result = (uint64_t)c->regs[ra] | (1 << (op2 % 32));
-		break;
-	case OPCODE_OR:
-		result = (uint64_t)c->regs[ra] | op2;
-		break;
-	default:
-		do_vector(c, VECTOR_ILLEGAL_INSTR);
-		return;
-	}
-
-	if (upc || upz || upo || upn) {
-		if (upz)
-			c->flagsbf.z = !result;
-		if (upc)
-			c->flagsbf.c = !!(result & (1LLU << 32));
-		if (upo)
-			c->flagsbf.o = (c->regs[ra] & 0x80000000) ^ (op2 & 0x80000000) &&
-				(result & 0x80000000) == (op2 & 0x80000000);
-		if (upn)
-			c->flagsbf.n = !!(result & 0x80000000);
-		trace(c->trace_file, TRACE_FLAGS, c->flagsw);
-	}
-
-	if (instr_opc(instr) != OPCODE_CMP)
-		cpu_wr_reg(c, rd, result & 0xffffffff);
-}
-
-static void emul_branch(struct cpu *c, uint32_t instr)
-{
-	enum regs rb = instr_rb(instr);
-	int32_t imm24 = instr_imm24(instr);
-	uint32_t target;
-
-	/* Sign extend the immediate. */
-	imm24 <<= 8;
-	imm24 >>= 8;
-
-	target = (instr & (1 << 25)) ? c->regs[rb] : c->pc + (imm24 << 2) + 4;
-
-	switch (instr_opc(instr)) {
-	case OPCODE_B:
-		cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BEQ:
-		if (c->flagsbf.z)
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BNE:
-		if (!c->flagsbf.z)
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BGT:
-		if (!c->flagsbf.c && !c->flagsbf.z)
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BGTS:
-		if (!c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o))
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BLT:
-		if (c->flagsbf.c && !c->flagsbf.z)
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_BLTS:
-		if (c->flagsbf.n != c->flagsbf.o)
-			cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_CALL:
-		cpu_wr_reg(c, 0xf, c->pc + 4);
-		cpu_set_next_pc(c, target);
-		break;
-	case OPCODE_RET:
-		cpu_set_next_pc(c, c->regs[LR]);
-		break;
-	case OPCODE_SWI:
-		do_vector(c, VECTOR_SWI);
-		break;
-	case OPCODE_RFE:
-		cpu_set_next_pc(c, c->control_regs[CR_FAULT_ADDRESS]);
-		set_psr(c, c->control_regs[CR_SAVED_PSR]);
-		break;
-	default:
-		do_vector(c, VECTOR_ILLEGAL_INSTR);
-	}
-}
-
 static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 			     unsigned int nr_bits, uint32_t val)
 {
@@ -357,6 +258,7 @@ static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 	return mem_map_write(c->mem, addr, nr_bits, val);
 }
 
+#if 0
 static void emul_ldr_str(struct cpu *c, uint32_t instr)
 {
 	int32_t imm13 = instr_imm13(instr);
@@ -411,58 +313,280 @@ static void emul_ldr_str(struct cpu *c, uint32_t instr)
 		do_vector(c, VECTOR_DATA_ABORT);
 	}
 }
+#endif
 
-static void emul_misc(struct cpu *c, uint32_t instr)
+static uint32_t fetch_op1(struct cpu *c, uint32_t instr, uint32_t ucode)
 {
-	int32_t imm16 = (int32_t)instr_imm16(instr);
-	int32_t imm13 = (int32_t)instr_imm13(instr);
-	uint64_t result;
-	enum regs ra = instr_ra(instr);
-	enum regs rb = instr_rb(instr);
-	enum regs rd = instr_rd(instr);
+	if (ucode_op1ra(ucode))
+		return c->regs[instr_ra(instr)];
+	else if (ucode_op1rb(ucode))
+		return c->regs[instr_rb(instr)];
+	else
+		return c->pc + 4;
+}
 
-	switch (instr_opc(instr)) {
-	case OPCODE_NOP:
-		break;
-	case OPCODE_ORLO:
-		result = (uint64_t)c->regs[rb] | imm16;
-		cpu_wr_reg(c, rd, result & 0xffffffff);
-		break;
-	case OPCODE_MOVHI:
-		result = imm16 << 16;
-		cpu_wr_reg(c, rd, result & 0xffffffff);
-		break;
-        case OPCODE_SCR:
-                if (imm13 < NUM_CONTROL_REGS)
-                        c->control_regs[imm13] = c->regs[ra];
-                break;
-        case OPCODE_GCR:
-                if (imm13 < NUM_CONTROL_REGS)
-                        cpu_wr_reg(c, rd, c->control_regs[imm13]);
-                break;
+static uint32_t fetch_op2(struct cpu *c, uint32_t instr, uint32_t ucode)
+{
+	if (ucode_op2rb(ucode))
+		return c->regs[instr_rb(instr)];
+
+	switch (ucode_imsel(ucode)) {
+	case IMSEL_IMM13:
+		return ((int32_t)instr_imm13(instr) << 19) >> 19;
+	case IMSEL_IMM24:
+		return ((int32_t)(instr_imm24(instr) << 2) << 8) >> 8;
+	case IMSEL_HI16:
+		return instr_imm16(instr) << 16;
+	case IMSEL_LO16:
+		return instr_imm16(instr);
 	default:
-		do_vector(c, VECTOR_ILLEGAL_INSTR);
+		errx(1, "invalid immediate select");
+	}
+}
+
+enum branch_condition {
+	BRANCH_CC_NE	= 0x1,
+	BRANCH_CC_EQ	= 0x2,
+	BRANCH_CC_GT	= 0x3,
+	BRANCH_CC_LT	= 0x4,
+	BRANCH_CC_GTS	= 0x5,
+	BRANCH_CC_LTS	= 0x6,
+	BRANCH_CC_B	= 0x7,
+};
+
+static bool branch_condition_met(const struct cpu *c, enum branch_condition cond)
+{
+	switch (cond) {
+	case BRANCH_CC_NE:
+		return !c->flagsbf.z;
+	case BRANCH_CC_EQ:
+		return c->flagsbf.z;
+	case BRANCH_CC_GT:
+		return !c->flagsbf.c && !c->flagsbf.z;
+	case BRANCH_CC_GTS:
+		return !c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o);
+	case BRANCH_CC_LT:
+		return c->flagsbf.c && !c->flagsbf.z;
+	case BRANCH_CC_LTS:
+		return c->flagsbf.n != c->flagsbf.o;
+	case BRANCH_CC_B:
+		return true;
+	default:
+		return false;
+	}
+}
+
+struct alu_result {
+	uint32_t alu_q;
+	int alu_c;
+	int alu_o;
+	int alu_n;
+	int alu_z;
+	uint32_t mem_write_val;
+};
+
+static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
+		   struct alu_result *alu)
+{
+	uint64_t op1 = fetch_op1(c, instr, ucode);
+	uint64_t op2 = fetch_op2(c, instr, ucode);
+	uint64_t v;
+
+	alu->alu_z = !(op1 ^ op2);
+
+	switch (ucode_aluop(ucode)) {
+	case ALU_OPCODE_ADD:
+		v = op1 + op2;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
+	case ALU_OPCODE_ADDC:
+		v = op1 + op2 + c->flagsbf.c;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
+	case ALU_OPCODE_SUB:
+		v = op1 - op2;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
+	case ALU_OPCODE_SUBC:
+		v = op1 - op2 - c->flagsbf.c;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
+	case ALU_OPCODE_LSL:
+		v = op1 << (op2 & 0x1f);
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
+	case ALU_OPCODE_LSR:
+		alu->alu_q = op1 >> (op2 & 0x1f);
+		break;
+	case ALU_OPCODE_AND:
+		alu->alu_q = op1 & op2;
+		break;
+	case ALU_OPCODE_XOR:
+		alu->alu_q = op1 ^ op2;
+		break;
+	case ALU_OPCODE_BIC:
+		alu->alu_q = op1 & ~(1 << (op2 & 0x1f));
+		break;
+	case ALU_OPCODE_BST:
+		alu->alu_q = op1 | (1 << (op2 & 0x1f));
+		break;
+	case ALU_OPCODE_OR:
+		alu->alu_q = op1 | op2;
+		break;
+	case ALU_OPCODE_COPYB:
+		alu->alu_q = op2;
+		break;
+	case ALU_OPCODE_CMP:
+		v = op1 - op2;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		alu->alu_o = (op1 & (1 << 31)) ^ (op2 & (1 << 31)) &&
+			(alu->alu_q & (1 << 31)) == (op2 & (1 << 31));
+		alu->alu_n = !!(alu->alu_q & (1 << 31));
+		break;
+	case ALU_OPCODE_MOVHI:
+		alu->alu_q = op1 | (op2 & 0xffff);
+		break;
+	case ALU_OPCODE_ASR:
+		alu->alu_q = ((int64_t)op1 << 32) >> 32;
+		alu->alu_q >>= op2;
+		break;
+	case ALU_OPCODE_GCR:
+		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
+		break;
+	case ALU_OPCODE_SWI:
+		alu->alu_q = c->control_regs[CR_VECTOR_ADDRESS] | 0x8;
+		break;
+	case ALU_OPCODE_RFE:
+		alu->alu_q = c->control_regs[CR_FAULT_ADDRESS];
+		break;
+	case ALU_OPCODE_COPYA:
+		alu->alu_q = op1;
+		break;
+	}
+
+	alu->mem_write_val = c->regs[instr_rb(instr)];
+}
+
+static bool branch_taken(const struct cpu *c, uint32_t instr, uint32_t ucode)
+{
+	if (instr_class(instr) != INSTR_BRANCH)
+		return false;
+
+	return branch_condition_met(c, ucode_bcc(ucode)) ||
+		 ucode_swi(ucode) || ucode_rfe(ucode);
+}
+
+static void commit_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
+		       const struct alu_result *alu)
+{
+	if (ucode_upc(ucode))
+		c->flagsbf.c = alu->alu_c;
+
+	if (ucode_upcc(ucode)) {
+		c->flagsbf.o = alu->alu_o;
+		c->flagsbf.n = alu->alu_n;
+		c->flagsbf.z = alu->alu_z;
+	}
+
+	if (ucode_wrrd(ucode)) {
+		int rd = ucode_rdlr(ucode) ? LR : instr_rd(instr);
+		uint32_t v = ucode_icall(ucode) ? c->pc + 4 : alu->alu_q;
+
+		cpu_wr_reg(c, rd, v);
+	}
+}
+
+static void process_branch(struct cpu *c, uint32_t instr, uint32_t ucode,
+			   const struct alu_result *alu)
+{
+	if (branch_taken(c, instr, ucode))
+		cpu_set_next_pc(c, alu->alu_q);
+
+	if (ucode_rfe(ucode))
+		set_psr(c, c->control_regs[CR_SAVED_PSR]);
+
+	if (ucode_swi(ucode)) {
+		c->control_regs[CR_SAVED_PSR] = c->control_regs[CR_PSR];
+		c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	}
+}
+
+static void do_scr(struct cpu *c, uint32_t instr, uint32_t ucode,
+		   const struct alu_result *alu)
+{
+	unsigned cr_sel = (instr >> 12) & 0x7;
+
+	if (!ucode_wcr(ucode))
+		return;
+
+	if (cr_sel > NUM_CONTROL_REGS)
+		return;
+
+	c->control_regs[cr_sel] = alu->alu_q;
+}
+
+static unsigned maw_to_bits(enum maw maw)
+{
+	switch (maw) {
+	case MAW_8:
+		return 8;
+	case MAW_16:
+		return 16;
+	case MAW_32:
+		return 32;
+	default:
+		errx(1, "invalid memory access width");
+	}
+}
+
+static void do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
+		      const struct alu_result *alu)
+{
+	uint32_t v, addr = alu->alu_q;
+	int err;
+
+	if (!ucode_mstr(ucode) && !ucode_mldr(ucode))
+		return;
+
+	if (ucode_mstr(ucode)) {
+		err = cpu_mem_map_write(c, alu->alu_q,
+					maw_to_bits(ucode_maw(ucode)),
+					alu->mem_write_val);
+	} else {
+		err = mem_map_read(c->mem, alu->alu_q,
+				   maw_to_bits(ucode_maw(ucode)), &v);
+		if (!err)
+			cpu_wr_reg(c, instr_rd(instr), v);
+	}
+
+	if (err) {
+		c->control_regs[CR_DATA_FAULT_ADDRESS] = addr;
+		do_vector(c, VECTOR_DATA_ABORT);
 	}
 }
 
 static void emul_insn(struct cpu *c, uint32_t instr)
 {
-	switch (instr_class(instr)) {
-	case INSTR_ARITHMETIC:
-		emul_arithmetic(c, instr);
-		break;
-	case INSTR_BRANCH:
-		emul_branch(c, instr);
-		break;
-	case INSTR_LDR_STR:
-		emul_ldr_str(c, instr);
-		break;
-	case INSTR_MISC:
-		emul_misc(c, instr);
-		break;
-	default:
+	/* 7 MSB's are the microcode address. */
+	uint32_t ucode = c->ucode[instr >> (32 - 7)];
+	struct alu_result alu = {};
+
+	if (!ucode_valid(ucode)) {
 		do_vector(c, VECTOR_ILLEGAL_INSTR);
+		return;
 	}
+
+	do_alu(c, instr, ucode, &alu);
+	commit_alu(c, instr, ucode, &alu);
+	process_branch(c, instr, ucode, &alu);
+	do_scr(c, instr, ucode, &alu);
+	do_memory(c, instr, ucode, &alu);
 }
 
 int cpu_cycle(struct cpu *c)
