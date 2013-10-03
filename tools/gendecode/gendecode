@@ -192,7 +192,7 @@ def add_misc_instruction(opcode, idef):
             'wcr':   opcode == 'scr',
             'op1ra': opcode == 'scr', # cr[N] := ra
             'wrrd':  opcode == 'gcr', # rd := cr[N]
-            'aluop': alu_opcode_val('gcr'),
+            'aluop': alu_opcode_val('copya') if opcode == 'scr' else alu_opcode_val('gcr'),
         }
 
 for opcode, idef in itab.items():
