@@ -16,6 +16,11 @@ def gen_types(instructions, operands):
         operand_types += '\tOPERAND_{0},\n'.format(name.upper())
     operand_types += '};'
 
+    aluops = 'enum alu_opcode {\n'
+    for name, val in alu_opcodes.items():
+        aluops += '\tALU_OPCODE_{0} = {1},\n'.format(name.upper(), val)
+    aluops += '};'
+
     opcode_types = ''
     for name, definition in instructions.items():
         opcode_types += 'enum {{ OPCODE_{0} = {1} }};\n'.format(name.upper(),
@@ -24,7 +29,8 @@ def gen_types(instructions, operands):
     with open('types.h.templ', 'r') as types_templ:
         templ = Template(types_templ.read())
         out = templ.substitute(operand_types = operand_types,
-                               opcode_types = opcode_types)
+                               opcode_types = opcode_types,
+                               alu_opcodes = aluops)
         with open('oldland-types.h', 'w') as types:
             types.write(out)
 
