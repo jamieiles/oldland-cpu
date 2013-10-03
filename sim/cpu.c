@@ -258,63 +258,6 @@ static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 	return mem_map_write(c->mem, addr, nr_bits, val);
 }
 
-#if 0
-static void emul_ldr_str(struct cpu *c, uint32_t instr)
-{
-	int32_t imm13 = instr_imm13(instr);
-	uint32_t addr, v = 0;
-	enum regs ra = instr_ra(instr), rb = instr_rb(instr), rd = instr_rd(instr);
-	int err = 0;
-
-	/* Sign extend. */
-	imm13 <<= 19;
-	imm13 >>= 19;
-
-	/* PC relative addressing. */
-	if (!(instr & (1 << 25)))
-		addr = c->pc + 4 + imm13;
-	else
-		addr = c->regs[ra] + imm13;
-
-	switch (instr_opc(instr)) {
-	case OPCODE_LDR8:
-		err = mem_map_read(c->mem, addr, 8, &v);
-		if (!err)
-			cpu_wr_reg(c, rd, v & 0xff);
-		break;
-	case OPCODE_LDR16:
-		err = mem_map_read(c->mem, addr, 16, &v);
-		if (!err)
-			cpu_wr_reg(c, rd, v & 0xffff);
-		break;
-	case OPCODE_LDR32:
-		err = mem_map_read(c->mem, addr, 32, &v);
-		if (!err)
-			cpu_wr_reg(c, rd, v);
-		break;
-	case OPCODE_STR8:
-		v = c->regs[rb] & 0xff;
-		err = cpu_mem_map_write(c, addr, 8, v);
-		break;
-	case OPCODE_STR16:
-		v = c->regs[rb] & 0xffff;
-		err = cpu_mem_map_write(c, addr, 16, v);
-		break;
-	case OPCODE_STR32:
-		v = c->regs[rb];
-		err = cpu_mem_map_write(c, addr, 32, v);
-		break;
-	default:
-		do_vector(c, VECTOR_ILLEGAL_INSTR);
-	}
-
-	if (err) {
-		c->control_regs[CR_DATA_FAULT_ADDRESS] = addr;
-		do_vector(c, VECTOR_DATA_ABORT);
-	}
-}
-#endif
-
 static uint32_t fetch_op1(struct cpu *c, uint32_t instr, uint32_t ucode)
 {
 	if (ucode_op1ra(ucode))
