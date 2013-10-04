@@ -58,6 +58,7 @@ struct cpu {
 	union {
 		uint32_t flagsw;
 		struct {
+			unsigned i:1;
 			unsigned n:1;
 			unsigned o:1;
 			unsigned z:1;
@@ -246,7 +247,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 static uint32_t current_psr(const struct cpu *c)
 {
 	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
-		(c->flagsbf.n << 3);
+		(c->flagsbf.n << 3) | (c->flagsbf.i << 4);
 }
 
 enum psr_flags {
@@ -254,17 +255,24 @@ enum psr_flags {
 	PSR_C	= (1 << 1),
 	PSR_O	= (1 << 2),
 	PSR_N	= (1 << 3),
+	PSR_I	= (1 << 4),
 };
 
 static void set_psr(struct cpu *c, uint32_t psr)
 {
-	c->flagsw = psr & (PSR_C | PSR_Z | PSR_N | PSR_O);
+	c->flagsbf.i = !!(psr & PSR_I);
+	c->flagsbf.n = !!(psr & PSR_N);
+	c->flagsbf.o = !!(psr & PSR_O);
+	c->flagsbf.c = !!(psr & PSR_C);
+	c->flagsbf.z = !!(psr & PSR_Z);
 }
 
 static void do_vector(struct cpu *c, enum exception_vector vector)
 {
 	c->control_regs[CR_SAVED_PSR] = current_psr(c);
 	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	/* Exception handlers run with interrupts disabled. */
+	c->flagsbf.i = 0;
 	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
 }
 
@@ -423,7 +431,8 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 			c->flagsbf.z << 0 |
 			c->flagsbf.c << 1 |
 			c->flagsbf.o << 2 |
-			c->flagsbf.n << 3);
+			c->flagsbf.n << 3 |
+			c->flagsbf.i << 4);
 		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
 		break;
 	case ALU_OPCODE_SWI:
@@ -481,6 +490,7 @@ static void process_branch(struct cpu *c, uint32_t instr, uint32_t ucode,
 	if (ucode_swi(ucode)) {
 		c->control_regs[CR_SAVED_PSR] = c->control_regs[CR_PSR];
 		c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+		c->flagsbf.i = 0;
 	}
 }
 
@@ -496,6 +506,8 @@ static void do_scr(struct cpu *c, uint32_t instr, uint32_t ucode,
 		return;
 
 	c->control_regs[cr_sel] = alu->alu_q;
+	if (cr_sel == CR_PSR)
+		set_psr(c, c->control_regs[CR_PSR]);
 }
 
 static unsigned maw_to_bits(enum maw maw)
@@ -512,14 +524,14 @@ static unsigned maw_to_bits(enum maw maw)
 	}
 }
 
-static void do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
-		      const struct alu_result *alu)
+static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
+		     const struct alu_result *alu)
 {
 	uint32_t v, addr = alu->alu_q;
 	int err;
 
 	if (!ucode_mstr(ucode) && !ucode_mldr(ucode))
-		return;
+		return 0;
 
 	if (ucode_mstr(ucode)) {
 		err = cpu_mem_map_write(c, alu->alu_q,
@@ -536,6 +548,8 @@ static void do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 		c->control_regs[CR_DATA_FAULT_ADDRESS] = addr;
 		do_vector(c, VECTOR_DATA_ABORT);
 	}
+
+	return err;
 }
 
 static void emul_insn(struct cpu *c, uint32_t instr)
@@ -553,7 +567,12 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 	commit_alu(c, instr, ucode, &alu);
 	process_branch(c, instr, ucode, &alu);
 	do_scr(c, instr, ucode, &alu);
-	do_memory(c, instr, ucode, &alu);
+
+	if (do_memory(c, instr, ucode, &alu))
+		return;
+
+	if (c->irq_active && c->flagsbf.i)
+		do_vector(c, VECTOR_IRQ);
 }
 
 int cpu_cycle(struct cpu *c)
