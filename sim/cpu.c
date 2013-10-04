@@ -70,6 +70,7 @@ struct cpu {
 	unsigned long long cycle_count;
         uint32_t control_regs[NUM_CONTROL_REGS];
 	uint32_t ucode[MICROCODE_NR_WORDS];
+	bool irq_active;
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -189,6 +190,20 @@ static int load_microcode(struct cpu *c, const char *path)
 	return 0;
 }
 
+static void cpu_raise_irq(void *data)
+{
+	struct cpu *c = data;
+
+	c->irq_active = true;
+}
+
+static void cpu_clear_irq(void *data)
+{
+	struct cpu *c = data;
+
+	c->irq_active = false;
+}
+
 struct cpu *new_cpu(const char *binary, int flags)
 {
 	int err;
@@ -216,6 +231,10 @@ struct cpu *new_cpu(const char *binary, int flags)
 	assert(!err);
 
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
+	assert(!err);
+
+	err = irq_ctrl_init(c->mem, 0x80002000, cpu_raise_irq,
+			    cpu_clear_irq, c);
 	assert(!err);
 
 	err = load_microcode(c, MICROCODE_FILE);
@@ -573,4 +592,5 @@ void cpu_reset(struct cpu *c)
 
 	for (r = 0; r < NUM_CONTROL_REGS; ++r)
 		c->control_regs[r] = 0;
+	c->irq_active = false;
 }
