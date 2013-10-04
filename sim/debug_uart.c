@@ -84,7 +84,7 @@ static int uart_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 	return 0;
 }
 
-static struct io_ops uart_io_ops = {
+static const struct io_ops uart_io_ops = {
 	.write = uart_write,
 	.read = uart_read,
 };
