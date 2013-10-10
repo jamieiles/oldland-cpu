@@ -57,18 +57,37 @@ struct mem_map *mem_map_new(void)
 	return calloc(1, sizeof(struct mem_map));
 }
 
-static struct region *mem_map_lookup(struct mem_map *map, physaddr_t addr)
+static int null_read(unsigned int offs, uint32_t *val, size_t nr_bits,
+		     void *priv)
+{
+	*val = 0;
+
+	return -EFAULT;
+}
+
+static int null_write(unsigned int offs, uint32_t val, size_t nr_bits,
+		      void *priv)
+{
+	return -EFAULT;
+}
+
+static const struct region null_region = {
+	.read = null_read,
+	.write = null_write,
+};
+
+static const struct region *mem_map_lookup(struct mem_map *map, physaddr_t addr)
 {
 	unsigned int idx = supersect_idx(addr);
 	struct supersect *ss;
 
 	if (!map->supersects[idx])
-		return NULL;
+		return &null_region;
 
 	ss = map->supersects[idx];
 	idx = sect_idx(addr);
 	if (!ss->regions[idx])
-		return NULL;
+		return &null_region;
 
 	return ss->regions[idx];
 }
@@ -131,14 +150,12 @@ struct region *mem_map_region_add(struct mem_map *map, physaddr_t base,
 int mem_map_write(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 		  uint32_t val)
 {
-	struct region *r;
+	const struct region *r;
 
 	if (addr & ((nr_bits / 8) - 1))
 		return -EIO;
 
 	r = mem_map_lookup(map, addr);
-	if (!r)
-		return -EFAULT;
 
 	return r->write(addr - r->base, val, nr_bits, r->priv);
 }
@@ -146,14 +163,12 @@ int mem_map_write(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 		 uint32_t *val)
 {
-	struct region *r;
+	const struct region *r;
 
 	if (addr & ((nr_bits / 8) - 1))
 		return -EIO;
 
 	r = mem_map_lookup(map, addr);
-	if (!r)
-		return -EFAULT;
 
 	return r->read(addr - r->base, val, nr_bits, r->priv);
 }
