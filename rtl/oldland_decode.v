@@ -35,7 +35,9 @@ module oldland_decode(input wire	clk,
                       output reg        write_cr,
                       output reg        is_swi,
 		      output reg	is_rfe,
-		      output wire	illegal_instr);
+		      output wire	illegal_instr,
+		      input wire	exception_start_in,
+		      output reg	exception_start_out);
 
 wire [6:0]      addr = instr[31:25];
 
@@ -131,5 +133,8 @@ end
 
 always @(posedge clk)
 	pc_plus_4_out <= rst ? 32'b0 : pc_plus_4;
+
+always @(posedge clk)
+	exception_start_out <= exception_start_in | illegal_instr;
 
 endmodule

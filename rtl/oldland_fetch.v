@@ -37,12 +37,14 @@ module oldland_fetch(input wire		clk,
 		     input wire [31:0]	dbg_pc_wr_val,
 		     input wire [25:0]	vector_base,
 		     input wire		illegal_instr,
-		     input wire		data_abort);
+		     input wire		data_abort,
+		     output reg		exception_start);
 
 localparam	STATE_RUNNING	= 2'b00;
 localparam	STATE_STALLED	= 2'b01;
 localparam	STATE_STOPPING	= 2'b10;
 localparam	STATE_STOPPED	= 2'b11;
+
 localparam	STOP_COUNT_RST	= 3'd5;
 
 reg [1:0]	next_state = STATE_RUNNING;
@@ -71,7 +73,21 @@ assign		stopped = state == STATE_STOPPED;
 assign		fetch_addr = next_pc[31:2];
 assign		instr = i_ack ? fetch_data : `INSTR_NOP;
 
-initial		i_access = 1'b1;
+reg		fetching = 1'b0;
+
+initial	begin
+	i_access = 1'b1;
+	exception_start = 1'b0;
+end
+
+/*
+ * Save the PSR, preserving instruction stream ordering.  For SWI the PSR is
+ * saved at execution stage, for illegal instruction it's at the decode stage,
+ * for others we handle here.  Data abort can be handled here as data accesses
+ * stall the pipeline.
+ */
+always @(posedge clk)
+	exception_start <= rst ? 1'b0 : i_error | data_abort;
 
 always @(*) begin
 	if (dbg_pc_wr_en)
@@ -93,8 +109,6 @@ end
 
 always @(posedge clk)
 	state <= next_state;
-
-reg		fetching = 1'b0;
 
 always @(posedge clk) begin
 	if (i_access)

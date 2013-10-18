@@ -37,7 +37,8 @@ module oldland_exec(input wire		clk,
 		    input wire		is_rfe,
 		    output wire [25:0]	vector_base,
 		    output reg [31:0]	pc_plus_4_out,
-		    input wire		data_abort);
+		    input wire		data_abort,
+		    input wire		exception_start);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -153,7 +154,7 @@ always @(posedge clk)
 always @(posedge clk) begin
 	if (rst)
 		saved_psr <= 4'b0;
-	else if (is_swi)
+	else if (is_swi || exception_start)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
                 saved_psr <= ra[3:0];

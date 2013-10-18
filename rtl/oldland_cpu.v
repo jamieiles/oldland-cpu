@@ -28,6 +28,7 @@ module oldland_cpu(input wire		clk,
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
 wire [31:0]	fd_instr;
+wire		fd_exception_start;
 
 /* Execute -> fetch signals. */
 wire		ef_branch_taken;
@@ -66,6 +67,7 @@ reg [31:0]	de_rb = 32'b0;
 wire            de_is_swi;
 wire            de_is_rfe;
 wire		df_illegal_instr;
+wire		de_exception_start;
 
 /* Execute -> memory signals. */
 wire [31:0]	em_alu_out;
@@ -157,7 +159,8 @@ oldland_fetch	fetch(.clk(clk),
 		      .dbg_pc_wr_val(dbg_pc_wr_val),
 		      .illegal_instr(df_illegal_instr),
 		      .vector_base(e_vector_base),
-		      .data_abort(m_data_abort));
+		      .data_abort(m_data_abort),
+		      .exception_start(fd_exception_start));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -185,7 +188,9 @@ oldland_decode	decode(.clk(clk),
                        .write_cr(de_write_cr),
                        .is_swi(de_is_swi),
 		       .is_rfe(de_is_rfe),
-		       .illegal_instr(df_illegal_instr));
+		       .illegal_instr(df_illegal_instr),
+		       .exception_start_in(fd_exception_start),
+		       .exception_start_out(de_exception_start));
 
 oldland_exec	execute(.clk(clk),
 			.rst(dbg_rst),
@@ -225,7 +230,8 @@ oldland_exec	execute(.clk(clk),
 			.is_rfe(de_is_rfe),
 			.vector_base(e_vector_base),
 			.pc_plus_4_out(em_pc_plus_4),
-			.data_abort(m_data_abort));
+			.data_abort(m_data_abort),
+			.exception_start(de_exception_start));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),
