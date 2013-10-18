@@ -50,6 +50,11 @@ wire [31:0]	uart_data;
 wire		uart_ack;
 wire		uart_error;
 
+wire [31:0]	irq_data;
+wire		irq_ack;
+wire		irq_error;
+wire		irq_req;
+
 wire [31:0]	d_sdram_data;
 wire		d_sdram_ack;
 wire		d_sdram_error;
@@ -74,6 +79,7 @@ reg		i_default_error = 1'b0;
  * 0x20000000 -- 0x2fffffff: SDRAM.
  * 0x80000000 -- 0x80000fff: UART0.
  * 0x80001000 -- 0x80001fff: SDRAM controller.
+ * 0x80002000 -- 0x80002fff: IRQ controller.
  */
 wire		ram_cs		= d_addr[29:10]	== 20'h00000;
 wire		ram_i_cs	= i_addr[29:10]	== 20'h00000;
@@ -83,16 +89,18 @@ wire		d_sdram_cs	= d_addr[29:23] == 7'b0010000;
 wire		i_sdram_cs	= i_addr[29:23] == 7'b0010000;
 wire		d_sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
 wire		uart_cs		= d_addr[29:10] == 20'h80000;
+wire		irq_cs		= d_addr[29:10] == 20'h80002;
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
-				    d_sdram_ctrl_cs | uart_cs);
+				    d_sdram_ctrl_cs | uart_cs | irq_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
 
 reg ram_i_out_cs = 1'b0;
 reg rom_i_out_cs = 1'b0;
 
-wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | d_default_ack;
-wire d_error = uart_error | d_sdram_error | d_default_error;
+wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
+	d_default_ack;
+wire d_error = uart_error | d_sdram_error | irq_error | d_default_error;
 
 wire i_access;
 wire i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
@@ -166,6 +174,19 @@ keynsham_uart	uart(.clk(clk),
 		     .rx(uart_rx),
 		     .tx(uart_tx));
 
+keynsham_irq	irq(.clk(clk),
+		    .rst(dbg_rst),
+		    .bus_access(d_access),
+		    .bus_cs(irq_cs),
+		    .bus_addr(d_addr),
+		    .bus_wr_val(d_wr_val),
+		    .bus_wr_en(d_wr_en),
+		    .bus_bytesel(d_bytesel),
+		    .bus_error(irq_error),
+		    .bus_ack(irq_ack),
+		    .bus_data(irq_data),
+		    .irq_req(irq_req));
+
 oldland_cpu	cpu(.clk(clk),
 		    .running(running),
 		    .i_access(i_access),
@@ -199,6 +220,8 @@ always @(*) begin
 		d_data = d_sdram_data;
 	else if (rom_cs)
 		d_data = rom_data;
+	else if (irq_cs)
+		d_data = irq_data;
 	else
 		d_data = 32'b0;
 end
