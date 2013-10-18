@@ -1,6 +1,40 @@
 `include "oldland_defines.v"
 
 /*
+ * Interrupt handling:
+ *
+ * - I bit in the PSR:
+ *   0: interrupts disabled.
+ *   1: interrupts enabled.
+ * - Interrupts are level triggered, if irq_in goes high and PSR[I] == 1 then
+ *   we'll service the interrupt.
+ * - There is a possibility for an IRQ to happen at the same time as another
+ *   exception such as illegal instruction or memory abort.  All abort
+ *   handlers are entered with PSR[I] == 0 and all other exceptions have
+ *   a higher priority than IRQ - the handlers can reenable interrupts to
+ *   service IRQS.
+ * - When we're ready to process an IRQ we flush the pipeline to avoid any
+ *   side effects (such as control register writes in particular) and other
+ *   exceptions.  If we're stalling for a memory access or branch then the
+ *   pipeline is empty.  Otherwise we issue a pipeline flush which is just
+ *   a NOP but the writeback stage signals that the pipeline is flushed.
+ *
+ * Exception Priorities:
+ *
+ * 1. Reset.
+ * 2. Data abort.
+ * 3. Software interrupt.
+ * 4. Illegal instruction.
+ * 5. Interrupt.
+ * 6. Instruction fetch abort.
+ *
+ * With this scheme we should always process the exception for the instruction
+ * that has made the most progress through the pipeline so returning from
+ * that exception by re-executing the instruction or starting from the next
+ * should order exceptions correctly.
+ */
+
+/*
  * Instructions are fetched from the next_pc on reset.
  */
 `ifndef OLDLAND_RESET_ADDR
@@ -20,6 +54,7 @@
  */
 module oldland_fetch(input wire		clk,
 		     input wire		rst,
+		     input wire		irq_req,
 		     output reg		i_access,
 		     input wire		i_ack,
 		     input wire		i_error,
@@ -40,15 +75,19 @@ module oldland_fetch(input wire		clk,
 		     input wire		data_abort,
 		     output reg		exception_start,
 		     output wire	i_fetched,
-		     input wire		pipeline_busy);
+		     input wire		pipeline_busy,
+		     input wire		irqs_enabled,
+		     output wire	exception_disable_irqs,
+		     input wire		decode_exception);
 
-localparam	STATE_RUNNING	= 2'b00;
-localparam	STATE_STALLED	= 2'b01;
-localparam	STATE_STOPPING	= 2'b10;
-localparam	STATE_STOPPED	= 2'b11;
+localparam	STATE_RUNNING	= 3'b000;
+localparam	STATE_STALLED	= 3'b001;
+localparam	STATE_STOPPING	= 3'b010;
+localparam	STATE_STOPPED	= 3'b011;
+localparam	STATE_FLUSHING	= 3'b100;
 
-reg [1:0]	next_state = STATE_RUNNING;
-reg [1:0]	state = STATE_RUNNING;
+reg [2:0]	next_state = STATE_RUNNING;
+reg [2:0]	state = STATE_RUNNING;
 
 reg [31:0]	pc = `OLDLAND_RESET_ADDR;
 assign		pc_plus_4 = pc + 32'd4;
@@ -69,6 +108,11 @@ assign		instr = i_ack ? fetch_data : `INSTR_NOP;
 
 reg		fetching = 1'b0;
 assign		i_fetched = i_ack;
+wire		take_irq = irqs_enabled && !pipeline_busy && irq_req;
+assign		exception_disable_irqs = illegal_instr |
+					 data_abort |
+					 take_irq |
+					 decode_exception;
 
 initial	begin
 	i_access = 1'b1;
@@ -82,7 +126,7 @@ end
  * stall the pipeline.
  */
 always @(posedge clk)
-	exception_start <= rst ? 1'b0 : i_error | data_abort;
+	exception_start <= rst ? 1'b0 : i_error | data_abort | take_irq;
 
 always @(*) begin
 	if (dbg_pc_wr_en)
@@ -93,10 +137,11 @@ always @(*) begin
 		next_pc = {vector_base, 6'h14};	/* Data abort. */
 	else if (illegal_instr)
 		next_pc = {vector_base, 6'h4};	/* Illegal instruction. */
+	else if (take_irq)
+		next_pc = {vector_base, 6'hc};  /* Interrupt. */
 	else if (branch_taken)
 		next_pc = branch_pc;
-	else if (stall_clear ||
-		 (i_ack && !should_stall))
+	else if (stall_clear || (i_ack && !should_stall))
 		next_pc = pc_plus_4;
 	else
 		next_pc = pc;
@@ -106,9 +151,9 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk) begin
-	if (i_access)
+	if (i_access) begin
 		fetching <= 1'b1;
-	else if (i_ack)
+	end else if (i_ack)
 		fetching <= 1'b0;
 end
 
@@ -116,7 +161,9 @@ always @(*) begin
 	case (state)
 	STATE_RUNNING: begin
 		/* Stall for branches and memory accesses. */
-		if (should_stall)
+		if (irq_req && irqs_enabled && pipeline_busy)
+			next_state = STATE_FLUSHING;
+		else if (should_stall)
 			next_state = STATE_STALLED;
 		else if (!run && (i_access | !fetching))
 			next_state = STATE_STOPPING;
@@ -136,6 +183,16 @@ always @(*) begin
 	end
 	STATE_STOPPED: begin
 		next_state = run ? STATE_RUNNING : STATE_STOPPED;
+	end
+	STATE_FLUSHING: begin
+		if (!run)
+			next_state = STATE_STOPPING;
+		else if (pipeline_busy)
+			next_state = STATE_FLUSHING;
+		else
+			next_state = STATE_RUNNING;
+	end
+	default: begin
 	end
 	endcase
 end

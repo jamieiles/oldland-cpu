@@ -189,6 +189,7 @@ keynsham_irq	irq(.clk(clk),
 
 oldland_cpu	cpu(.clk(clk),
 		    .running(running),
+		    .irq_req(irq_req),
 		    .i_access(i_access),
 		    .i_addr(i_addr),
 		    .i_data(i_data),

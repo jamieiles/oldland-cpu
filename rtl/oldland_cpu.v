@@ -1,5 +1,6 @@
 module oldland_cpu(input wire		clk,
 		   output wire		running,
+		   input wire		irq_req,
 		   /* Instruction bus. */
 		   output wire		i_access,
 		   output wire [29:0]	i_addr,
@@ -30,6 +31,7 @@ wire [31:0]	fd_pc_plus_4;
 wire [31:0]	fd_instr;
 wire		fd_exception_start;
 wire		fd_i_fetched;
+wire		fe_disable_irqs;
 
 /* Execute -> fetch signals. */
 wire		ef_branch_taken;
@@ -86,6 +88,7 @@ wire [31:0]	em_pc_plus_4;
 wire [25:0]	e_vector_base;
 wire		em_i_valid;
 wire		m_busy; /* Memory/writeback busy. */
+wire		ei_irqs_enabled;
 
 /* Memory -> writeback signals. */
 wire [31:0]	mw_wr_val;
@@ -148,6 +151,7 @@ oldland_debug	debug(.clk(clk),
 
 oldland_fetch	fetch(.clk(clk),
 		      .rst(dbg_rst),
+		      .irq_req(irq_req),
 		      .i_access(i_access),
 		      .i_ack(i_ack),
 		      .i_error(i_error),
@@ -168,7 +172,10 @@ oldland_fetch	fetch(.clk(clk),
 		      .data_abort(m_data_abort),
 		      .exception_start(fd_exception_start),
 		      .i_fetched(fd_i_fetched),
-		      .pipeline_busy(pipeline_busy));
+		      .pipeline_busy(pipeline_busy),
+		      .irqs_enabled(ei_irqs_enabled),
+		      .decode_exception(de_exception_start),
+		      .exception_disable_irqs(fe_disable_irqs));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -243,7 +250,9 @@ oldland_exec	execute(.clk(clk),
 			.data_abort(m_data_abort),
 			.exception_start(de_exception_start),
 			.i_valid(de_i_valid),
-			.i_valid_out(em_i_valid));
+			.i_valid_out(em_i_valid),
+			.irqs_enabled(ei_irqs_enabled),
+			.exception_disable_irqs(fe_disable_irqs));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),

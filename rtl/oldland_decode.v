@@ -140,6 +140,6 @@ always @(posedge clk)
 	pc_plus_4_out <= rst ? 32'b0 : pc_plus_4;
 
 always @(posedge clk)
-	exception_start_out <= exception_start_in | illegal_instr;
+	exception_start_out <= illegal_instr | uc_val[23];
 
 endmodule

@@ -40,7 +40,9 @@ module oldland_exec(input wire		clk,
 		    input wire		data_abort,
 		    input wire		exception_start,
 		    input wire		i_valid,
-		    output reg		i_valid_out);
+		    output reg		i_valid_out,
+		    output reg		irqs_enabled,
+		    input wire		exception_disable_irqs);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -61,9 +63,9 @@ reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
-wire [3:0]      psr = {n_flag, o_flag, c_flag, z_flag};
+wire [4:0]      psr = {irqs_enabled, n_flag, o_flag, c_flag, z_flag};
 
-reg [3:0]       saved_psr = 4'b0;
+reg [4:0]       saved_psr = 5'b0;
 reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
@@ -84,6 +86,7 @@ initial begin
 	mem_wr_en = 1'b0;
 	pc_plus_4_out = 32'b0;
 	i_valid_out = 1'b0;
+	irqs_enabled = 1'b0;
 end
 
 always @(*) begin
@@ -156,18 +159,18 @@ always @(posedge clk)
 /* CR2: saved PSR. */
 always @(posedge clk) begin
 	if (rst)
-		saved_psr <= 4'b0;
-	else if (is_swi || exception_start)
+		saved_psr <= 5'b0;
+	else if (is_swi || exception_start || exception_disable_irqs)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
-                saved_psr <= ra[3:0];
+                saved_psr <= ra[4:0];
 end
 
 /* CR3: fault address register. */
 always @(posedge clk)
 	if (rst)
 		fault_address <= 32'b0;
-	else if (is_swi || data_abort)
+	else if (exception_disable_irqs)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)
 		fault_address <= ra;
@@ -189,6 +192,7 @@ always @(posedge clk) begin
 		c_flag <= 1'b0;
 		n_flag <= 1'b0;
 		o_flag <= 1'b0;
+		irqs_enabled <= 1'b0;
 	end else begin
 		alu_out <= alu_q;
 		wr_result <= update_rd;
@@ -203,7 +207,11 @@ always @(posedge clk) begin
 		if (update_carry)
 			c_flag <= alu_c;
 
+		if (exception_disable_irqs)
+			irqs_enabled <= 1'b0;
+
 		if (is_rfe) begin
+			irqs_enabled <= saved_psr[4];
 			n_flag <= saved_psr[3];
 			o_flag <= saved_psr[2];
 			c_flag <= saved_psr[1];
@@ -212,6 +220,7 @@ always @(posedge clk) begin
 
 		/* CR1: PSR. */
 		if (write_cr && cr_sel == 3'h1) begin
+			irqs_enabled <= ra[4];
 			n_flag <= ra[3];
 			o_flag <= ra[2];
 			c_flag <= ra[1];
