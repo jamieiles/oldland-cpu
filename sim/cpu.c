@@ -400,6 +400,11 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 		alu->alu_q >>= op2;
 		break;
 	case ALU_OPCODE_GCR:
+		c->control_regs[CR_PSR] = (
+			c->flagsbf.z << 0 |
+			c->flagsbf.c << 1 |
+			c->flagsbf.o << 2 |
+			c->flagsbf.n << 3);
 		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
 		break;
 	case ALU_OPCODE_SWI:
