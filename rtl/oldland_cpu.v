@@ -22,7 +22,8 @@ module oldland_cpu(input wire		clk,
 		   output wire [31:0]	dbg_dout,
 		   input wire		dbg_wr_en,
 		   input wire		dbg_req,
-		   output wire		dbg_ack);
+		   output wire		dbg_ack,
+		   output wire		dbg_rst);
 
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
@@ -108,7 +109,6 @@ wire [31:0]	dbg_mem_rd_val;
 wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
-wire		dbg_rst;
 
 assign		running = cpu_run;
 

@@ -25,6 +25,8 @@ module keynsham_soc(input wire		clk,
 		    input wire		dbg_req,
 		    output wire		dbg_ack);
 
+wire		dbg_rst;
+
 wire [29:0]	i_addr;
 reg [31:0]	i_data = `INSTR_NOP;
 wire [29:0]	d_addr;
@@ -185,7 +187,8 @@ oldland_cpu	cpu(.clk(clk),
 		    .dbg_dout(dbg_dout),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
-		    .dbg_ack(dbg_ack));
+		    .dbg_ack(dbg_ack),
+		    .dbg_rst(dbg_rst));
 
 always @(*) begin
 	if (ram_cs)
