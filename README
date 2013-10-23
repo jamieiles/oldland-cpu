@@ -11,7 +11,6 @@ Included is an instruction set simulator, tools for debugging in gtkwave, a
 bootloader (and associated bootrom code).  Documentation is currently sparse
 and there are a few working limitations:
 
-- Interrupts are not yet implemented, but other exceptions are.
 - There is no hardware multiply implemented yet.
 
 The FPGA target is for a DE0 nano and runs at 50MHz, though it should
