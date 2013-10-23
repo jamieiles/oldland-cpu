@@ -31,7 +31,9 @@ module oldland_memory(input wire		clk,
 		      input wire [1:0]		dbg_width,
 		      input wire [31:0]		dbg_wr_val,
 		      output wire [31:0]	dbg_rd_val,
-		      output wire		dbg_compl);
+		      output wire		dbg_compl,
+		      input wire		i_valid,
+		      output wire		busy);
 
 reg [31:0]	wr_val_bypass;
 reg		update_rd_bypass = 1'b0;
@@ -59,6 +61,8 @@ assign		rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
 assign		dbg_rd_val = mem_rd_val;
 assign		dbg_compl = complete;
 assign		data_abort = d_error;
+
+assign		busy = load | store | update_rd_out;
 
 initial begin
 	wr_val_bypass = 32'b0;

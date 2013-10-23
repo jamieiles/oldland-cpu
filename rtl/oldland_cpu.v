@@ -29,6 +29,7 @@ module oldland_cpu(input wire		clk,
 wire [31:0]	fd_pc_plus_4;
 wire [31:0]	fd_instr;
 wire		fd_exception_start;
+wire		fd_i_fetched;
 
 /* Execute -> fetch signals. */
 wire		ef_branch_taken;
@@ -68,6 +69,7 @@ wire            de_is_swi;
 wire            de_is_rfe;
 wire		df_illegal_instr;
 wire		de_exception_start;
+wire		de_i_valid;
 
 /* Execute -> memory signals. */
 wire [31:0]	em_alu_out;
@@ -82,6 +84,8 @@ wire [31:0]	em_mdr;
 wire		em_mem_wr_en;
 wire [31:0]	em_pc_plus_4;
 wire [25:0]	e_vector_base;
+wire		em_i_valid;
+wire		m_busy; /* Memory/writeback busy. */
 
 /* Memory -> writeback signals. */
 wire [31:0]	mw_wr_val;
@@ -113,6 +117,8 @@ wire		dbg_mem_access;
 wire		dbg_mem_compl;
 
 assign		running = cpu_run;
+
+wire		pipeline_busy = fd_i_fetched | de_i_valid | em_i_valid | m_busy;
 
 oldland_debug	debug(.clk(clk),
 		      .dbg_clk(dbg_clk),
@@ -160,7 +166,9 @@ oldland_fetch	fetch(.clk(clk),
 		      .illegal_instr(df_illegal_instr),
 		      .vector_base(e_vector_base),
 		      .data_abort(m_data_abort),
-		      .exception_start(fd_exception_start));
+		      .exception_start(fd_exception_start),
+		      .i_fetched(fd_i_fetched),
+		      .pipeline_busy(pipeline_busy));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -190,7 +198,9 @@ oldland_decode	decode(.clk(clk),
 		       .is_rfe(de_is_rfe),
 		       .illegal_instr(df_illegal_instr),
 		       .exception_start_in(fd_exception_start),
-		       .exception_start_out(de_exception_start));
+		       .exception_start_out(de_exception_start),
+		       .i_fetched(fd_i_fetched),
+		       .i_valid(de_i_valid));
 
 oldland_exec	execute(.clk(clk),
 			.rst(dbg_rst),
@@ -231,7 +241,9 @@ oldland_exec	execute(.clk(clk),
 			.vector_base(e_vector_base),
 			.pc_plus_4_out(em_pc_plus_4),
 			.data_abort(m_data_abort),
-			.exception_start(de_exception_start));
+			.exception_start(de_exception_start),
+			.i_valid(de_i_valid),
+			.i_valid_out(em_i_valid));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),
@@ -264,7 +276,9 @@ oldland_memory	mem(.clk(clk),
 		    .dbg_wr_val(dbg_mem_wr_val),
 		    .dbg_rd_val(dbg_mem_rd_val),
 		    .dbg_compl(dbg_mem_compl),
-		    .data_abort(m_data_abort));
+		    .data_abort(m_data_abort),
+		    .i_valid(em_i_valid),
+		    .busy(m_busy));
 
 oldland_regfile	regfile(.clk(clk),
 			.rst(dbg_rst),

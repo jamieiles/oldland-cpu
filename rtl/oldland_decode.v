@@ -37,7 +37,9 @@ module oldland_decode(input wire	clk,
 		      output reg	is_rfe,
 		      output wire	illegal_instr,
 		      input wire	exception_start_in,
-		      output reg	exception_start_out);
+		      output reg	exception_start_out,
+		      input wire	i_fetched,
+		      output reg	i_valid);
 
 wire [6:0]      addr = instr[31:25];
 
@@ -79,6 +81,7 @@ initial begin
         write_cr = 1'b0;
         is_swi = 1'b0;
 	is_rfe = 1'b0;
+	i_valid = 1'b0;
 end
 
 always @(posedge clk) begin
@@ -97,6 +100,7 @@ always @(posedge clk) begin
 		update_carry <= 1'b0;
 		update_rd <= 1'b0;
 		instr_class <= 2'b00;
+		i_valid = 1'b0;
 	end else begin
 		update_carry <= uc_val[25];
 		is_rfe <= uc_val[24];
@@ -116,6 +120,7 @@ always @(posedge clk) begin
 
 		instr_class <= instr[31:30];
 		cr_sel <= instr[14:12];
+		i_valid <= valid && i_fetched;
 	end
 end
 

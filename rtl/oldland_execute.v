@@ -38,7 +38,9 @@ module oldland_exec(input wire		clk,
 		    output wire [25:0]	vector_base,
 		    output reg [31:0]	pc_plus_4_out,
 		    input wire		data_abort,
-		    input wire		exception_start);
+		    input wire		exception_start,
+		    input wire		i_valid,
+		    output reg		i_valid_out);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -81,6 +83,7 @@ initial begin
 	mdr = 32'b0;
 	mem_wr_en = 1'b0;
 	pc_plus_4_out = 32'b0;
+	i_valid_out = 1'b0;
 end
 
 always @(*) begin
@@ -236,6 +239,7 @@ always @(posedge clk) begin
 		mem_load_out <= 1'b0;
 		mem_store_out <= 1'b0;
 		mem_wr_en <= 1'b0;
+		i_valid_out <= 1'b0;
 	end else begin
 		mem_load_out <= mem_load;
 		mem_store_out <= mem_store;
@@ -249,6 +253,7 @@ always @(posedge clk) begin
 
 		mem_wr_en <= mem_store;
 		pc_plus_4_out <= pc_plus_4;
+		i_valid_out <= i_valid;
 	end
 end
 

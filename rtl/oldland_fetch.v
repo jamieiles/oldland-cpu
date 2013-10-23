@@ -38,14 +38,14 @@ module oldland_fetch(input wire		clk,
 		     input wire [25:0]	vector_base,
 		     input wire		illegal_instr,
 		     input wire		data_abort,
-		     output reg		exception_start);
+		     output reg		exception_start,
+		     output wire	i_fetched,
+		     input wire		pipeline_busy);
 
 localparam	STATE_RUNNING	= 2'b00;
 localparam	STATE_STALLED	= 2'b01;
 localparam	STATE_STOPPING	= 2'b10;
 localparam	STATE_STOPPED	= 2'b11;
-
-localparam	STOP_COUNT_RST	= 3'd5;
 
 reg [1:0]	next_state = STATE_RUNNING;
 reg [1:0]	state = STATE_RUNNING;
@@ -62,18 +62,13 @@ assign		dbg_pc = pc;
  */
 wire		should_stall = ^instr[31:30] == 1'b1;
 
-/*
- * When stopping have a 5 cycle delay before signalling stopped.  We start the
- * counter once we are no longer stalling so there won't be any potentially
- * long memory accesses, we only have to handle integer ops here.
- */
-reg [2:0]	stop_ctr = STOP_COUNT_RST;
 assign		stopped = state == STATE_STOPPED;
 
 assign		fetch_addr = next_pc[31:2];
 assign		instr = i_ack ? fetch_data : `INSTR_NOP;
 
 reg		fetching = 1'b0;
+assign		i_fetched = i_ack;
 
 initial	begin
 	i_access = 1'b1;
@@ -137,10 +132,7 @@ always @(*) begin
 			next_state = STATE_STALLED;
 	end
 	STATE_STOPPING: begin
-		if (~|stop_ctr)
-			next_state = STATE_STOPPED;
-		else
-			next_state = STATE_STOPPING;
+		next_state = pipeline_busy ? STATE_STOPPING : STATE_STOPPED;
 	end
 	STATE_STOPPED: begin
 		next_state = run ? STATE_RUNNING : STATE_STOPPED;
@@ -167,8 +159,5 @@ always @(posedge clk) begin
 	else if (i_ack)
 		pc <= next_pc;
 end
-
-always @(posedge clk)
-	stop_ctr <= state == STATE_STOPPING ? stop_ctr - 3'd1 : STOP_COUNT_RST;
 
 endmodule
