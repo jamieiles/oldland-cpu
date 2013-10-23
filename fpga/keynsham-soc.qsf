@@ -141,6 +141,7 @@ set_global_assignment -name VERILOG_FILE "../rtl/keynsham/oldland-sdram/rtl/brid
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_sdram.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_uart.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_ram.v
+set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_irq.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/transmitter.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/receiver.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/uart/baud_rate_gen.v
