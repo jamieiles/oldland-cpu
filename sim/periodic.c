@@ -28,7 +28,7 @@ void event_list_tick(struct event_list *event_list)
 	list_for_each(pos, &event_list->events) {
 		struct event *event = container_of(pos, struct event, head);
 
-		if (--event->current == 0) {
+		if (event->enabled && --event->current == 0) {
 			event->current = event->reload_val;
 			event->callback(event);
 		}
