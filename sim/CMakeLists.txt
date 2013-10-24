@@ -7,7 +7,7 @@ set(CMAKE_C_FLAGS "-DMICROCODE_FILE=\\\"${CMAKE_INSTALL_PREFIX}/lib/decode.hex\\
 find_package(Threads)
 
 add_executable(oldland-sim debug_uart.c io.c main.c memory.c trace.c cpu.c
-	       oldland-instructions.c irq_ctrl.c)
+	       oldland-instructions.c irq_ctrl.c periodic.c)
 
 target_link_libraries(oldland-sim ${CMAKE_THREAD_LIBS_INIT})
 

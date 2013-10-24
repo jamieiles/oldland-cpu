@@ -15,6 +15,7 @@
 #include "microcode.h"
 #include "trace.h"
 #include "oldland-types.h"
+#include "periodic.h"
 
 #ifndef ROM_FILE
 #define ROM_FILE NULL
@@ -72,6 +73,7 @@ struct cpu {
         uint32_t control_regs[NUM_CONTROL_REGS];
 	uint32_t ucode[MICROCODE_NR_WORDS];
 	bool irq_active;
+	struct event_list events;
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -240,6 +242,8 @@ struct cpu *new_cpu(const char *binary, int flags)
 
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
+
+	event_list_init(&c->events);
 
 	return c;
 }
