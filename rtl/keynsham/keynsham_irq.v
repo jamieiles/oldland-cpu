@@ -56,9 +56,9 @@ always @(posedge clk) begin
 	end else if (ctrl_access && bus_wr_en) begin
 		case (bus_addr[1:0])
 		REG_STATUS: /* Read-only. */;
-		REG_ENABLE: irq_enabled = irq_enabled | bus_wr_val;
-		REG_DISABLE: irq_enabled = irq_enabled & ~bus_wr_val;
-		REG_TEST: irq_test = bus_wr_val;
+		REG_ENABLE: irq_enabled <= irq_enabled | bus_wr_val;
+		REG_DISABLE: irq_enabled <= irq_enabled & ~bus_wr_val;
+		REG_TEST: irq_test <= bus_wr_val;
 		endcase
 	end
 end
