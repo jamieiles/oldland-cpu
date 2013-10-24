@@ -218,6 +218,8 @@ struct cpu *new_cpu(const char *binary, int flags)
 	if (!(flags & CPU_NOTRACE))
 		c->trace_file = init_trace_file();
 
+	event_list_init(&c->events);
+
 	c->mem = mem_map_new();
 	assert(c->mem);
 
@@ -243,7 +245,6 @@ struct cpu *new_cpu(const char *binary, int flags)
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
 
-	event_list_init(&c->events);
 
 	return c;
 }
