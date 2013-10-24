@@ -242,9 +242,11 @@ struct cpu *new_cpu(const char *binary, int flags)
 			    cpu_clear_irq, c);
 	assert(!err);
 
-	err = load_microcode(c, MICROCODE_FILE);
+	err = timers_init(c->mem, 0x80003000, &c->events);
 	assert(!err);
 
+	err = load_microcode(c, MICROCODE_FILE);
+	assert(!err);
 
 	return c;
 }
@@ -583,6 +585,8 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 int cpu_cycle(struct cpu *c)
 {
 	uint32_t instr;
+
+	event_list_tick(&c->events);
 
 	c->next_pc = c->pc + 4;
 

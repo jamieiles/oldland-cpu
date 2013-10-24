@@ -14,6 +14,7 @@ add_subdirectory(i_sdram)
 add_subdirectory(addcarry)
 add_subdirectory(irq)
 add_subdirectory(exception_irq_disabled)
+add_subdirectory(timer)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"

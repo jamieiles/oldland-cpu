@@ -13,6 +13,8 @@
 
 #include <stdint.h>
 
+struct event_list;
+
 #define PAGE_SIZE		(1 << 12)
 
 typedef uint32_t physaddr_t;
@@ -52,5 +54,7 @@ int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len);
 int irq_ctrl_init(struct mem_map *mem, physaddr_t base,
 		  void (*cpu_raise_irq)(void *data),
 		  void (*cpu_clear_irq)(void *data), void *data);
+int timers_init(struct mem_map *mem, physaddr_t base,
+		struct event_list *events);
 
 #endif /* __IO_H__ */
