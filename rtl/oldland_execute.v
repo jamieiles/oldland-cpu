@@ -119,9 +119,9 @@ always @(*) begin
                 if (cr_sel == 3'b000) begin
                         alu_q = {vector_addr, 6'b0};
                 end else if (cr_sel == 3'h1) begin
-                        alu_q = {28'b0, n_flag, o_flag, c_flag, z_flag};
+                        alu_q = {27'b0, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
                 end else if (cr_sel == 3'h2) begin
-                        alu_q = {28'b0, saved_psr};
+                        alu_q = {27'b0, saved_psr};
                 end else if (cr_sel == 3'h3) begin
                         alu_q = fault_address;
 		end else if (cr_sel == 3'h4) begin
