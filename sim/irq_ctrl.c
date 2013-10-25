@@ -95,14 +95,30 @@ static int irq_ctrl_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 	return 0;
 }
 
+void irq_ctrl_raise_irq(struct irq_ctrl *ctrl, unsigned int irq_num)
+{
+	assert(irq_num < 32);
+
+	ctrl->raw_status |= (1 << irq_num);
+	irq_ctrl_update(ctrl);
+}
+
+void irq_ctrl_clear_irq(struct irq_ctrl *ctrl, unsigned int irq_num)
+{
+	assert(irq_num < 32);
+
+	ctrl->raw_status &= ~(1 << irq_num);
+	irq_ctrl_update(ctrl);
+}
+
 static const struct io_ops irq_ctrl_ops = {
 	.write = irq_ctrl_write,
 	.read = irq_ctrl_read,
 };
 
-int irq_ctrl_init(struct mem_map *mem, physaddr_t base,
-		  void (*cpu_raise_irq)(void *data),
-		  void (*cpu_clear_irq)(void *data), void *data)
+struct irq_ctrl *irq_ctrl_init(struct mem_map *mem, physaddr_t base,
+			       void (*cpu_raise_irq)(void *data),
+			       void (*cpu_clear_irq)(void *data), void *data)
 {
 	struct region *r;
 	struct irq_ctrl *ctrl;
@@ -117,5 +133,5 @@ int irq_ctrl_init(struct mem_map *mem, physaddr_t base,
 	r = mem_map_region_add(mem, base, 4096, &irq_ctrl_ops, ctrl);
 	assert(r);
 
-	return 0;
+	return ctrl;
 }

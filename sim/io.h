@@ -51,9 +51,6 @@ int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
 int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 	     const char *filename);
 int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len);
-int irq_ctrl_init(struct mem_map *mem, physaddr_t base,
-		  void (*cpu_raise_irq)(void *data),
-		  void (*cpu_clear_irq)(void *data), void *data);
 int timers_init(struct mem_map *mem, physaddr_t base,
 		struct event_list *events);
 
