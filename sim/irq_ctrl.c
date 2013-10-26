@@ -135,3 +135,12 @@ struct irq_ctrl *irq_ctrl_init(struct mem_map *mem, physaddr_t base,
 
 	return ctrl;
 }
+
+void irq_ctrl_reset(struct irq_ctrl *irq_ctrl)
+{
+	irq_ctrl->enable_mask = 0;
+	irq_ctrl->raw_status = 0;
+	irq_ctrl->status = 0;
+	irq_ctrl->irq_raised = false;
+	irq_ctrl->cpu_clear_irq(irq_ctrl->cb_data);
+}

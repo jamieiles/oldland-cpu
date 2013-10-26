@@ -75,6 +75,7 @@ struct cpu {
 	uint32_t ucode[MICROCODE_NR_WORDS];
 	bool irq_active;
 	struct event_list events;
+	struct irq_ctrl *irq_ctrl;
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -212,7 +213,6 @@ struct cpu *new_cpu(const char *binary, int flags)
 {
 	int err;
 	struct cpu *c;
-	struct irq_ctrl *irq_ctrl;
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
@@ -240,9 +240,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
 	assert(!err);
 
-	irq_ctrl = irq_ctrl_init(c->mem, 0x80002000, cpu_raise_irq,
-				 cpu_clear_irq, c);
-	assert(irq_ctrl != NULL);
+	c->irq_ctrl = irq_ctrl_init(c->mem, 0x80002000, cpu_raise_irq,
+				    cpu_clear_irq, c);
+	assert(c->irq_ctrl != NULL);
 
 	err = timers_init(c->mem, 0x80003000, &c->events);
 	assert(!err);
@@ -623,4 +623,5 @@ void cpu_reset(struct cpu *c)
 	for (r = 0; r < NUM_CONTROL_REGS; ++r)
 		c->control_regs[r] = 0;
 	c->irq_active = false;
+	irq_ctrl_reset(c->irq_ctrl);
 }
