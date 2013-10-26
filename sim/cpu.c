@@ -573,6 +573,11 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 	uint32_t ucode = c->ucode[instr >> (32 - 7)];
 	struct alu_result alu = {};
 
+	if (c->irq_active && c->flagsbf.i) {
+		do_vector(c, VECTOR_IRQ);
+		return;
+	}
+
 	if (!ucode_valid(ucode)) {
 		do_vector(c, VECTOR_ILLEGAL_INSTR);
 		return;
@@ -585,9 +590,6 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 
 	if (do_memory(c, instr, ucode, &alu))
 		return;
-
-	if (c->irq_active && c->flagsbf.i)
-		do_vector(c, VECTOR_IRQ);
 }
 
 int cpu_cycle(struct cpu *c)
