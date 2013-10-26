@@ -76,6 +76,7 @@ struct cpu {
 	bool irq_active;
 	struct event_list events;
 	struct irq_ctrl *irq_ctrl;
+	struct timer_base *timers;
 };
 
 int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
@@ -213,6 +214,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 {
 	int err;
 	struct cpu *c;
+	struct timer_init_data timer_data;
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
@@ -244,8 +246,12 @@ struct cpu *new_cpu(const char *binary, int flags)
 				    cpu_clear_irq, c);
 	assert(c->irq_ctrl != NULL);
 
-	err = timers_init(c->mem, 0x80003000, &c->events);
-	assert(!err);
+	timer_data = (struct timer_init_data) {
+		.irq_ctrl = c->irq_ctrl,
+		.irqs = { 0, 1, 2, 3 },
+	};
+	c->timers = timers_init(c->mem, 0x80003000, &c->events, &timer_data);
+	assert(c->timers);
 
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
@@ -624,4 +630,5 @@ void cpu_reset(struct cpu *c)
 		c->control_regs[r] = 0;
 	c->irq_active = false;
 	irq_ctrl_reset(c->irq_ctrl);
+	timers_reset(c->timers);
 }

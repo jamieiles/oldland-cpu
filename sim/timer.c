@@ -23,6 +23,7 @@
 
 #include "internal.h"
 #include "periodic.h"
+#include "irq_ctrl.h"
 #include "io.h"
 
 enum timer_regs {
@@ -40,6 +41,8 @@ enum timer_regs {
 
 struct timer {
 	struct event *event;
+	struct irq_ctrl *irq_ctrl;
+	unsigned int irq;
 	unsigned timer_num;
 	bool periodic;
 	bool irq_enabled;
@@ -55,6 +58,9 @@ static void timer_callback(struct event *event)
 
 	if (!t->periodic)
 		event_disable(t->event);
+
+	if (t->irq_enabled)
+		irq_ctrl_raise_irq(t->irq_ctrl, t->irq);
 }
 
 static int timer_write(unsigned int offs, uint32_t val, size_t nr_bits,
@@ -85,6 +91,7 @@ static int timer_write(unsigned int offs, uint32_t val, size_t nr_bits,
 			event_disable(timer->event);
 		break;
 	case REG_EOI:
+		irq_ctrl_clear_irq(timer->irq_ctrl, timer->irq);
 		break;
 	}
 
@@ -130,8 +137,9 @@ static const struct io_ops timer_ops = {
 	.read = timer_read,
 };
 
-int timers_init(struct mem_map *mem, physaddr_t base,
-		struct event_list *events)
+struct timer_base *timers_init(struct mem_map *mem, physaddr_t base,
+			       struct event_list *events,
+			       const struct timer_init_data *init_data)
 {
 	struct region *r;
 	struct timer_base *t = calloc(1, sizeof(*t));
@@ -143,11 +151,24 @@ int timers_init(struct mem_map *mem, physaddr_t base,
 		t->timers[i].timer_num = i;
 		t->timers[i].event = event_new(events, 0xffffffff,
 					       timer_callback, &t->timers[i]);
+		t->timers[i].irq_ctrl = init_data->irq_ctrl;
+		t->timers[i].irq = init_data->irqs[i];
 		assert(t->timers[i].event != NULL);
 	}
 
 	r = mem_map_region_add(mem, base, 4096, &timer_ops, t);
 	assert(r != NULL);
 
-	return 0;
+	return t;
+}
+
+void timers_reset(struct timer_base *t)
+{
+	int i;
+
+	for (i = 0; i < NR_TIMERS; ++i) {
+		event_disable(t->timers[i].event);
+		t->timers[i].event->current = 0xffffffff;
+		t->timers[i].event->reload_val = 0xffffffff;
+	}
 }

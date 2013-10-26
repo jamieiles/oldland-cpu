@@ -51,7 +51,19 @@ int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
 int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 	     const char *filename);
 int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len);
-int timers_init(struct mem_map *mem, physaddr_t base,
-		struct event_list *events);
+
+struct irq_ctrl;
+
+struct timer_init_data {
+	struct irq_ctrl *irq_ctrl;
+	unsigned int irqs[4];
+};
+
+struct timer_base;
+
+struct timer_base *timers_init(struct mem_map *mem, physaddr_t base,
+			       struct event_list *events,
+			       const struct timer_init_data *init_data);
+void timers_reset(struct timer_base *timers);
 
 #endif /* __IO_H__ */
