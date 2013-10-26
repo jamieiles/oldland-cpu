@@ -1,3 +1,5 @@
+.section .text.sdram
+
 .include "common.s"
 
 .globl _start
