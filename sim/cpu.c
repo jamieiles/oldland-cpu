@@ -503,7 +503,7 @@ static void process_branch(struct cpu *c, uint32_t instr, uint32_t ucode,
 		set_psr(c, c->control_regs[CR_SAVED_PSR]);
 
 	if (ucode_swi(ucode)) {
-		c->control_regs[CR_SAVED_PSR] = c->control_regs[CR_PSR];
+		c->control_regs[CR_SAVED_PSR] = current_psr(c);
 		c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
 		c->flagsbf.i = 0;
 	}
