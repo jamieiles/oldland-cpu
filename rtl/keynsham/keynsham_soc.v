@@ -50,14 +50,17 @@ wire [31:0]	uart_data;
 wire		uart_ack;
 wire		uart_error;
 
+wire [31:0]	timer_data;
+wire		timer_ack;
+wire		timer_error;
+wire [3:0]	timer_irqs;
+
 wire [31:0]	irq_data;
 wire		irq_ack;
 wire		irq_error;
 wire		irq_req;
 
-wire [31:0]	timer_data;
-wire		timer_ack;
-wire		timer_error;
+wire [3:0]	irqs = timer_irqs;
 
 wire [31:0]	d_sdram_data;
 wire		d_sdram_ack;
@@ -182,7 +185,8 @@ keynsham_uart	uart(.clk(clk),
 		     .rx(uart_rx),
 		     .tx(uart_tx));
 
-keynsham_irq	irq(.clk(clk),
+keynsham_irq	#(.nr_irqs(4))
+		irq(.clk(clk),
 		    .rst(dbg_rst),
 		    .bus_access(d_access),
 		    .bus_cs(irq_cs),
@@ -193,6 +197,7 @@ keynsham_irq	irq(.clk(clk),
 		    .bus_error(irq_error),
 		    .bus_ack(irq_ack),
 		    .bus_data(irq_data),
+		    .irq_in(irqs),
 		    .irq_req(irq_req));
 
 keynsham_timer_block	timer(.clk(clk),
@@ -205,7 +210,8 @@ keynsham_timer_block	timer(.clk(clk),
 			      .bus_bytesel(d_bytesel),
 			      .bus_error(timer_error),
 			      .bus_ack(timer_ack),
-			      .bus_data(timer_data));
+			      .bus_data(timer_data),
+			      .irqs(timer_irqs));
 
 oldland_cpu	cpu(.clk(clk),
 		    .running(running),

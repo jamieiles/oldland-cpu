@@ -2,18 +2,21 @@
  * Simple IRQ controller.  Supports a maximum of 32 IRQ sources, has an active
  * high (irq_req) output when any enabled IRQ is active.
  */
-module keynsham_irq(input wire		clk,
-		    input wire		rst,
-		    input wire		bus_access,
-		    input wire		bus_cs,
-		    input wire [29:0]	bus_addr,
-		    input wire [31:0]	bus_wr_val,
-		    input wire		bus_wr_en,
-		    input wire [3:0]	bus_bytesel,
-		    output reg		bus_error,
-		    output reg		bus_ack,
-		    output reg [31:0]	bus_data,
-		    output wire		irq_req);
+module keynsham_irq(input wire			clk,
+		    input wire			rst,
+		    input wire			bus_access,
+		    input wire			bus_cs,
+		    input wire [29:0]		bus_addr,
+		    input wire [31:0]		bus_wr_val,
+		    input wire			bus_wr_en,
+		    input wire [3:0]		bus_bytesel,
+		    output reg			bus_error,
+		    output reg			bus_ack,
+		    output reg [31:0]		bus_data,
+		    input wire [nr_irqs - 1:0]	irq_in,
+		    output wire			irq_req);
+
+parameter nr_irqs	= 4;
 
 localparam REG_STATUS	= 2'd0;
 localparam REG_ENABLE	= 2'd1;
@@ -23,8 +26,9 @@ localparam REG_TEST	= 2'd3;
 reg [31:0]	irq_status = 32'b0;
 reg [31:0]	irq_enabled = 32'b0;
 reg [31:0]	irq_test = 32'b0;
+wire [31:0]	irq_in_raw = {{(32 - nr_irqs){1'b0}}, irq_in};
 
-wire [31:0]	reg_irq_status = (irq_status | irq_test) & irq_enabled;
+wire [31:0]	reg_irq_status = (irq_status | irq_test | irq_in_raw) & irq_enabled;
 wire [31:0]	reg_irq_enable = irq_enabled;
 wire [31:0]	reg_irq_disable = 32'b0;
 wire [31:0]	reg_irq_test = irq_test;

@@ -1,14 +1,15 @@
-module keynsham_timer_block(input wire		clk,
-			    input wire		rst,
-			    input wire		bus_access,
-			    input wire		bus_cs,
-			    input wire [29:0]	bus_addr,
-			    input wire [31:0]	bus_wr_val,
-			    input wire		bus_wr_en,
-			    input wire [3:0]	bus_bytesel,
-			    output wire		bus_error,
-			    output wire		bus_ack,
-			    output wire [31:0]	bus_data);
+module keynsham_timer_block(input wire			clk,
+			    input wire			rst,
+			    input wire			bus_access,
+			    input wire			bus_cs,
+			    input wire [29:0]		bus_addr,
+			    input wire [31:0]		bus_wr_val,
+			    input wire			bus_wr_en,
+			    input wire [3:0]		bus_bytesel,
+			    output wire			bus_error,
+			    output wire			bus_ack,
+			    output wire [31:0]		bus_data,
+			    output wire [nr_timers - 1:0] irqs);
 
 parameter	nr_timers = 4;
 
@@ -25,7 +26,6 @@ assign		bus_data = timer_data[timer_sel];
 assign		bus_ack = timer_ack[timer_sel];
 assign		bus_error = timer_error[timer_sel];
 
-
 genvar		i;
 
 generate
@@ -40,7 +40,8 @@ generate
 				      .bus_bytesel(bus_bytesel),
 				      .bus_error(timer_error[i]),
 				      .bus_ack(timer_ack[i]),
-				      .bus_data(timer_data[i]));
+				      .bus_data(timer_data[i]),
+				      .irq_out(irqs[i]));
 	end
 endgenerate
 
