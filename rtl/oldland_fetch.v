@@ -108,15 +108,25 @@ assign		instr = i_ack ? fetch_data : `INSTR_NOP;
 
 reg		fetching = 1'b0;
 assign		i_fetched = i_ack;
-wire		take_irq = irqs_enabled && !pipeline_busy && irq_req;
+wire		take_irq = irqs_enabled && !pipeline_busy && irq_req && (i_access && !fetching);
 assign		exception_disable_irqs = illegal_instr |
 					 data_abort |
 					 take_irq |
 					 decode_exception;
+reg		starting_irq = 1'b0;
 
 initial	begin
 	i_access = 1'b1;
 	exception_start = 1'b0;
+end
+
+always @(posedge clk) begin
+	if (rst)
+		starting_irq <= 1'b0;
+	else if (starting_irq && i_ack)
+		starting_irq <= 1'b0;
+	else if (take_irq)
+		starting_irq <= 1'b1;
 end
 
 /*
@@ -126,7 +136,7 @@ end
  * stall the pipeline.
  */
 always @(posedge clk)
-	exception_start <= rst ? 1'b0 : i_error | data_abort | take_irq;
+	exception_start <= rst ? 1'b0 : i_error | data_abort | starting_irq;
 
 always @(*) begin
 	if (dbg_pc_wr_en)
@@ -137,7 +147,7 @@ always @(*) begin
 		next_pc = {vector_base, 6'h14};	/* Data abort. */
 	else if (illegal_instr)
 		next_pc = {vector_base, 6'h4};	/* Illegal instruction. */
-	else if (take_irq)
+	else if (take_irq || starting_irq)
 		next_pc = {vector_base, 6'hc};  /* Interrupt. */
 	else if (branch_taken)
 		next_pc = branch_pc;
@@ -213,7 +223,7 @@ always @(posedge clk) begin
 		pc <= dbg_pc_wr_val;
 	else if (state == STATE_STALLED && stall_clear)
 		pc <= next_pc;
-	else if (i_ack)
+	else if (i_ack || take_irq)
 		pc <= next_pc;
 end
 
