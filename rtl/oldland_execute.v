@@ -42,7 +42,11 @@ module oldland_exec(input wire		clk,
 		    input wire		i_valid,
 		    output reg		i_valid_out,
 		    output reg		irqs_enabled,
-		    input wire		exception_disable_irqs);
+		    input wire		exception_disable_irqs,
+		    input wire [2:0]	dbg_cr_sel,
+		    output wire [31:0]	dbg_cr_val,
+		    input wire [31:0]	dbg_cr_wr_val,
+		    input wire		dbg_cr_wr_en);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -70,6 +74,20 @@ reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
 assign		vector_base = vector_addr;
+
+wire [31:0]	control_regs[0:7];
+assign		control_regs[0] = {vector_addr, 6'b0};
+assign		control_regs[1] = {27'b0, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+assign		control_regs[2] = {27'b0, saved_psr};
+assign		control_regs[3] = fault_address;
+assign		control_regs[4] = data_fault_address;
+assign		control_regs[5] = 32'b0;
+assign		control_regs[6] = 32'b0;
+assign		control_regs[7] = 32'b0;
+
+assign		dbg_cr_val = control_regs[dbg_cr_sel];
+
+wire [31:0]	read_cr_val = control_regs[cr_sel];
 
 initial begin
 	branch_taken = 1'b0;
@@ -115,21 +133,7 @@ always @(*) begin
 	`ALU_OPC_MOVHI: alu_q = op1 | {16'b0, op2[15:0]};
 	`ALU_OPC_ASR:   alu_q = op1 >>> op2;
 	`ALU_OPC_COPYA: alu_q = op1;
-	`ALU_OPC_GCR: begin
-                if (cr_sel == 3'b000) begin
-                        alu_q = {vector_addr, 6'b0};
-                end else if (cr_sel == 3'h1) begin
-                        alu_q = {27'b0, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
-                end else if (cr_sel == 3'h2) begin
-                        alu_q = {27'b0, saved_psr};
-                end else if (cr_sel == 3'h3) begin
-                        alu_q = fault_address;
-		end else if (cr_sel == 3'h4) begin
-			alu_q = data_fault_address;
-                end else begin
-                        alu_q = 32'b0;
-                end
-	end
+	`ALU_OPC_GCR:	alu_q = read_cr_val;
         `ALU_OPC_SWI:   alu_q = {vector_addr, 6'h8};
 	`ALU_OPC_RFE:   alu_q = fault_address;
 	default:        alu_q = 32'b0;
@@ -153,6 +157,8 @@ end
 always @(posedge clk)
 	if (rst)
 		vector_addr <= 26'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h0)
+		vector_addr <= dbg_cr_wr_val[31:6];
 	else if (write_cr && cr_sel == 3'h0)
                 vector_addr <= ra[31:6];
 
@@ -160,6 +166,8 @@ always @(posedge clk)
 always @(posedge clk) begin
 	if (rst)
 		saved_psr <= 5'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
+		saved_psr <= dbg_cr_wr_val[4:0];
 	else if (is_swi || exception_start || exception_disable_irqs)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
@@ -170,6 +178,8 @@ end
 always @(posedge clk)
 	if (rst)
 		fault_address <= 32'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h3)
+		fault_address <= dbg_cr_wr_val;
 	else if (exception_disable_irqs)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)
@@ -179,6 +189,8 @@ always @(posedge clk)
 always @(posedge clk)
 	if (rst)
 		data_fault_address <= 32'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h4)
+		data_fault_address <= dbg_cr_wr_val;
 	else if (data_abort)
 		data_fault_address <= mar;
 	else if (write_cr && cr_sel == 3'h4)
@@ -225,6 +237,12 @@ always @(posedge clk) begin
 			o_flag <= ra[2];
 			c_flag <= ra[1];
 			z_flag <= ra[0];
+		end else if (dbg_cr_wr_en && dbg_cr_sel == 3'h1) begin
+			irqs_enabled <= dbg_cr_wr_val[4];
+			n_flag <= dbg_cr_wr_val[3];
+			o_flag <= dbg_cr_wr_val[2];
+			c_flag <= dbg_cr_wr_val[1];
+			z_flag <= dbg_cr_wr_val[0];
 		end
 
 		wr_val <= is_call ? pc_plus_4 :

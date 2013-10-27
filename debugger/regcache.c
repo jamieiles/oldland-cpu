@@ -7,8 +7,8 @@
 
 struct regcache {
 	struct target *target;
-	uint32_t valid_mask;
-	uint32_t dirty_mask;
+	uint64_t valid_mask;
+	uint64_t dirty_mask;
 	uint32_t regs[NR_REGS];
 };
 
@@ -16,9 +16,8 @@ struct regcache *regcache_new(struct target *target)
 {
 	struct regcache *r = calloc(1, sizeof(*r));
 
-	if (r) {
+	if (r)
 		r->target = target;
-	}
 
 	return r;
 }

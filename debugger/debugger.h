@@ -21,7 +21,8 @@ enum regs {
 	SP,
 	LR,
 	PC,
-	NR_REGS
+	CR_BASE = 32,
+	NR_REGS = 63
 };
 
 enum testpoint_type {

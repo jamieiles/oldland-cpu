@@ -22,6 +22,11 @@ module oldland_debug(input wire		clk,
 		     input wire [31:0]	dbg_reg_val,
 		     output wire [31:0]	dbg_reg_wr_val,
 		     output reg		dbg_reg_wr_en,
+		     /* Control register signals. */
+		     output wire [2:0]	dbg_cr_sel,
+		     input wire [31:0]	dbg_cr_val,
+		     output wire [31:0]	dbg_cr_wr_val,
+		     output reg		dbg_cr_wr_en,
 		     /* PC read/write signals. */
 		     input wire [31:0]	dbg_pc,
 		     output reg		dbg_pc_wr_en,
@@ -84,6 +89,8 @@ assign		dbg_reg_wr_val = debug_data;
 assign		mem_addr = debug_addr;
 assign		mem_wr_val = debug_data;
 assign		dbg_rst = state == STATE_RESET;
+assign		dbg_cr_sel = debug_addr[2:0];
+assign		dbg_cr_wr_val = debug_data;
 
 dc_ram		#(.addr_bits(2),
 		  .data_bits(32))
@@ -111,6 +118,7 @@ initial begin
 	run = 1'b1;
 	dbg_reg_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
+	dbg_cr_wr_en = 1'b0;
 	mem_wr_en = 1'b0;
 	mem_access = 1'b0;
 end
@@ -146,6 +154,7 @@ always @(*) begin
 	ctl_addr = 2'b00;
 	ctl_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
+	dbg_cr_wr_en = 1'b0;
 	dbg_reg_wr_en = 1'b0;
 	mem_access = 1'b0;
 
@@ -208,6 +217,8 @@ always @(*) begin
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
 			dbg_pc_wr_en = 1'b1;
+		else if (debug_addr[5])
+			dbg_cr_wr_en = 1'b1;
 		else
 			dbg_reg_wr_en = 1'b1;
 		next_state = STATE_COMPL;
@@ -239,7 +250,8 @@ always @(*) begin
 	STATE_STORE_REG_RVAL: begin
 		ctl_addr = 2'b11;
 		ctl_wr_en = 1'b1;
-		ctl_din = debug_addr[4] ? dbg_pc : dbg_reg_val;
+		ctl_din = debug_addr[4] ? dbg_pc :
+			  debug_addr[5] ? dbg_cr_val : dbg_reg_val;
 		next_state = STATE_COMPL;
 	end
 	STATE_COMPL: begin

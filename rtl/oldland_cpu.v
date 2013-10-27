@@ -108,6 +108,10 @@ wire [3:0]	dbg_reg_sel;
 wire [31:0]	dbg_reg_wr_val;
 wire [31:0]	dbg_reg_val;
 wire		dbg_reg_wr_en;
+wire [2:0]	dbg_cr_sel;
+wire [31:0]	dbg_cr_val;
+wire [31:0]	dbg_cr_wr_val;
+wire		dbg_cr_wr_en;
 wire [31:0]	dbg_pc;
 wire [31:0]	dbg_pc_wr_val;
 wire		dbg_pc_wr_en;
@@ -144,6 +148,10 @@ oldland_debug	debug(.clk(clk),
 		      .dbg_reg_wr_val(dbg_reg_wr_val),
 		      .dbg_reg_val(dbg_reg_val),
 		      .dbg_reg_wr_en(dbg_reg_wr_en),
+		      .dbg_cr_sel(dbg_cr_sel),
+		      .dbg_cr_wr_val(dbg_cr_wr_val),
+		      .dbg_cr_val(dbg_cr_val),
+		      .dbg_cr_wr_en(dbg_cr_wr_en),
 		      .dbg_pc(dbg_pc),
 		      .dbg_pc_wr_val(dbg_pc_wr_val),
 		      .dbg_pc_wr_en(dbg_pc_wr_en),
@@ -252,7 +260,11 @@ oldland_exec	execute(.clk(clk),
 			.i_valid(de_i_valid),
 			.i_valid_out(em_i_valid),
 			.irqs_enabled(ei_irqs_enabled),
-			.exception_disable_irqs(fe_disable_irqs));
+			.exception_disable_irqs(fe_disable_irqs),
+			.dbg_cr_sel(dbg_cr_sel),
+			.dbg_cr_val(dbg_cr_val),
+			.dbg_cr_wr_val(dbg_cr_wr_val),
+			.dbg_cr_wr_en(dbg_cr_wr_en));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),

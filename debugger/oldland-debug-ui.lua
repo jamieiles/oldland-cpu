@@ -28,6 +28,19 @@ function read8(addr)
 	print(string.format("%02x", target.read8(addr)))
 end
 
+target.read_cr = function(reg)
+	return target.read_reg(32 + reg)
+end
+
+function read_cr(reg)
+	print(string.format("%08x", target.read_cr(reg)))
+end
+
+function write_cr(reg, val)
+	return target.write_reg(32 + reg, val)
+end
+target.write_cr = write_cr
+
 regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
 	     'r8', 'r9', 'r10', 'r11', 'r12', 'fp', 'sp', 'lr', 'pc' }
 

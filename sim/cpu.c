@@ -79,12 +79,40 @@ struct cpu {
 	struct timer_base *timers;
 };
 
-int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
+enum psr_flags {
+	PSR_Z	= (1 << 0),
+	PSR_C	= (1 << 1),
+	PSR_O	= (1 << 2),
+	PSR_N	= (1 << 3),
+	PSR_I	= (1 << 4),
+};
+
+static void set_psr(struct cpu *c, uint32_t psr)
 {
-	if (regnum >= 17)
+	c->flagsbf.i = !!(psr & PSR_I);
+	c->flagsbf.n = !!(psr & PSR_N);
+	c->flagsbf.o = !!(psr & PSR_O);
+	c->flagsbf.c = !!(psr & PSR_C);
+	c->flagsbf.z = !!(psr & PSR_Z);
+}
+
+static uint32_t current_psr(const struct cpu *c)
+{
+	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
+		(c->flagsbf.n << 3) | (c->flagsbf.i << 4);
+}
+
+int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
+{
+	c->control_regs[CR_PSR] = current_psr(c);
+
+	if ((regnum > PC && regnum < CR_BASE) ||
+	    regnum > CR_BASE + NUM_CONTROL_REGS)
 		return -1;
 	if (regnum == 16)
 		*v = c->pc;
+	else if (regnum >= CR_BASE)
+		*v = c->control_regs[regnum - CR_BASE];
 	else
 		*v = c->regs[regnum];
 
@@ -93,12 +121,18 @@ int cpu_read_reg(const struct cpu *c, unsigned regnum, uint32_t *v)
 
 int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
 {
-	if (regnum >= 17)
+	if ((regnum > PC && regnum < CR_BASE) ||
+	    regnum > CR_BASE + NUM_CONTROL_REGS)
 		return -1;
 	if (regnum == 16)
 		c->pc = v;
+	else if (regnum >= CR_BASE)
+		c->control_regs[regnum - CR_BASE] = v;
 	else
 		c->regs[regnum] = v;
+
+	if (regnum == CR_BASE + CR_PSR)
+		set_psr(c, c->control_regs[CR_PSR]);
 
 	return 0;
 }
@@ -257,29 +291,6 @@ struct cpu *new_cpu(const char *binary, int flags)
 	assert(!err);
 
 	return c;
-}
-
-static uint32_t current_psr(const struct cpu *c)
-{
-	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
-		(c->flagsbf.n << 3) | (c->flagsbf.i << 4);
-}
-
-enum psr_flags {
-	PSR_Z	= (1 << 0),
-	PSR_C	= (1 << 1),
-	PSR_O	= (1 << 2),
-	PSR_N	= (1 << 3),
-	PSR_I	= (1 << 4),
-};
-
-static void set_psr(struct cpu *c, uint32_t psr)
-{
-	c->flagsbf.i = !!(psr & PSR_I);
-	c->flagsbf.n = !!(psr & PSR_N);
-	c->flagsbf.o = !!(psr & PSR_O);
-	c->flagsbf.c = !!(psr & PSR_C);
-	c->flagsbf.z = !!(psr & PSR_Z);
 }
 
 static void do_vector(struct cpu *c, enum exception_vector vector)
