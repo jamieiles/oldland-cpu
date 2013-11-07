@@ -47,10 +47,6 @@ _start:
 irq_vector:
 	str32	$r3, [$r1, 0xc] /* Clear IRQs. */
 	TESTPOINT	TP_USER, 0
-	/* Restart interrupted instruction. */
-	gcr	$r7, 3
-	sub	$r7, $r7, 4
-	scr	3, $r7
 	rfe
 
 swi_vector:

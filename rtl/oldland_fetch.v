@@ -19,6 +19,15 @@
  *   pipeline is empty.  Otherwise we issue a pipeline flush which is just
  *   a NOP but the writeback stage signals that the pipeline is flushed.
  *
+ * Dealing with interrupts and debugging:
+ *
+ * - When debugging, if we're single stepping then when we resume executing
+ *   and take an interrupt we haven't yet executed the instruction at PC, so
+ *   the next instruction after servicing the interrupt should be PC.
+ * - If we're running and take an interrupt then we've just executed an
+ *   instruction, we need to return to the next instruction - either pc + 4 or
+ *   the target of a taken branch.
+ *
  * Exception Priorities:
  *
  * 1. Reset.
@@ -78,7 +87,9 @@ module oldland_fetch(input wire		clk,
 		     input wire		pipeline_busy,
 		     input wire		irqs_enabled,
 		     output wire	exception_disable_irqs,
-		     input wire		decode_exception);
+		     input wire		decode_exception,
+		     output wire	irq_start,
+		     output reg [31:0]	irq_fault_address);
 
 localparam	STATE_RUNNING	= 3'b000;
 localparam	STATE_STALLED	= 3'b001;
@@ -113,11 +124,19 @@ assign		exception_disable_irqs = illegal_instr |
 					 data_abort |
 					 take_irq |
 					 decode_exception;
+assign		irq_start = take_irq;
 reg		starting_irq = 1'b0;
 
 initial	begin
 	i_access = 1'b1;
 	exception_start = 1'b0;
+end
+
+always @(*) begin
+	if (state == STATE_STOPPED)
+		irq_fault_address = pc;
+	else
+		irq_fault_address = branch_taken ? branch_pc : pc_plus_4;
 end
 
 always @(posedge clk) begin

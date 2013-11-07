@@ -32,6 +32,8 @@ wire [31:0]	fd_instr;
 wire		fd_exception_start;
 wire		fd_i_fetched;
 wire		fe_disable_irqs;
+wire		fe_irq_start;
+wire [31:0]	fe_irq_fault_address;
 
 /* Execute -> fetch signals. */
 wire		ef_branch_taken;
@@ -183,7 +185,9 @@ oldland_fetch	fetch(.clk(clk),
 		      .pipeline_busy(pipeline_busy),
 		      .irqs_enabled(ei_irqs_enabled),
 		      .decode_exception(de_exception_start),
-		      .exception_disable_irqs(fe_disable_irqs));
+		      .exception_disable_irqs(fe_disable_irqs),
+		      .irq_start(fe_irq_start),
+		      .irq_fault_address(fe_irq_fault_address));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -264,7 +268,9 @@ oldland_exec	execute(.clk(clk),
 			.dbg_cr_sel(dbg_cr_sel),
 			.dbg_cr_val(dbg_cr_val),
 			.dbg_cr_wr_val(dbg_cr_wr_val),
-			.dbg_cr_wr_en(dbg_cr_wr_en));
+			.dbg_cr_wr_en(dbg_cr_wr_en),
+			.irq_start(fe_irq_start),
+			.irq_fault_address(fe_irq_fault_address));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),

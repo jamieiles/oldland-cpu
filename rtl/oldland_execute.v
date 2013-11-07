@@ -46,7 +46,9 @@ module oldland_exec(input wire		clk,
 		    input wire [2:0]	dbg_cr_sel,
 		    output wire [31:0]	dbg_cr_val,
 		    input wire [31:0]	dbg_cr_wr_val,
-		    input wire		dbg_cr_wr_en);
+		    input wire		dbg_cr_wr_en,
+		    output wire		irq_start,
+		    input wire [31:0]	irq_fault_address);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -168,7 +170,7 @@ always @(posedge clk) begin
 		saved_psr <= 5'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
 		saved_psr <= dbg_cr_wr_val[4:0];
-	else if (is_swi || exception_start || exception_disable_irqs)
+	else if (is_swi || exception_start || exception_disable_irqs || irq_start)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
                 saved_psr <= ra[4:0];
@@ -180,6 +182,8 @@ always @(posedge clk)
 		fault_address <= 32'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h3)
 		fault_address <= dbg_cr_wr_val;
+	else if (irq_start)
+		fault_address <= irq_fault_address;
 	else if (exception_disable_irqs)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)

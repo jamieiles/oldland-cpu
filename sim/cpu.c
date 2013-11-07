@@ -296,7 +296,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 static void do_vector(struct cpu *c, enum exception_vector vector)
 {
 	c->control_regs[CR_SAVED_PSR] = current_psr(c);
-	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	c->control_regs[CR_FAULT_ADDRESS] = c->irq_active ? c->pc : c->pc + 4;
 	/* Exception handlers run with interrupts disabled. */
 	c->flagsbf.i = 0;
 	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
