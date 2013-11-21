@@ -47,7 +47,7 @@ module oldland_exec(input wire		clk,
 		    output wire [31:0]	dbg_cr_val,
 		    input wire [31:0]	dbg_cr_wr_val,
 		    input wire		dbg_cr_wr_en,
-		    output wire		irq_start,
+		    input wire		irq_start,
 		    input wire [31:0]	irq_fault_address);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
