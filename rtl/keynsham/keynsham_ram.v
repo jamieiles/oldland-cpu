@@ -40,12 +40,12 @@ reg		i_ram_ack = 1'b0;
 assign		i_ack = i_ram_ack;
 
 ram		mem(.clock(clk),
-		    .address_a(i_addr[10:0]), /* Word addressed with byte enables. */
+		    .address_a(i_addr[9:0]), /* Word addressed with byte enables. */
 		    .data_a(32'b0),
 		    .byteena_a(d_bytesel),
 		    .wren_a(1'b0),
 		    .q_a(i_data),
-		    .address_b(d_addr[10:0]), /* Word addressed with byte enables. */
+		    .address_b(d_addr[9:0]), /* Word addressed with byte enables. */
 		    .data_b(d_wr_val),
 		    .byteena_b(d_bytesel),
 		    .wren_b(d_wr_en & d_cs),

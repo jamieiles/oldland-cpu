@@ -100,7 +100,7 @@ always @(posedge clk) begin
 		update_carry <= 1'b0;
 		update_rd <= 1'b0;
 		instr_class <= 2'b00;
-		i_valid = 1'b0;
+		i_valid <= 1'b0;
 	end else begin
 		update_carry <= uc_val[25];
 		is_rfe <= uc_val[24];

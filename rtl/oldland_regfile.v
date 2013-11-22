@@ -38,7 +38,7 @@ end
 always @(posedge clk) begin
 	if (rst) begin
 		for (regno = 0; regno < 16; regno = regno + 5'b1)
-			registers[regno[3:0]] = 32'b0;
+			registers[regno[3:0]] <= 32'b0;
 	end else begin
 		port_a_val <= (wr_en && port_a_sel == rd_sel) ? wr_port_val :
 			registers[port_a_sel];
