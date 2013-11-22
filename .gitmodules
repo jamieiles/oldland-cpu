@@ -1,11 +1,8 @@
-[submodule "binutils-oldland"]
-	path = binutils-oldland
-	url = git@github.com:jamieiles/binutils-oldland
-[submodule "rtl/keynsham/uart"]
-	path = rtl/keynsham/uart
+[submodule "rtl/uart"]
+	path = rtl/uart
 	url = git@github.com:jamieiles/uart
-[submodule "rtl/keynsham/oldland-sdram"]
-	path = rtl/keynsham/oldland-sdram
+[submodule "rtl/sdram"]
+	path = rtl/sdram
 	url = git@github.com:jamieiles/oldland-sdram
 [submodule "oldland-jtag/jtag"]
 	path = oldland-jtag/jtag

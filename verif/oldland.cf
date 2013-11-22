@@ -1,11 +1,14 @@
 +timescale+1ns/1ps
-../rtl/oldland_defines.v
+../rtl/oldland/oldland_defines.v
 +incdir+../rtl
--y ../rtl
++incdir+../rtl/oldland
 -y .
--y ../rtl/keynsham/uart
--y ../rtl/keynsham/oldland-sdram/rtl
--y ../rtl/keynsham/oldland-sdram/verif
+-y ../rtl
+-y ../rtl/oldland
+-y ../rtl/common
+-y ../rtl/uart
+-y ../rtl/sdram/rtl
+-y ../rtl/sdram/verif
 cpu_tb.v
 ../rtl/keynsham/keynsham_soc.v
 ../rtl/keynsham/keynsham_uart.v
@@ -15,10 +18,10 @@ cpu_tb.v
 ../rtl/keynsham/keynsham_sdram.v
 ../rtl/keynsham/keynsham_bootrom.v
 ../rtl/keynsham/keynsham_ram.v
-../rtl/keynsham/uart/uart.v
-../rtl/oldland_cpu.v
-../rtl/oldland_fetch.v
-../rtl/oldland_decode.v
-../rtl/oldland_execute.v
-../rtl/oldland_regfile.v
-../rtl/oldland_debug.v
+../rtl/uart/uart.v
+../rtl/oldland/oldland_cpu.v
+../rtl/oldland/oldland_fetch.v
+../rtl/oldland/oldland_decode.v
+../rtl/oldland/oldland_execute.v
+../rtl/oldland/oldland_regfile.v
+../rtl/oldland/oldland_debug.v
