@@ -16,6 +16,7 @@ enum dbg_cmd {
 	CMD_WMEM16,
 	CMD_WMEM8,
 	CMD_RESET,
+	CMD_CACHE_SYNC,
 
 	CMD_SIM_TERM = -1,
 };

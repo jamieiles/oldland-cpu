@@ -289,6 +289,9 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		case CMD_RESET:
 			cpu_reset(cpu);
 			break;
+		case CMD_CACHE_SYNC:
+			cpu_cache_sync(cpu);
+			break;
 		case CMD_SIM_TERM:
 			exit(EXIT_SUCCESS);
 		default:

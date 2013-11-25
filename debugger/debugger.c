@@ -44,6 +44,8 @@ struct target {
 	bool wdata_written;
 	uint32_t cached_wdata;
 
+	bool mem_written;
+
 	/* Populated when stopped. */
 	uint32_t pc;
 
@@ -145,10 +147,26 @@ int dbg_stop(struct target *t)
 	return rc;
 }
 
+static int dbg_cache_sync(struct target *t)
+{
+	int rc;
+
+	if (!t->mem_written)
+		return 0;
+
+	rc = dbg_write(t, REG_CMD, CMD_CACHE_SYNC);
+	if (!rc)
+		t->mem_written = 0;
+
+	return rc;
+}
+
 int dbg_run(struct target *t)
 {
 	int rc = regcache_sync(t->regcache);
 
+	if (!rc)
+		rc = dbg_cache_sync(t);
 	if (!rc)
 		rc = dbg_write(t, REG_CMD, CMD_RUN);
 
@@ -159,6 +177,8 @@ int dbg_step(struct target *t)
 {
 	int rc = regcache_sync(t->regcache);
 
+	if (!rc)
+		rc = dbg_cache_sync(t);
 	if (!rc)
 		rc = dbg_write(t, REG_CMD, CMD_STEP);
 	if (!rc)
@@ -173,6 +193,8 @@ static int dbg_reset(struct target *t)
 
 	if (!rc)
 		dbg_stop(t);
+	if (!rc)
+		dbg_cache_sync(t);
 	if (rc)
 		return rc;
 
@@ -255,7 +277,13 @@ int dbg_write##width(struct target *t, unsigned addr, uint32_t val)		\
 	if (rc)									\
 		return rc;							\
 										\
-	return dbg_write(t, REG_CMD, CMD_WMEM##width);				\
+	rc = dbg_write(t, REG_CMD, CMD_WMEM##width);				\
+	if (rc)									\
+		return rc;							\
+										\
+	t->mem_written = 1;							\
+										\
+	return rc;								\
 }										\
 										\
 static int lua_write##width(lua_State *L)					\

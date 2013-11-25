@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "cache.h"
 #include "cpu.h"
 #include "internal.h"
 #include "irq_ctrl.h"
@@ -77,6 +78,7 @@ struct cpu {
 	struct event_list events;
 	struct irq_ctrl *irq_ctrl;
 	struct timer_base *timers;
+	struct cache *icache;
 };
 
 enum psr_flags {
@@ -286,6 +288,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	};
 	c->timers = timers_init(c->mem, 0x80003000, &c->events, &timer_data);
 	assert(c->timers);
+
+	c->icache = cache_new(c->mem);
+	assert(c->icache);
 
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
@@ -614,7 +619,7 @@ int cpu_cycle(struct cpu *c)
 	if (c->trace_file)
 		fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
 	trace(c->trace_file, TRACE_PC, c->pc);
-	if (mem_map_read(c->mem, c->pc, 32, &instr)) {
+	if (cache_read(c->icache, c->pc, 32, &instr)) {
 		do_vector(c, VECTOR_IFETCH_ABORT);
 		goto out;
 	}
@@ -627,6 +632,11 @@ out:
 	c->pc = c->next_pc;
 
 	return 0;
+}
+
+void cpu_cache_sync(struct cpu *cpu)
+{
+	cache_inval_all(cpu->icache);
 }
 
 void cpu_reset(struct cpu *c)
@@ -644,4 +654,5 @@ void cpu_reset(struct cpu *c)
 	c->irq_active = false;
 	irq_ctrl_reset(c->irq_ctrl);
 	timers_reset(c->timers);
+	cache_inval_all(c->icache);
 }
