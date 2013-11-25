@@ -14,9 +14,9 @@
 #define CACHE_INDEX_SHIFT	CACHE_OFFSET_BITS
 #define CACHE_INDEX_MASK	(((1 << CACHE_INDEX_BITS) - 1) << CACHE_OFFSET_BITS)
 
-#define CACHE_TAG_BITS		(32 - CACHE_INDEX_BITS - CACHE_OFFSET_BITS)
+#define CACHE_TAG_BITS		(32 - (CACHE_INDEX_BITS + CACHE_OFFSET_BITS))
 #define CACHE_TAG_SHIFT		(CACHE_OFFSET_BITS + CACHE_INDEX_BITS)
-#define CACHE_TAG_MASK		(((1 << CACHE_TAG_SHIFT) - 1) << CACHE_TAG_SHIFT)
+#define CACHE_TAG_MASK		(((1 << CACHE_TAG_BITS) - 1) << CACHE_TAG_SHIFT)
 
 struct cache_line {
 	union {
@@ -77,16 +77,16 @@ static int cache_fill_line(const struct cache *cache, struct cache_line *line,
 			   uint32_t addr)
 {
 	uint32_t tag = addr_tag(addr);
-	int rc, br = 0;
+	int rc = 0, br = 0;
 
 	for (br = 0; br < CACHE_OFFSET_SZ; br += sizeof(uint32_t)) {
-		rc = mem_map_read(cache->mem, addr, 32,
+		rc = mem_map_read(cache->mem, addr + br, 32,
 				  &line->data32[br / sizeof(uint32_t)]);
 		if (rc)
 			break;
 	}
 
-	line->valid = !!rc;
+	line->valid = !rc;
 	line->dirty = 0;
 	line->tag = tag;
 
@@ -105,7 +105,7 @@ int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 	assert(!line->dirty);
 
 	if (!line->valid || tag != line->tag) {
-		rc = cache_fill_line(cache, line, addr);
+		rc = cache_fill_line(cache, line, addr & ~CACHE_OFFSET_MASK);
 		if (rc != 0)
 			goto out;
 	}
