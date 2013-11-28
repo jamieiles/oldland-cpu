@@ -109,6 +109,7 @@ oldland_debug		debug(.clk(clk),
 
 oldland_pipeline	pipeline(.clk(clk),
 				 .irq_req(irq_req),
+				 .running(running),
 				 /* Instruction bus. */
 				 .i_access(ic_access),
 				 .i_addr(ic_addr),
