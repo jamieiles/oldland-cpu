@@ -14,6 +14,13 @@ parameter data_bits = 32;
 
 (* ramstyle = "M9K" *) reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0];
 
+integer i;
+
+initial begin
+	for (i = 0; i < 2 ** addr_bits; i = i + 1)
+		ram[i] = {data_bits{1'b0}};
+end
+
 always @(posedge clk_a) begin
 	if (wr_en_a)
 		ram[addr_a] <= din_a;
