@@ -32,7 +32,9 @@ module oldland_debug(input wire		clk,
 		     output reg		dbg_pc_wr_en,
 		     output wire [31:0]	dbg_pc_wr_val,
 		     /* Reset control. */
-		     output wire	dbg_rst);
+		     output wire	dbg_rst,
+		     /* Cache maintenance. */
+		     output wire	dbg_cache_sync);
 
 localparam STATE_IDLE		= 4'b0000;
 localparam STATE_LOAD_CMD	= 4'b0001;
@@ -47,6 +49,7 @@ localparam STATE_WAIT_RMEM	= 4'b1110;
 localparam STATE_WAIT_WMEM	= 4'b1100;
 localparam STATE_EXECUTE	= 4'b1000;
 localparam STATE_RESET		= 4'b1001;
+localparam STATE_CACHE_SYNC	= 4'b1011;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
@@ -60,6 +63,7 @@ localparam CMD_WMEM32		= 4'h8;
 localparam CMD_WMEM16		= 4'h9;
 localparam CMD_WMEM8		= 4'ha;
 localparam CMD_RESET            = 4'hb;
+localparam CMD_CACHE_SYNC	= 4'hc;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
@@ -91,6 +95,7 @@ assign		mem_wr_val = debug_data;
 assign		dbg_rst = state == STATE_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
+assign		dbg_cache_sync = state == STATE_CACHE_SYNC;
 
 dc_ram		#(.addr_bits(2),
 		  .data_bits(32))
@@ -208,11 +213,17 @@ always @(*) begin
 		CMD_RESET: begin
 			next_state = STATE_RESET;
 		end
+		CMD_CACHE_SYNC: begin
+			next_state = STATE_CACHE_SYNC;
+		end
 		default: next_state = STATE_COMPL;
 		endcase
 	end
 	STATE_RESET: begin
 		next_state = |reset_count ? STATE_RESET : STATE_COMPL;
+	end
+	STATE_CACHE_SYNC: begin
+		next_state = STATE_COMPL;
 	end
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
