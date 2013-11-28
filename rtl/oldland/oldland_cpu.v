@@ -47,6 +47,28 @@ wire [31:0]	dbg_mem_rd_val;
 wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
+wire		dbg_cache_sync;
+
+/* CPU<->I$ signals. */
+wire		ic_access;
+wire [29:0]	ic_addr;
+wire [31:0]	ic_data;
+wire		ic_ack;
+wire		ic_error;
+
+cache			icache(.clk(clk),
+			       .rst(dbg_rst),
+			       .c_access(ic_access),
+			       .c_addr(ic_addr),
+			       .c_data(ic_data),
+			       .c_ack(ic_ack),
+			       .c_error(ic_error),
+			       .ctrl_inval(dbg_cache_sync),
+			       .m_access(i_access),
+			       .m_addr(i_addr),
+			       .m_data(i_data),
+			       .m_ack(i_ack),
+			       .m_error(i_error));
 
 oldland_debug		debug(.clk(clk),
 		              /* Controller to debug signals. */
@@ -81,16 +103,18 @@ oldland_debug		debug(.clk(clk),
 		              .dbg_pc_wr_val(dbg_pc_wr_val),
 		              .dbg_pc_wr_en(dbg_pc_wr_en),
 		              /* Reset. */
-		              .dbg_rst(dbg_rst));
+		              .dbg_rst(dbg_rst),
+			      /* Cache maintenance. */
+			      .dbg_cache_sync(dbg_cache_sync));
 
 oldland_pipeline	pipeline(.clk(clk),
 				 .irq_req(irq_req),
 				 /* Instruction bus. */
-				 .i_access(i_access),
-				 .i_addr(i_addr),
-				 .i_data(i_data),
-				 .i_ack(i_ack),
-				 .i_error(i_error),
+				 .i_access(ic_access),
+				 .i_addr(ic_addr),
+				 .i_data(ic_data),
+				 .i_ack(ic_ack),
+				 .i_error(ic_error),
 				 /* Data bus. */
 				 .d_addr(d_addr),
 				 .d_bytesel(d_bytesel),
