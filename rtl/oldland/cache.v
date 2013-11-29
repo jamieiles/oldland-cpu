@@ -42,7 +42,6 @@ wire [CACHE_OFFSET_BITS - 1:0]	offset = c_addr[0+:CACHE_OFFSET_BITS];
 wire [CACHE_INDEX_BITS - 1:0]	index = c_addr[CACHE_INDEX_IDX+:CACHE_INDEX_BITS];
 
 reg [29:0]			latched_addr = 30'b0;
-wire [CACHE_OFFSET_BITS - 1:0]	latched_offset = latched_addr[0+:CACHE_OFFSET_BITS];
 wire [CACHE_INDEX_BITS - 1:0]	latched_index = latched_addr[CACHE_INDEX_IDX+:CACHE_INDEX_BITS];
 wire [CACHE_TAG_BITS - 1:0]	latched_tag = latched_addr[CACHE_TAG_IDX+:CACHE_TAG_BITS];
 
