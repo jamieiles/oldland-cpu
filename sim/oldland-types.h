@@ -23,6 +23,7 @@ enum alu_opcode {
 	ALU_OPCODE_SUBC = 0x03,
 	ALU_OPCODE_RFE = 0x12,
 	ALU_OPCODE_COPYA = 0x0f,
+	ALU_OPCODE_CPUID = 0x13,
 	ALU_OPCODE_ADDC = 0x01,
 	ALU_OPCODE_COPYB = 0x0b,
 	ALU_OPCODE_OR = 0x0a,
@@ -46,6 +47,7 @@ enum { OPCODE_BLTS = 10 };
 enum { OPCODE_LSL = 4 };
 enum { OPCODE_LSR = 5 };
 enum { OPCODE_SUBC = 3 };
+enum { OPCODE_CPUID = 7 };
 enum { OPCODE_SCR = 2 };
 enum { OPCODE_SWI = 15 };
 enum { OPCODE_STR8 = 6 };

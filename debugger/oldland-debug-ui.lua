@@ -1,3 +1,4 @@
+require "bit32"
 require "math"
 require "io"
 
@@ -40,6 +41,10 @@ function write_cr(reg, val)
 	return target.write_reg(32 + reg, val)
 end
 target.write_cr = write_cr
+
+function read_cpuid(reg)
+	print(string.format("%08x", target.read_cpuid(reg)))
+end
 
 regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
 	     'r8', 'r9', 'r10', 'r11', 'r12', 'fp', 'sp', 'lr', 'pc' }
@@ -114,4 +119,21 @@ function dump_mem(start, len)
 
 		count = count + math.min(len - count, 16)
 	end
+end
+
+function cpuid()
+	version = target.read_cpuid(0)
+
+	vendor = bit32.rshift(version, 16)
+	model = bit32.band(version, 0xffff)
+
+	print(string.format("Vendor:\t0x%04x", vendor))
+	print(string.format("Model:\t0x%04x", model))
+	print(string.format("Hz:\t%u", target.read_cpuid(1)))
+	print("Instruction Cache:")
+	icache = target.read_cpuid(3)
+	line_size = bit32.band(icache, 0xff) * 4
+	size = bit32.rshift(icache, 8) * line_size
+	print(string.format("  Size: %uKB", size / 1024))
+	print(string.format("  Line: %u", line_size))
 end

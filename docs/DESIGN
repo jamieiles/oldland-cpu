@@ -105,6 +105,7 @@ GCR	 1  1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  
 SCR	 1  1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
 MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd
 ORLO	 1  1  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x rb rb rb rb rd rd rd rd
+CPUID	 1  1  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
 NOP	 1  1  1  1  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x
 
 RELOCATIONS
@@ -204,3 +205,25 @@ RFE implementation:
   cr3:	fault address register
 	[31:0]: fault address
   cr4:	data fault address
+
+CPUID registers
+---------------
+
+The CPUID registers provide a mechanism for software to discover hardware
+features:
+
+0: CPU version
+   [31:16]:	Vendor
+   [15:0]:	Model
+1: CPU core speed
+   [31:0]	core speed (Hz)
+2: Instruction set features
+   [31:0]:	SBZ
+3: Instruction cache feature register
+   [31:24]:	SBZ
+   [23:8]:	number of cache lines
+   [7:0]:	words per cache line
+4: Data cache feature register
+   [31:24]:	SBZ
+   [23:8]:	number of cache lines
+   [7:0]:	words per cache line

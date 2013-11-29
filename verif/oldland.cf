@@ -27,3 +27,4 @@ cpu_tb.v
 ../rtl/oldland/oldland_regfile.v
 ../rtl/oldland/oldland_debug.v
 ../rtl/oldland/cache.v
+../rtl/oldland/oldland_cpuid.v

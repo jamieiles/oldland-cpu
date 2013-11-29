@@ -8,6 +8,7 @@
 `define OPCODE_LSL	4'h4
 `define OPCODE_LSR	4'h5
 `define OPCODE_SUBC	4'h3
+`define OPCODE_CPUID	4'h7
 `define OPCODE_SCR	4'h2
 `define OPCODE_SWI	4'hf
 `define OPCODE_STR8	4'h6
@@ -54,6 +55,7 @@
 `define ALU_OPC_SUBC	5'b00011
 `define ALU_OPC_RFE	5'b10010
 `define ALU_OPC_COPYA	5'b01111
+`define ALU_OPC_CPUID	5'b10011
 `define ALU_OPC_ADDC	5'b00001
 `define ALU_OPC_COPYB	5'b01011
 `define ALU_OPC_OR	5'b01010

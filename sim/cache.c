@@ -3,13 +3,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "io.h"
 
-#define CACHE_OFFSET_BITS	5
 #define CACHE_OFFSET_SZ		(1 << CACHE_OFFSET_BITS)
 #define CACHE_OFFSET_MASK	((1 << CACHE_OFFSET_BITS) - 1)
 
-#define CACHE_INDEX_BITS	8
 #define CACHE_INDEX_SZ		((1 << CACHE_INDEX_BITS) * CACHE_OFFSET_SZ)
 #define CACHE_INDEX_SHIFT	CACHE_OFFSET_BITS
 #define CACHE_INDEX_MASK	(((1 << CACHE_INDEX_BITS) - 1) << CACHE_OFFSET_BITS)

@@ -48,7 +48,9 @@ module oldland_exec(input wire		clk,
 		    input wire [31:0]	dbg_cr_wr_val,
 		    input wire		dbg_cr_wr_en,
 		    input wire		irq_start,
-		    input wire [31:0]	irq_fault_address);
+		    input wire [31:0]	irq_fault_address,
+		    output wire [2:0]	cpuid_sel,
+		    input wire [31:0]	cpuid_val);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -90,6 +92,8 @@ assign		control_regs[7] = 32'b0;
 assign		dbg_cr_val = control_regs[dbg_cr_sel];
 
 wire [31:0]	read_cr_val = control_regs[cr_sel];
+
+assign		cpuid_sel = op2[2:0];
 
 initial begin
 	branch_taken = 1'b0;
@@ -138,6 +142,7 @@ always @(*) begin
 	`ALU_OPC_GCR:	alu_q = read_cr_val;
         `ALU_OPC_SWI:   alu_q = {vector_addr, 6'h8};
 	`ALU_OPC_RFE:   alu_q = fault_address;
+	`ALU_OPC_CPUID:	alu_q = cpuid_val;
 	default:        alu_q = 32'b0;
 	endcase
 end

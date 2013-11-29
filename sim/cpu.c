@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "cache.h"
+#include "config.h"
 #include "cpu.h"
 #include "internal.h"
 #include "irq_ctrl.h"
@@ -79,6 +80,26 @@ struct cpu {
 	struct irq_ctrl *irq_ctrl;
 	struct timer_base *timers;
 	struct cache *icache;
+};
+
+enum cpuid_reg_names {
+	CPUID_VERSION,
+	CPUID_CORE_SPEED,
+	CPUID_FEATURES,
+	CPUID_ICACHE,
+	CPUID_DCACHE,
+};
+
+#define CACHE_LINE_SIZE		(1 << CACHE_OFFSET_BITS)
+#define CPUID_ICACHE_VAL	((CACHE_LINE_SIZE / sizeof(uint32_t)) | \
+				  ((1 << CACHE_INDEX_BITS) << 8))
+
+static const uint32_t cpuid_regs[] = {
+	[CPUID_VERSION]		= (CPUID_VENDOR << 16) | CPUID_MODEL,
+	[CPUID_CORE_SPEED]	= CPU_HZ,
+	[CPUID_FEATURES]	= 0,
+	[CPUID_ICACHE]		= CPUID_ICACHE_VAL,
+	[CPUID_DCACHE]		= 0,
 };
 
 enum psr_flags {
@@ -475,6 +496,12 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 	case ALU_OPCODE_COPYA:
 		alu->alu_q = op1;
 		break;
+	case ALU_OPCODE_CPUID:
+		if (op2 >= ARRAY_SIZE(cpuid_regs))
+			alu->alu_q = 0;
+		else
+			alu->alu_q = cpuid_regs[op2];
+		break;
 	}
 
 	alu->mem_write_val = c->regs[instr_rb(instr)];
@@ -637,6 +664,14 @@ out:
 void cpu_cache_sync(struct cpu *cpu)
 {
 	cache_inval_all(cpu->icache);
+}
+
+uint32_t cpu_cpuid(unsigned int reg)
+{
+	if (reg >= ARRAY_SIZE(cpuid_regs))
+		return 0;
+
+	return cpuid_regs[reg];
 }
 
 void cpu_reset(struct cpu *c)

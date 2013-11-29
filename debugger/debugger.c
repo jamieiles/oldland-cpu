@@ -220,6 +220,20 @@ int dbg_read_reg(struct target *t, unsigned reg, uint32_t *val)
 	return dbg_read(t, REG_RDATA, val);
 }
 
+int dbg_read_cpuid(struct target *t, unsigned reg, uint32_t *val)
+{
+	int rc;
+
+	rc = dbg_write(t, REG_ADDRESS, reg);
+	if (rc)
+		return rc;
+	rc = dbg_write(t, REG_CMD, CMD_CPUID);
+	if (rc)
+		return rc;
+
+	return dbg_read(t, REG_RDATA, val);
+}
+
 static void assert_target(lua_State *L)
 {
 	if (!target) {
@@ -466,6 +480,27 @@ static int lua_read_reg(lua_State *L)
 	return 1;
 }
 
+static int lua_read_cpuid(lua_State *L)
+{
+	uint32_t v;
+	lua_Integer regnum;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no register identifier");
+		lua_error(L);
+	}
+
+	regnum = lua_tointeger(L, 1);
+	if (dbg_read_cpuid(target, regnum, &v))
+		warnx("failed to read cpuid register %u", (unsigned)regnum);
+	lua_pop(L, 1);
+	lua_pushinteger(L, v);
+
+	return 1;
+}
+
 static int lua_write_reg(lua_State *L)
 {
 	lua_Integer regnum, val;
@@ -584,6 +619,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "connect", lua_connect },
 	{ "term", lua_term },
 	{ "reset", lua_reset },
+	{ "read_cpuid", lua_read_cpuid },
 	{}
 };
 

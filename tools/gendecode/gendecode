@@ -194,6 +194,12 @@ def add_misc_instruction(opcode, idef):
             'wrrd':  opcode == 'gcr', # rd := cr[N]
             'aluop': alu_opcode_val('copya') if opcode == 'scr' else alu_opcode_val('gcr'),
         }
+    elif opcode == 'cpuid':
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'wrrd':  1,
+            'aluop': alu_opcode_val('cpuid'),
+        }
 
 for opcode, idef in itab.items():
     if is_arith_instruction(idef):

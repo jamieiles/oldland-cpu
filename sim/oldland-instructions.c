@@ -434,6 +434,17 @@ const struct oldland_instruction oldland_instructions_2[16] = {
 };
 
 const struct oldland_instruction oldland_instructions_3[16] = {
+        [OPCODE_CPUID] = {
+                .name = "cpuid",
+                .class = 3,
+                .opcode = OPCODE_CPUID,
+                .constbits = 0x00000000,
+                .nr_operands = 2,
+                .op1 = {&operands[OPERAND_RD]},
+                .op2 = {&operands[OPERAND_IMM13]},
+                .op3 = {},
+                .formatsel = -1,
+        }, 
         [OPCODE_SCR] = {
                 .name = "scr",
                 .class = 3,

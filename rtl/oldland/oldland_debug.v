@@ -34,7 +34,10 @@ module oldland_debug(input wire		clk,
 		     /* Reset control. */
 		     output wire	dbg_rst,
 		     /* Cache maintenance. */
-		     output wire	dbg_cache_sync);
+		     output wire	dbg_cache_sync,
+		     /* CPUID. */
+		     output wire [2:0]	cpuid_sel,
+		     input wire [31:0]	cpuid_val);
 
 localparam STATE_IDLE		= 4'b0000;
 localparam STATE_LOAD_CMD	= 4'b0001;
@@ -64,6 +67,7 @@ localparam CMD_WMEM16		= 4'h9;
 localparam CMD_WMEM8		= 4'ha;
 localparam CMD_RESET            = 4'hb;
 localparam CMD_CACHE_SYNC	= 4'hc;
+localparam CMD_CPUID		= 4'hd;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
@@ -96,6 +100,7 @@ assign		dbg_rst = state == STATE_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
 assign		dbg_cache_sync = state == STATE_CACHE_SYNC;
+assign		cpuid_sel = debug_addr[2:0];
 
 dc_ram		#(.addr_bits(2),
 		  .data_bits(32))
@@ -215,6 +220,12 @@ always @(*) begin
 		end
 		CMD_CACHE_SYNC: begin
 			next_state = STATE_CACHE_SYNC;
+		end
+		CMD_CPUID: begin
+			next_state = STATE_COMPL;
+			ctl_addr = 2'b11;
+			ctl_wr_en = 1'b1;
+			ctl_din = cpuid_val;
 		end
 		default: next_state = STATE_COMPL;
 		endcase

@@ -18,7 +18,8 @@
         "copya":"0x0f",
         "gcr":  "0x10",
         "swi":  "0x11",
-        "rfe":  "0x12"
+        "rfe":  "0x12",
+        "cpuid":"0x13"
     },
     "operands": {
         "rd": {
@@ -285,6 +286,12 @@
             "opcode": 13,
             "format": [["rd"], ["rb"], ["imm16"]],
             "description": "Rd := Rb | imm16."
+        },
+        "cpuid": {
+            "class": 3,
+            "opcode": 7,
+            "format": [["rd"], ["imm13"]],
+            "description": "Rd := cpuid[imm16]."
         },
         "gcr": {
             "class": 3,

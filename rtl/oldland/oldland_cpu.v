@@ -26,6 +26,12 @@ module oldland_cpu(input wire		clk,
 		   output wire		dbg_ack,
 		   output wire		dbg_rst);
 
+parameter	ICACHE_SIZE = 8192;
+parameter	ICACHE_LINE_SIZE = 32;
+parameter	CPUID_MANUFACTURER = 16'h4a49;
+parameter	CPUID_MODEL = 16'h0001;
+parameter	CPU_CLOCK_SPEED = 32'd50000000;
+
 /* Debug control signals. */
 wire		cpu_run;
 wire		cpu_stopped;
@@ -48,6 +54,7 @@ wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
 wire		dbg_cache_sync;
+wire [2:0]	dbg_cpuid_sel;
 
 /* CPU<->I$ signals. */
 wire		ic_access;
@@ -56,7 +63,22 @@ wire [31:0]	ic_data;
 wire		ic_ack;
 wire		ic_error;
 
-cache			icache(.clk(clk),
+/* CPUID signals. */
+wire [2:0]	cpu_cpuid_sel;
+wire [2:0]	cpuid_sel = cpu_stopped ? dbg_cpuid_sel : cpu_cpuid_sel;
+wire [31:0]	cpuid_val;
+
+oldland_cpuid		#(.CPUID_MANUFACTURER(CPUID_MANUFACTURER),
+			  .CPUID_MODEL(CPUID_MODEL),
+			  .CPU_CLOCK_SPEED(CPU_CLOCK_SPEED),
+			  .ICACHE_SIZE(ICACHE_SIZE),
+			  .ICACHE_LINE_SIZE(ICACHE_LINE_SIZE))
+			oldland_cpuid(.reg_sel(cpuid_sel),
+				      .val(cpuid_val));
+
+cache			#(.CACHE_SIZE(ICACHE_SIZE),
+			  .CACHE_LINE_SIZE(ICACHE_LINE_SIZE))
+			icache(.clk(clk),
 			       .rst(dbg_rst),
 			       .c_access(ic_access),
 			       .c_addr(ic_addr),
@@ -105,7 +127,10 @@ oldland_debug		debug(.clk(clk),
 		              /* Reset. */
 		              .dbg_rst(dbg_rst),
 			      /* Cache maintenance. */
-			      .dbg_cache_sync(dbg_cache_sync));
+			      .dbg_cache_sync(dbg_cache_sync),
+			      /* CPUID. */
+			      .cpuid_sel(dbg_cpuid_sel),
+			      .cpuid_val(cpuid_val));
 
 oldland_pipeline	pipeline(.clk(clk),
 				 .irq_req(irq_req),
@@ -148,6 +173,9 @@ oldland_pipeline	pipeline(.clk(clk),
 				 .dbg_pc(dbg_pc),
 				 .dbg_pc_wr_val(dbg_pc_wr_val),
 				 .dbg_pc_wr_en(dbg_pc_wr_en),
+				 /* CPUID. */
+				 .cpuid_sel(cpu_cpuid_sel),
+				 .cpuid_val(cpuid_val),
 				 /* Reset. */
 				 .dbg_rst(dbg_rst));
 

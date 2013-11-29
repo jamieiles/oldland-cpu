@@ -292,6 +292,10 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		case CMD_CACHE_SYNC:
 			cpu_cache_sync(cpu);
 			break;
+		case CMD_CPUID:
+			debug->debug_regs[REG_RDATA] =
+				cpu_cpuid(debug->debug_regs[REG_ADDRESS]);
+			break;
 		case CMD_SIM_TERM:
 			exit(EXIT_SUCCESS);
 		default:

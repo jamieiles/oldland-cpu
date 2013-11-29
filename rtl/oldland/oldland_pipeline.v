@@ -39,7 +39,11 @@ module oldland_pipeline(input wire		clk,
 			output wire [31:0]	dbg_pc,
 			input wire [31:0]	dbg_pc_wr_val,
 			input wire		dbg_pc_wr_en,
-			input wire		dbg_rst);
+			/* Reset. */
+			input wire		dbg_rst,
+			/* CPUID> */
+			output wire [2:0]	cpuid_sel,
+			input wire [31:0]	cpuid_val);
 
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
@@ -233,7 +237,9 @@ oldland_exec	execute(.clk(clk),
 			.dbg_cr_wr_val(dbg_cr_wr_val),
 			.dbg_cr_wr_en(dbg_cr_wr_en),
 			.irq_start(fe_irq_start),
-			.irq_fault_address(fe_irq_fault_address));
+			.irq_fault_address(fe_irq_fault_address),
+			.cpuid_sel(cpuid_sel),
+			.cpuid_val(cpuid_val));
 
 oldland_memory	mem(.clk(clk),
 		    .rst(dbg_rst),
