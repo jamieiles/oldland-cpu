@@ -1,19 +1,19 @@
-module cache(input wire		clk,
-	     input wire		rst,
-	     /* CPU<->cache bus signals. */
-	     input wire		c_access,
-	     input wire	[29:0]	c_addr,
-	     output reg [31:0]	c_data,
-	     output wire	c_ack,
-	     output reg		c_error,
-	     /* CPU<->cache control signals. */
-	     input wire		ctrl_inval,
-	     /* Cache<->memory signals. */
-	     output reg		m_access,
-	     output wire [29:0]	m_addr,
-	     input wire [31:0]	m_data,
-	     input wire		m_ack,
-	     input wire		m_error);
+module oldland_cache(input wire		clk,
+		     input wire		rst,
+		     /* CPU<->cache bus signals. */
+		     input wire		c_access,
+		     input wire	[29:0]	c_addr,
+		     output reg [31:0]	c_data,
+		     output wire	c_ack,
+		     output reg		c_error,
+		     /* CPU<->cache control signals. */
+		     input wire		ctrl_inval,
+		     /* Cache<->memory signals. */
+		     output reg		m_access,
+		     output wire [29:0]	m_addr,
+		     input wire [31:0]	m_data,
+		     input wire		m_ack,
+		     input wire		m_error);
 
 parameter CACHE_SIZE		= 8192;
 parameter CACHE_LINE_SIZE	= 32;

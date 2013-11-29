@@ -76,7 +76,7 @@ oldland_cpuid		#(.CPUID_MANUFACTURER(CPUID_MANUFACTURER),
 			oldland_cpuid(.reg_sel(cpuid_sel),
 				      .val(cpuid_val));
 
-cache			#(.CACHE_SIZE(ICACHE_SIZE),
+oldland_cache		#(.CACHE_SIZE(ICACHE_SIZE),
 			  .CACHE_LINE_SIZE(ICACHE_LINE_SIZE))
 			icache(.clk(clk),
 			       .rst(dbg_rst),
