@@ -33,7 +33,7 @@ int regcache_sync(struct regcache *r)
 	unsigned reg = 0;
 
 	for (reg = 0; reg < NR_REGS; ++reg) {
-		if (r->dirty_mask & (1 << reg)) {
+		if (r->dirty_mask & (1LLU << reg)) {
 			rc = dbg_write_reg(r->target, reg, r->regs[reg]);
 			if (rc)
 				break;
@@ -52,7 +52,7 @@ int regcache_read(struct regcache *r, enum regs reg, uint32_t *val)
 	if (reg >= NR_REGS || reg < 0)
 		return -EINVAL;
 
-	if (r->valid_mask & (1 << reg)) {
+	if (r->valid_mask & (1LLU << reg)) {
 		*val = r->regs[reg];
 		return 0;
 	}
@@ -61,7 +61,7 @@ int regcache_read(struct regcache *r, enum regs reg, uint32_t *val)
 	if (!rc) {
 		if (val)
 			*val = r->regs[reg];
-		r->valid_mask |= (1 << reg);
+		r->valid_mask |= (1LLU << reg);
 	}
 
 	return rc;
@@ -75,8 +75,8 @@ int regcache_write(struct regcache *r, enum regs reg, uint32_t val)
 		return -EINVAL;
 
 	r->regs[reg] = val;
-	r->valid_mask |= (1 << reg);
-	r->dirty_mask |= (1 << reg);
+	r->valid_mask |= (1LLU << reg);
+	r->dirty_mask |= (1LLU << reg);
 
 	return rc;
 }
