@@ -1,4 +1,4 @@
-.section .text.sdram
+.section .text
 .include "common.s"
 
 .globl _start
@@ -11,6 +11,14 @@ _start:
 	cmp	$r1, 0x0
 	beq	1b
 
+	movhi	$r1, %hi(_start_sdram)
+	orlo	$r1, $r1, %lo(_start_sdram)
+	b	$r1
+
+.section .text.sdram
+
+.globl _start_sdram
+_start_sdram:
 	movhi	$r0, %hi(ex_table)
 	orlo	$r0, $r0, %lo(ex_table)
 	scr	0, $r0
