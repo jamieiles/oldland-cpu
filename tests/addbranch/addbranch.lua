@@ -8,4 +8,4 @@ expect_testpoints = {
 	{ TP_SUCCESS, 0 }
 }
 
-return step_testpoints(expect_testpoints)
+return run_testpoints(expect_testpoints)
