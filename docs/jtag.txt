@@ -37,6 +37,7 @@ Command list:
   0x9:	Write memory 16 bits
   0xa:	Write memory 8 bits
   0xb:  Reset CPU core
+  0xc:  Synchronize caches
 
 Register/memory operations may only be issued whilst the CPU is stopped.
 
