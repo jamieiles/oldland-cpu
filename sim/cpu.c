@@ -610,7 +610,15 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 	return err;
 }
 
-static void emul_insn(struct cpu *c, uint32_t instr)
+static bool instr_is_breakpoint(uint32_t instr)
+{
+	if (instr_class(instr) != INSTR_MISC || instr_opc(instr) != OPCODE_BKP)
+		return false;
+
+	return true;
+}
+
+static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 {
 	/* 7 MSB's are the microcode address. */
 	uint32_t ucode = c->ucode[instr >> (32 - 7)];
@@ -626,6 +634,9 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 		return;
 	}
 
+	if (instr_is_breakpoint(instr))
+		*breakpoint_hit = true;
+
 	do_alu(c, instr, ucode, &alu);
 	commit_alu(c, instr, ucode, &alu);
 	process_branch(c, instr, ucode, &alu);
@@ -635,7 +646,7 @@ static void emul_insn(struct cpu *c, uint32_t instr)
 		return;
 }
 
-int cpu_cycle(struct cpu *c)
+int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 {
 	uint32_t instr;
 
@@ -653,10 +664,11 @@ int cpu_cycle(struct cpu *c)
 	if (c->trace_file)
 		trace(c->trace_file, TRACE_INSTR, instr);
 
-	emul_insn(c, instr);
+	emul_insn(c, instr, breakpoint_hit);
 
 out:
-	c->pc = c->next_pc;
+	if (!*breakpoint_hit)
+		c->pc = c->next_pc;
 
 	return 0;
 }

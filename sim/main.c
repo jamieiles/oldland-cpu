@@ -31,6 +31,7 @@ struct debug_data {
 	int pending;
 	int more_data;
 	pthread_mutex_t lock;
+	bool breakpoint_hit;
 
 	uint32_t debug_regs[4];
 };
@@ -237,7 +238,8 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 			break;
 		case CMD_STEP:
 			sim_state = SIM_STATE_STOPPED;
-			cpu_cycle(cpu);
+			debug->breakpoint_hit = false;
+			cpu_cycle(cpu, &debug->breakpoint_hit);
 			cpu_read_reg(cpu, PC, &debug->debug_regs[REG_RDATA]);
 			break;
 		case CMD_READ_REG:
@@ -296,6 +298,11 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 			debug->debug_regs[REG_RDATA] =
 				cpu_cpuid(debug->debug_regs[REG_ADDRESS]);
 			break;
+		case CMD_GET_EXEC_STATUS:
+			debug->debug_regs[REG_RDATA] =
+				(sim_state == SIM_STATE_RUNNING) |
+				((!!debug->breakpoint_hit) << 1);
+			break;
 		case CMD_SIM_TERM:
 			exit(EXIT_SUCCESS);
 		default:
@@ -352,8 +359,12 @@ int main(int argc, char *argv[])
 		if (!get_request(debug, &req))
 			handle_req(debug, &req, cpu);
 
-		if (sim_state == SIM_STATE_RUNNING)
-			cpu_cycle(cpu);
+		if (sim_state == SIM_STATE_RUNNING) {
+			debug->breakpoint_hit = false;
+			cpu_cycle(cpu, &debug->breakpoint_hit);
+			if (debug->breakpoint_hit)
+				sim_state = SIM_STATE_STOPPED;
+		}
 	}
 
 	return 0;

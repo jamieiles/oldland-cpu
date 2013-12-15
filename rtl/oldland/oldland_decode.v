@@ -39,7 +39,8 @@ module oldland_decode(input wire	clk,
 		      input wire	exception_start_in,
 		      output reg	exception_start_out,
 		      input wire	i_fetched,
-		      output reg	i_valid);
+		      output reg	i_valid,
+		      output wire	bkpt_hit);
 
 wire [6:0]      addr = instr[31:25];
 
@@ -59,6 +60,9 @@ assign		ra_sel = instr[11:8];
 assign		rb_sel = instr[7:4];
 
 assign		illegal_instr = ~valid;
+
+assign		bkpt_hit = instr[31:30] == `CLASS_MISC &&
+			   instr[29:25] == {`OPCODE_BKP, 1'b0};
 
 initial begin
 	$readmemh({`OLDLAND_ROM_PATH, "decode.hex"}, microcode, 0, 127);

@@ -46,6 +46,8 @@ struct target {
 
 	bool mem_written;
 
+	bool breakpoint_hit;
+
 	/* Populated when stopped. */
 	uint32_t pc;
 
@@ -201,6 +203,25 @@ static int dbg_reset(struct target *t)
 	return dbg_write(t, REG_CMD, CMD_RESET);
 }
 
+/*
+ * Forcibly reload the cached copy of the PC.  For run() and step() the debug
+ * controller returns the updated PC, but when execution has hit a breakpoint
+ * we just get that by polling the execution status so need to manually update
+ * the PC.
+ */
+static int dbg_reload_pc(struct target *t)
+{
+	int rc = dbg_write(t, REG_ADDRESS, PC);
+
+	if (rc)
+		return rc;
+	rc = dbg_write(t, REG_CMD, CMD_READ_REG);
+	if (rc)
+		return rc;
+
+	return dbg_read(t, REG_RDATA, &t->pc);
+}
+
 int dbg_read_reg(struct target *t, unsigned reg, uint32_t *val)
 {
 	int rc;
@@ -232,6 +253,17 @@ int dbg_read_cpuid(struct target *t, unsigned reg, uint32_t *val)
 		return rc;
 
 	return dbg_read(t, REG_RDATA, val);
+}
+
+int dbg_get_exec_status(struct target *t, uint32_t *status)
+{
+	int rc;
+
+	rc = dbg_write(t, REG_CMD, CMD_GET_EXEC_STATUS);
+	if (rc)
+		return rc;
+
+	return dbg_read(t, REG_RDATA, status);
 }
 
 static void assert_target(lua_State *L)
@@ -432,9 +464,17 @@ static int lua_stop(lua_State *L)
 static void wait_until_stopped(struct target *t)
 {
 	target->interrupted = false;
+	uint32_t exec_status = 0;
 
-	while (!target->interrupted)
-		pause();
+	do {
+		if (dbg_get_exec_status(target, &exec_status))
+			err(1, "failed to get execution status.");
+	} while (!target->interrupted && (exec_status & EXEC_STATUS_RUNNING));
+
+	if (dbg_reload_pc(t))
+		err(1, "failed to read PC");
+
+	target->breakpoint_hit = exec_status & EXEC_STATUS_STOPPED_ON_BKPT;
 }
 
 static int lua_run(lua_State *L)

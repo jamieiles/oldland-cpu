@@ -19,6 +19,7 @@ module oldland_pipeline(input wire		clk,
 			input wire		run,
 			output wire		stopped,
 			output wire		running,
+			output wire		bkpt_hit,
 			/* Memory debug. */
 			input wire [31:0]	dbg_mem_addr,
 			input wire [1:0]	dbg_mem_width,
@@ -154,7 +155,8 @@ oldland_fetch	fetch(.clk(clk),
 		      .decode_exception(de_exception_start),
 		      .exception_disable_irqs(fe_disable_irqs),
 		      .irq_start(fe_irq_start),
-		      .irq_fault_address(fe_irq_fault_address));
+		      .irq_fault_address(fe_irq_fault_address),
+		      .bkpt_hit(bkpt_hit));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -186,7 +188,8 @@ oldland_decode	decode(.clk(clk),
 		       .exception_start_in(fd_exception_start),
 		       .exception_start_out(de_exception_start),
 		       .i_fetched(fd_i_fetched),
-		       .i_valid(de_i_valid));
+		       .i_valid(de_i_valid),
+		       .bkpt_hit(bkpt_hit));
 
 oldland_exec	execute(.clk(clk),
 			.rst(dbg_rst),

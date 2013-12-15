@@ -40,6 +40,11 @@ Command list:
   0xc:  Synchronize caches
   0xd:  Read CPUID register
     - Address is register number, no data word.
+  0xe:  Get execution status
+    - Read data:
+      [0]     running
+      [1]     breakpoint hit, cleared on run
+      [31:2]  SBZ
 
 Register/memory operations may only be issued whilst the CPU is stopped.
 

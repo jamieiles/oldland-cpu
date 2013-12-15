@@ -18,6 +18,7 @@ enum dbg_cmd {
 	CMD_RESET,
 	CMD_CACHE_SYNC,
 	CMD_CPUID,
+	CMD_GET_EXEC_STATUS,
 
 	CMD_SIM_TERM = -1,
 };
@@ -38,6 +39,11 @@ struct dbg_request {
 struct dbg_response {
 	int32_t status;
 	uint32_t data;
+};
+
+enum exec_status {
+	EXEC_STATUS_RUNNING		= (1 << 0),
+	EXEC_STATUS_STOPPED_ON_BKPT	= (1 << 1),
 };
 
 #endif /* __PROTOCOL_H__ */

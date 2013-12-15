@@ -89,7 +89,8 @@ module oldland_fetch(input wire		clk,
 		     output wire	exception_disable_irqs,
 		     input wire		decode_exception,
 		     output wire	irq_start,
-		     output reg [31:0]	irq_fault_address);
+		     output reg [31:0]	irq_fault_address,
+		     input wire		bkpt_hit);
 
 localparam	STATE_RUNNING	= 3'b000;
 localparam	STATE_STALLED	= 3'b001;
@@ -242,7 +243,7 @@ always @(posedge clk) begin
 		pc <= dbg_pc_wr_val;
 	else if (state == STATE_STALLED && stall_clear)
 		pc <= next_pc;
-	else if (i_ack || take_irq)
+	else if ((i_ack || take_irq) && !bkpt_hit)
 		pc <= next_pc;
 end
 

@@ -55,6 +55,7 @@ wire		dbg_mem_access;
 wire		dbg_mem_compl;
 wire		dbg_cache_sync;
 wire [2:0]	dbg_cpuid_sel;
+wire            dbg_bkpt_hit;
 
 /* CPU<->I$ signals. */
 wire		ic_access;
@@ -104,6 +105,7 @@ oldland_debug		debug(.clk(clk),
 		              /* Execution control. */
 		              .run(cpu_run),
 		              .stopped(cpu_stopped),
+                              .bkpt_hit(dbg_bkpt_hit),
 		              /* Memory debug. */
 		              .mem_addr(dbg_mem_addr),
 		              .mem_width(dbg_mem_width),
@@ -153,6 +155,7 @@ oldland_pipeline	pipeline(.clk(clk),
 				 /* Debug signals. */
 				 .run(cpu_run),
 				 .stopped(cpu_stopped),
+                                 .bkpt_hit(dbg_bkpt_hit),
 				 /* Memory debug. */
 				 .dbg_mem_addr(dbg_mem_addr),
 				 .dbg_mem_width(dbg_mem_width),

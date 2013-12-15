@@ -1,6 +1,7 @@
 #ifndef __CPU_H__
 #define __CPU_H__
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -16,7 +17,7 @@ enum cpu_flags {
 };
 
 struct cpu *new_cpu(const char *binary, int flags);
-int cpu_cycle(struct cpu *c);
+int cpu_cycle(struct cpu *c, bool *breakpoint_hit);
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v);
 int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v);
 int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits);

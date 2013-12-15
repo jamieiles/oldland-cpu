@@ -7,8 +7,9 @@ module oldland_debug(input wire		clk,
 		     input wire		req,
 		     output wire	ack,
 		     /* Execution control signals. */
-		     output reg		run,
+		     output wire	run,
 		     input wire		stopped,
+                     input wire         bkpt_hit,
 		     /* Memory read/write signals. */
 		     output wire [31:0] mem_addr,
 		     output reg [1:0]	mem_width,
@@ -68,6 +69,7 @@ localparam CMD_WMEM8		= 4'ha;
 localparam CMD_RESET            = 4'hb;
 localparam CMD_CACHE_SYNC	= 4'hc;
 localparam CMD_CPUID		= 4'hd;
+localparam CMD_GET_EXEC_STATUS	= 4'he;
 
 reg [1:0]	ctl_addr = 2'b00;
 reg [31:0]	ctl_din = 32'b0;
@@ -90,6 +92,9 @@ reg		ack_internal;	/*
 				 * CPU clock, will be synchronized to debug
 				 * clock.
 				 */
+reg		do_run = 1'b1;
+reg		stopped_on_bkpt = 1'b0;
+assign		run = do_run && !bkpt_hit;
 
 assign		dbg_reg_sel = debug_addr[3:0];
 assign		dbg_pc_wr_val = debug_data;
@@ -125,7 +130,6 @@ sync2ff		sync_ack(.dst_clk(dbg_clk),
 
 initial begin
 	ack_internal = 1'b0;
-	run = 1'b1;
 	dbg_reg_wr_en = 1'b0;
 	dbg_pc_wr_en = 1'b0;
 	dbg_cr_wr_en = 1'b0;
@@ -227,6 +231,12 @@ always @(*) begin
 			ctl_wr_en = 1'b1;
 			ctl_din = cpuid_val;
 		end
+		CMD_GET_EXEC_STATUS: begin
+			next_state = STATE_COMPL;
+			ctl_addr = 2'b11;
+			ctl_wr_en = 1'b1;
+			ctl_din = {30'b0, stopped_on_bkpt, run};
+		end
 		default: next_state = STATE_COMPL;
 		endcase
 	end
@@ -288,6 +298,9 @@ end
 always @(posedge clk) begin
 	ack_internal <= 1'b0;
 
+	if (do_run && bkpt_hit)
+		do_run <= 1'b0;
+
 	case (state)
 	STATE_IDLE: begin
 	end
@@ -304,10 +317,10 @@ always @(posedge clk) begin
 		reset_count <= 8'hff;
 
 		case (debug_cmd)
-		CMD_HALT: run <= 1'b0;
-		CMD_RUN: run <= 1'b1;
-		CMD_STEP: run <= 1'b1;
-		CMD_RESET: run <= 1'b0;
+		CMD_HALT: do_run <= 1'b0;
+		CMD_RUN: do_run <= 1'b1;
+		CMD_STEP: do_run <= 1'b1;
+		CMD_RESET: do_run <= 1'b0;
 		default: begin
 		end
 		endcase
@@ -317,7 +330,7 @@ always @(posedge clk) begin
 			reset_count <= reset_count - 8'b1;
 	end
 	STATE_STEP: begin
-		run <= 1'b0;
+		do_run <= 1'b0;
 	end
 	STATE_COMPL: begin
 		ack_internal <= 1'b1;
@@ -326,6 +339,12 @@ always @(posedge clk) begin
 	end
 	endcase
 end
+
+always @(posedge clk)
+	if (bkpt_hit)
+		stopped_on_bkpt <= 1'b1;
+	else if (stopped_on_bkpt && run)
+		stopped_on_bkpt <= 1'b0;
 
 always @(posedge clk)
 	state <= next_state;
