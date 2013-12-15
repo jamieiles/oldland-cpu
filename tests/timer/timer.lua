@@ -35,7 +35,7 @@ expect_testpoints = {
 	{ TP_SUCCESS, 0 },
 }
 
-rc = run_testpoints(expect_testpoints)
+rc = step_testpoints(expect_testpoints)
 if (rc ~= 0) then
 	return rc
 end

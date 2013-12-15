@@ -3,11 +3,7 @@
 .equ	TP_USER,	0x4
 
 .macro	TESTPOINT	type, tag
-.if	\type & (TP_SUCCESS | TP_FAILURE)
-10001:	b	10001b
-.else
-10001:	nop
-.endif
+10001:	bkp
 .pushsection	".testpoints"
 	.long	10001b
 	.word	\type

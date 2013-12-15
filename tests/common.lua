@@ -8,7 +8,7 @@ end
 
 cycle_count = 0
 
-function run_to_tp()
+function step_to_tp()
 	while true do
 		target.step()
 		cycle_count = cycle_count + 1
@@ -26,11 +26,50 @@ function run_to_tp()
 	end
 end
 
+function run_to_tp()
+	while true do
+		target.run()
+		pc = target.read_reg(16)
+		tp = get_testpoint(pc)
+
+		if tp then
+			return tp
+		end
+	end
+end
+
 function tp_type(typ)
         if tp.type == TP_SUCCESS then return "SUCCESS" end
         if tp.type == TP_FAILURE then return "FAILURE" end
         if tp.type == TP_USER then return "USER" end
         return "???"
+end
+
+function step_testpoints(expected_testpoints)
+	for _, v in pairs(expected_testpoints) do
+		tp = step_to_tp()
+		if not tp or
+		tp.type ~= v[1] or
+		tp.tag ~= v[2] then
+                        if tp then
+                                print(string.format("unexpected testpoint %s:%u at %08x",
+                                                    tp_type(tp.type), tp.tag,
+                                                    target.read_reg(16)))
+                        else
+                                print("No testpoint hit")
+                        end
+			return -1
+		end
+
+                print(string.format("hit tp %s:%u", tp_type(tp.type), tp.tag))
+
+                if v[3] and v[3]() then return -1 end
+
+		-- Advance the PC to the instruction after the breakpoint.
+		target.write_reg(16, target.read_reg(16) + 4)
+	end
+
+	return 0
 end
 
 function run_testpoints(expected_testpoints)
@@ -52,6 +91,9 @@ function run_testpoints(expected_testpoints)
                 print(string.format("hit tp %s:%u", tp_type(tp.type), tp.tag))
 
                 if v[3] and v[3]() then return -1 end
+
+		-- Advance the PC to the instruction after the breakpoint.
+		target.write_reg(16, target.read_reg(16) + 4)
 	end
 
 	return 0

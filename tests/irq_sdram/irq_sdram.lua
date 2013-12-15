@@ -1,6 +1,6 @@
 require "common"
 
-MAX_CYCLE_COUNT = 1024
+MAX_CYCLE_COUNT = 8192
 
 connect_and_load("irq_sdram")
 
@@ -16,4 +16,4 @@ expect_testpoints = {
 	{ TP_SUCCESS, 0 },
 }
 
-return run_testpoints(expect_testpoints)
+return step_testpoints(expect_testpoints)

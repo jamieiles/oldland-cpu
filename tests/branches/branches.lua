@@ -8,4 +8,4 @@ expect_testpoints = {
 	{ TP_SUCCESS, 0, function () regs() end }
 }
 
-return run_testpoints(expect_testpoints)
+return step_testpoints(expect_testpoints)

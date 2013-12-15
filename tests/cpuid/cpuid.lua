@@ -19,4 +19,4 @@ expect_testpoints = {
 	{ TP_SUCCESS, 0, validate_cpuid }
 }
 
-return run_testpoints(expect_testpoints)
+return step_testpoints(expect_testpoints)
