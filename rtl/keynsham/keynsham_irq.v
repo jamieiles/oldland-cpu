@@ -12,7 +12,7 @@ module keynsham_irq(input wire			clk,
 		    input wire [3:0]		bus_bytesel,
 		    output reg			bus_error,
 		    output reg			bus_ack,
-		    output reg [31:0]		bus_data,
+		    output wire [31:0]		bus_data,
 		    input wire [nr_irqs - 1:0]	irq_in,
 		    output wire			irq_req);
 
@@ -34,21 +34,22 @@ wire [31:0]	reg_irq_disable = 32'b0;
 wire [31:0]	reg_irq_test = irq_test;
 
 wire		ctrl_access = bus_access && bus_cs;
+reg [31:0]	data;
+assign bus_data	= bus_ack ? data : 32'b0;
 
 assign irq_req = |reg_irq_status;
 
 initial begin
 	bus_error = 1'b0;
 	bus_ack = 1'b0;
-	bus_data = 32'b0;
 end
 
 always @(*) begin
 	case (bus_addr[1:0])
-	REG_STATUS: bus_data = reg_irq_status;
-	REG_ENABLE: bus_data = reg_irq_enable;
-	REG_DISABLE: bus_data = reg_irq_disable;
-	REG_TEST: bus_data = reg_irq_test;
+	REG_STATUS: data = reg_irq_status;
+	REG_ENABLE: data = reg_irq_enable;
+	REG_DISABLE: data = reg_irq_disable;
+	REG_TEST: data = reg_irq_test;
 	endcase
 end
 

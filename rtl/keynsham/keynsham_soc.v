@@ -28,9 +28,9 @@ module keynsham_soc(input wire		clk,
 wire		dbg_rst;
 
 wire [29:0]	i_addr;
-reg [31:0]	i_data = `INSTR_NOP;
+wire [31:0]	i_data;
 wire [29:0]	d_addr;
-reg [31:0]	d_data = 32'b0;
+wire [31:0]	d_data;
 wire [31:0]	d_wr_val;
 wire [3:0]	d_bytesel;
 wire		d_wr_en;
@@ -104,9 +104,6 @@ wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs | irq_cs |
 				    timer_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
-
-reg ram_i_out_cs = 1'b0;
-reg rom_i_out_cs = 1'b0;
 
 wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
 	timer_ack | d_default_ack;
@@ -238,27 +235,9 @@ oldland_cpu	cpu(.clk(clk),
 		    .dbg_ack(dbg_ack),
 		    .dbg_rst(dbg_rst));
 
-always @(*) begin
-	if (ram_cs)
-		d_data = ram_data;
-	else if (uart_cs)
-		d_data = uart_data;
-	else if (d_sdram_cs || d_sdram_ctrl_cs)
-		d_data = d_sdram_data;
-	else if (rom_cs)
-		d_data = rom_data;
-	else if (irq_cs)
-		d_data = irq_data;
-	else if (timer_cs)
-		d_data = timer_data;
-	else
-		d_data = 32'b0;
-end
-
-always @(posedge clk) begin
-	ram_i_out_cs <= ram_i_cs;
-	rom_i_out_cs <= rom_i_cs;
-end
+assign d_data	= ram_data | uart_data | d_sdram_data | rom_data | irq_data |
+		  timer_data;
+assign i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 always @(posedge clk) begin
 	d_default_ack <= d_access && d_default_cs;
@@ -266,17 +245,6 @@ always @(posedge clk) begin
 
 	i_default_ack <= i_access && i_default_cs;
 	i_default_error <= i_access && i_default_cs;
-end
-
-always @(*) begin
-	if (ram_i_out_cs)
-		i_data = i_ram_data;
-	else if (rom_i_out_cs)
-		i_data = i_rom_data;
-	else if (i_sdram_ack)
-		i_data = i_sdram_data;
-	else
-		i_data = `INSTR_NOP;
 end
 
 endmodule

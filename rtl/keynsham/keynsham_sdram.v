@@ -56,8 +56,10 @@ wire		q_ack;
 
 assign		d_ack = ctrl_ack | (d_active ? q_ack : 1'b0);
 assign		i_ack = !d_active ? q_ack : 1'b0;
-assign		d_data = d_cs ? q_data : ctrl_data;
-assign		i_data = q_data;
+wire [31:0]	data = d_cs ? q_data : ctrl_data;
+assign		i_data = q_ack ? q_data : 32'b0;
+
+assign		d_data = q_ack | ctrl_ack ? data : 32'b0;
 
 bridge_32_16		br(.clk(clk),
 			   .h_cs(q_cs),

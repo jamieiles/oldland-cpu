@@ -38,6 +38,8 @@ initial begin
 end
 
 always @(posedge clk) begin
+	bus_data <= 32'b0;
+
 	if (!uart_tx_busy)
 		uart_write <= 1'b0;
 	uart_rdy_clr <= 1'b0;

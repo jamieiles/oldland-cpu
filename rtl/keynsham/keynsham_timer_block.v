@@ -22,9 +22,10 @@ wire [31:0]	timer_data[0:nr_timers - 1];
 wire		timer_ack[0:nr_timers - 1];
 wire		timer_error[0:nr_timers - 1];
 
-assign		bus_data = timer_data[timer_sel];
+wire [31:0]	data = timer_data[timer_sel];
 assign		bus_ack = timer_ack[timer_sel];
 assign		bus_error = timer_error[timer_sel];
+assign		bus_data = timer_ack[timer_sel] ? data : 32'b0;
 
 genvar		i;
 
