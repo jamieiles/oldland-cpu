@@ -89,30 +89,63 @@ reg		i_default_error = 1'b0;
  * 0x80002000 -- 0x80002fff: IRQ controller.
  * 0x80003000 -- 0x80003fff: timers.
  */
-wire		ram_cs		= d_addr[29:10]	== 20'h00000;
-wire		ram_i_cs	= i_addr[29:10]	== 20'h00000;
-wire		rom_cs		= d_addr[29:10]	== 20'h10000;
-wire		rom_i_cs	= i_addr[29:10]	== 20'h10000;
-wire		d_sdram_cs	= d_addr[29:23] == 7'b0010000;
-wire		i_sdram_cs	= i_addr[29:23] == 7'b0010000;
-wire		d_sdram_ctrl_cs	= d_addr[29:10] == 20'h80001;
-wire		uart_cs		= d_addr[29:10] == 20'h80000;
-wire		irq_cs		= d_addr[29:10] == 20'h80002;
-wire		timer_cs	= d_addr[29:10] == 20'h80003;
+wire		ram_cs;
+cs_gen		#(.address(32'h00000000), .size(32'h1000))
+		ram_cs_gen(.bus_addr(d_addr), .cs(ram_cs));
+
+wire		ram_i_cs;
+cs_gen		#(.address(32'h00000000), .size(32'h1000))
+		ram_i_cs_gen(.bus_addr(i_addr), .cs(ram_i_cs));
+
+wire		rom_cs;
+cs_gen		#(.address(32'h10000000), .size(32'h200))
+		rom_cs_gen(.bus_addr(d_addr), .cs(rom_cs));
+
+wire		rom_i_cs;
+cs_gen		#(.address(32'h10000000), .size(32'h200))
+		rom_i_cs_gen(.bus_addr(i_addr), .cs(rom_i_cs));
+
+wire		d_sdram_cs;
+cs_gen		#(.address(32'h20000000), .size(32'h2000000))
+		d_sdram_cs_gen(.bus_addr(d_addr), .cs(d_sdram_cs));
+
+wire		i_sdram_cs;
+cs_gen		#(.address(32'h20000000), .size(32'h2000000))
+		i_sdram_cs_gen(.bus_addr(i_addr), .cs(i_sdram_cs));
+
+wire		d_sdram_ctrl_cs;
+cs_gen		#(.address(32'h80001000), .size(32'h1000))
+		d_sdram_ctrl_cs_gen(.bus_addr(d_addr), .cs(d_sdram_ctrl_cs));
+
+wire		uart_cs;
+cs_gen		#(.address(32'h80000000), .size(32'h1000))
+		uart_cs_gen(.bus_addr(d_addr), .cs(uart_cs));
+
+wire		irq_cs;
+cs_gen		#(.address(32'h80002000), .size(32'h1000))
+		irq_cs_gen(.bus_addr(d_addr), .cs(irq_cs));
+
+wire		timer_cs;
+cs_gen		#(.address(32'h80003000), .size(32'h1000))
+		timer_cs_gen(.bus_addr(d_addr), .cs(timer_cs));
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs | irq_cs |
 				    timer_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
 
-wire d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
-	timer_ack | d_default_ack;
-wire d_error = uart_error | d_sdram_error | irq_error | timer_error |
-	d_default_error;
+wire		d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
+			timer_ack | d_default_ack;
+wire		d_error = uart_error | d_sdram_error | irq_error |
+			  timer_error | d_default_error;
 
-wire i_access;
-wire i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
-wire i_error = i_default_error | i_sdram_error;
+wire		i_access;
+wire		i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
+wire		i_error = i_default_error | i_sdram_error;
+
+assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
+			  irq_data | timer_data;
+assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 keynsham_ram	ram(.clk(clk),
 		    .i_access(i_access),
@@ -234,10 +267,6 @@ oldland_cpu	cpu(.clk(clk),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack),
 		    .dbg_rst(dbg_rst));
-
-assign d_data	= ram_data | uart_data | d_sdram_data | rom_data | irq_data |
-		  timer_data;
-assign i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 always @(posedge clk) begin
 	d_default_ack <= d_access && d_default_cs;

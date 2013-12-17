@@ -161,6 +161,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cache.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cpuid.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/sync2ff.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/dc_ram.v
+set_global_assignment -name VERILOG_FILE ../rtl/common/cs_gen.v
 set_global_assignment -name VERILOG_FILE bootrom.v
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name QIP_FILE bootrom.qip
