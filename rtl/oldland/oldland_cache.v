@@ -52,6 +52,7 @@ wire [CACHE_TAG_BITS - 1:0]	latched_tag = latched_addr[CACHE_TAG_IDX+:CACHE_TAG_
 reg [NR_CACHE_LINES - 1:0]	valid_mem;
 reg [31:0]			mem[(CACHE_SIZE / 4) - 1:0];
 reg [CACHE_TAG_BITS - 1:0]	tag_mem[NR_CACHE_LINES - 1:0];
+reg [CACHE_TAG_BITS - 1:0]	read_tag = {CACHE_TAG_BITS{1'b0}};
 
 /*
  * Per-access variables.
@@ -110,10 +111,8 @@ always @(posedge clk) begin
 			mem[{latched_index, word_offs}] <= m_data;
 		end
 
-		if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack) begin
-			tag_mem[latched_index] <= latched_tag;
+		if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 			fill_complete <= 1'b1;
-		end
 	end
 end
 
@@ -142,10 +141,17 @@ always @(posedge clk)
 	else
 		c_data <= mem[cache_addr];
 
+always @(posedge clk) begin
+	read_tag <= tag_mem[index];
+
+	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
+		tag_mem[latched_index] <= latched_tag;
+end
+
 always @(posedge clk)
 	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 		cache_tag <= latched_tag;
 	else
-		cache_tag <= tag_mem[index];
+		cache_tag <= read_tag;
 
 endmodule
