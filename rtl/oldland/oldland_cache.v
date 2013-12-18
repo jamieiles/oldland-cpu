@@ -49,21 +49,13 @@ wire [CACHE_TAG_BITS - 1:0]	latched_tag = latched_addr[CACHE_TAG_IDX+:CACHE_TAG_
 /*
  * Local memories.
  */
-reg [NR_CACHE_LINES - 1:0]	valid_mem;
 reg [31:0]			mem[(CACHE_SIZE / 4) - 1:0];
 
-
-wire tag_wr_en = word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack;
-
-block_ram		#(.data_bits(CACHE_TAG_BITS),
-			  .nr_entries(NR_CACHE_LINES))
-			tag_ram(.clk(clk),
-				.read_addr(index),
-				.read_data(cache_tag),
-				.wr_en(tag_wr_en),
-				.write_addr(latched_index),
-				.write_data(latched_tag));
-
+wire				tag_wr_en = word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack;
+wire				valid_mem_wr_en = rst | c_inval |
+					(word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack);
+wire				valid_mem_wr_data = ~(rst | c_inval);
+wire [CACHE_INDEX_BITS - 1:0]	valid_index = rst | c_inval ? c_index : index;
 
 /*
  * Per-access variables.
@@ -78,7 +70,8 @@ wire [CACHE_LINE_WORD_BITS - 1:0] mem_offs = m_ack ? next_offs : word_offs;
 wire line_filled		= word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack;
 assign m_addr			= {c_addr[29:CACHE_OFFSET_BITS], mem_offs};
 wire tag_match			= cache_tag == latched_tag;
-wire hit			= (tag_match && valid_mem[latched_index]);
+wire valid;
+wire hit			= (tag_match && valid);
 reg latched_access		= 1'b0;
 reg fill_complete		= 1'b0;
 assign c_ack			= (latched_access & hit) | fill_complete | c_error;
@@ -91,11 +84,25 @@ assign				c_data = cache_mem_bypass ? fetch_data : read_data;
 reg [2:0]			state = STATE_IDLE;
 reg [2:0]			next_state = STATE_IDLE;
 
-integer i;
+block_ram		#(.data_bits(CACHE_TAG_BITS),
+			  .nr_entries(NR_CACHE_LINES))
+			tag_ram(.clk(clk),
+				.read_addr(index),
+				.read_data(cache_tag),
+				.wr_en(tag_wr_en),
+				.write_addr(latched_index),
+				.write_data(latched_tag));
+
+block_ram		#(.data_bits(1),
+			  .nr_entries(NR_CACHE_LINES))
+			valid_ram(.clk(clk),
+				  .read_addr(valid_index),
+				  .read_data(valid),
+				  .wr_en(valid_mem_wr_en),
+				  .write_addr(valid_index),
+				  .write_data(valid_mem_wr_data));
 
 initial begin
-	for (i = 0; i < NR_CACHE_LINES; i = i + 1)
-		valid_mem[i] = 1'b0;
 	m_access = 1'b0;
 	c_error = 1'b0;
 end
@@ -125,13 +132,6 @@ always @(posedge clk) begin
 		if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 			fill_complete <= 1'b1;
 	end
-end
-
-always @(posedge clk) begin
-	if (rst || c_inval)
-		valid_mem[c_index] <= 1'b0;
-	else if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
-		valid_mem[latched_index] <= 1'b1;
 end
 
 always @(posedge clk)
