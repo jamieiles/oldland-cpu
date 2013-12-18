@@ -146,6 +146,6 @@ always @(posedge clk)
 	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 		cache_tag <= latched_tag;
 	else
-		cache_tag <= tag_mem[c_index];
+		cache_tag <= tag_mem[index];
 
 endmodule
