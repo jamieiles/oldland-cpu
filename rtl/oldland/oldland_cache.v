@@ -51,14 +51,25 @@ wire [CACHE_TAG_BITS - 1:0]	latched_tag = latched_addr[CACHE_TAG_IDX+:CACHE_TAG_
  */
 reg [NR_CACHE_LINES - 1:0]	valid_mem;
 reg [31:0]			mem[(CACHE_SIZE / 4) - 1:0];
-reg [CACHE_TAG_BITS - 1:0]	tag_mem[NR_CACHE_LINES - 1:0];
-reg [CACHE_TAG_BITS - 1:0]	read_tag = {CACHE_TAG_BITS{1'b0}};
+
+
+wire tag_wr_en = word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack;
+
+block_ram		#(.data_bits(CACHE_TAG_BITS),
+			  .nr_entries(NR_CACHE_LINES))
+			tag_ram(.clk(clk),
+				.read_addr(index),
+				.read_data(cache_tag),
+				.wr_en(tag_wr_en),
+				.write_addr(latched_index),
+				.write_data(latched_tag));
+
 
 /*
  * Per-access variables.
  */
 wire [CACHE_OFFSET_BITS + CACHE_INDEX_BITS - 1:0] cache_addr = {index, offset};
-reg [CACHE_TAG_BITS - 1:0]	cache_tag = {CACHE_TAG_BITS{1'b0}};
+wire [CACHE_TAG_BITS - 1:0]	cache_tag;
 
 reg [CACHE_LINE_WORD_BITS - 1:0] word_offs = {CACHE_LINE_WORD_BITS{1'b0}};
 wire [CACHE_LINE_WORD_BITS - 1:0] next_offs = word_offs + 1'b1;
@@ -83,10 +94,8 @@ reg [2:0]			next_state = STATE_IDLE;
 integer i;
 
 initial begin
-	for (i = 0; i < NR_CACHE_LINES; i = i + 1) begin
+	for (i = 0; i < NR_CACHE_LINES; i = i + 1)
 		valid_mem[i] = 1'b0;
-		tag_mem[i] = {CACHE_TAG_BITS{1'b0}};
-	end
 	m_access = 1'b0;
 	c_error = 1'b0;
 end
@@ -153,18 +162,5 @@ end
 
 always @(posedge clk)
 	fetch_data <= m_data;
-
-always @(posedge clk) begin
-	read_tag <= tag_mem[index];
-
-	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
-		tag_mem[latched_index] <= latched_tag;
-end
-
-always @(posedge clk)
-	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
-		cache_tag <= latched_tag;
-	else
-		cache_tag <= read_tag;
 
 endmodule
