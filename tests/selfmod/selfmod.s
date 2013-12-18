@@ -19,7 +19,26 @@ target:
 	nop
 	nop
 	nop
-	SUCCESS
+	TESTPOINT	TP_USER, 0
+	/*
+	 * Branch to a word at the end of a cache line, to make sure that our
+	 * line fills handle that case correctly and we don't return incorrect
+	 * data.
+	 */
+	b	cl_end
+
+.align	5
+	nop	/* 0 */
+	nop	/* 4 */
+	nop	/* 8 */
+	nop	/* 12 */
+	nop	/* 16 */
+	nop	/* 20 */
+	nop	/* 24 */
+cl_end:	orlo	$r1, $r1, 0xfeed	/* 28, last word in cache line. */
+	TESTPOINT	TP_USER, 1
+	nop
+	b	success
 
 loop:
 	b	loop

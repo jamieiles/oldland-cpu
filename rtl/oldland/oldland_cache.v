@@ -137,7 +137,10 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk)
-	c_data <= mem[cache_addr];
+	if (state == STATE_FILL && word_offs == offset && m_ack)
+		c_data <= m_data;
+	else
+		c_data <= mem[cache_addr];
 
 always @(posedge clk)
 	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
