@@ -3,7 +3,7 @@ module oldland_cache(input wire		clk,
 		     /* CPU<->cache bus signals. */
 		     input wire		c_access,
 		     input wire	[29:0]	c_addr,
-		     output reg [31:0]	c_data,
+		     output wire [31:0]	c_data,
 		     output wire	c_ack,
 		     output reg		c_error,
 		     /* CPU<->cache control signals. */
@@ -71,6 +71,11 @@ wire hit			= (tag_match && valid_mem[latched_index]);
 reg latched_access		= 1'b0;
 reg fill_complete		= 1'b0;
 assign c_ack			= (latched_access & hit) | fill_complete | c_error;
+reg [31:0] read_data		= 32'b0;
+reg cache_mem_bypass		= 1'b0;
+reg [31:0] fetch_data		= 32'b0;
+
+assign				c_data = cache_mem_bypass ? fetch_data : read_data;
 
 reg [2:0]			state = STATE_IDLE;
 reg [2:0]			next_state = STATE_IDLE;
@@ -82,7 +87,6 @@ initial begin
 		valid_mem[i] = 1'b0;
 		tag_mem[i] = {CACHE_TAG_BITS{1'b0}};
 	end
-	c_data = 32'b0;
 	m_access = 1'b0;
 	c_error = 1'b0;
 end
@@ -106,10 +110,8 @@ always @(posedge clk) begin
 		word_offs <= {CACHE_LINE_WORD_BITS{1'b0}};
 	end else if (state == STATE_FILL) begin
 		m_access <= 1'b1;
-		if (m_ack) begin
+		if (m_ack)
 			word_offs <= next_offs;
-			mem[{latched_index, word_offs}] <= m_data;
-		end
 
 		if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 			fill_complete <= 1'b1;
@@ -135,11 +137,22 @@ always @(posedge clk)
 always @(posedge clk)
 	state <= next_state;
 
-always @(posedge clk)
+always @(posedge clk) begin
+	cache_mem_bypass = 1'b0;
+
 	if (state == STATE_FILL && word_offs == offset && m_ack)
-		c_data <= m_data;
-	else
-		c_data <= mem[cache_addr];
+		cache_mem_bypass <= 1'b1;
+end
+
+always @(posedge clk) begin
+	read_data <= mem[cache_addr];
+
+	if (state == STATE_FILL && m_ack)
+		mem[{latched_index, word_offs}] <= m_data;
+end
+
+always @(posedge clk)
+	fetch_data <= m_data;
 
 always @(posedge clk) begin
 	read_tag <= tag_mem[index];
