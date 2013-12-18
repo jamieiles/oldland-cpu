@@ -7,7 +7,8 @@ module oldland_cache(input wire		clk,
 		     output wire	c_ack,
 		     output reg		c_error,
 		     /* CPU<->cache control signals. */
-		     input wire		ctrl_inval,
+		     input wire		c_inval,
+		     input wire [CACHE_INDEX_BITS - 1:0] c_index,
 		     /* Cache<->memory signals. */
 		     output reg		m_access,
 		     output wire [29:0]	m_addr,
@@ -117,11 +118,10 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (rst || ctrl_inval) begin
-		for (i = 0; i < NR_CACHE_LINES; i = i + 1)
-			valid_mem[i] <= 1'b0;
-	end else if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
-			valid_mem[latched_index] <= 1'b1;
+	if (rst || c_inval)
+		valid_mem[c_index] <= 1'b0;
+	else if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
+		valid_mem[latched_index] <= 1'b1;
 end
 
 always @(posedge clk)
@@ -143,6 +143,6 @@ always @(posedge clk)
 	if (word_offs == {CACHE_LINE_WORD_BITS{1'b1}} && m_ack)
 		cache_tag <= latched_tag;
 	else
-		cache_tag <= tag_mem[index];
+		cache_tag <= tag_mem[c_index];
 
 endmodule

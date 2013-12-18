@@ -35,10 +35,15 @@ module oldland_debug(input wire		clk,
 		     /* Reset control. */
 		     output wire	dbg_rst,
 		     /* Cache maintenance. */
-		     output wire	dbg_cache_sync,
+		     output reg	[icache_idx_bits - 1:0] dbg_icache_idx,
+		     output wire	dbg_icache_inval,
 		     /* CPUID. */
 		     output wire [2:0]	cpuid_sel,
 		     input wire [31:0]	cpuid_val);
+
+parameter icache_nr_lines	= 0;
+
+localparam icache_idx_bits	= $clog2(icache_nr_lines);
 
 localparam STATE_IDLE		= 4'b0000;
 localparam STATE_LOAD_CMD	= 4'b0001;
@@ -104,7 +109,7 @@ assign		mem_wr_val = debug_data;
 assign		dbg_rst = state == STATE_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
-assign		dbg_cache_sync = state == STATE_CACHE_SYNC;
+assign		dbg_icache_inval = state == STATE_CACHE_SYNC;
 assign		cpuid_sel = debug_addr[2:0];
 
 dc_ram		#(.addr_bits(2),
@@ -135,6 +140,7 @@ initial begin
 	dbg_cr_wr_en = 1'b0;
 	mem_wr_en = 1'b0;
 	mem_access = 1'b0;
+	dbg_icache_idx = {icache_idx_bits{1'b1}};
 end
 
 always @(*) begin
@@ -244,7 +250,8 @@ always @(*) begin
 		next_state = |reset_count ? STATE_RESET : STATE_COMPL;
 	end
 	STATE_CACHE_SYNC: begin
-		next_state = STATE_COMPL;
+		next_state = dbg_icache_idx == {icache_idx_bits{1'b1}} ?
+			STATE_COMPL : STATE_CACHE_SYNC;
 	end
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
@@ -326,11 +333,16 @@ always @(posedge clk) begin
 		endcase
 	end
 	STATE_RESET: begin
-		if (|reset_count)
+		if (|reset_count) begin
 			reset_count <= reset_count - 8'b1;
+			dbg_icache_idx <= dbg_icache_idx + 1'b1;
+		end
 	end
 	STATE_STEP: begin
 		do_run <= 1'b0;
+	end
+	STATE_CACHE_SYNC: begin
+		dbg_icache_idx <= dbg_icache_idx + 1'b1;
 	end
 	STATE_COMPL: begin
 		ack_internal <= 1'b1;

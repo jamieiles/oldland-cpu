@@ -33,18 +33,12 @@ Maintenance Instructions
 Instruction cache:
   I_INV		index
     - Invalidate cache line for index.
-  I_INV_ALL
-    - Invalidate all cache lines.
 
 Data cache:
   D_INV		index
     - Invalidate cache line for index.
-  D_INV_ALL
-    - Invalidate entire data cache.
   D_FLUSH	index
     - Flush cache line for index.
-  D_FLUSH_ALL 
-    - Flush all dirty cache lines to memory.
   DMB
     - Flush the write buffer for coherence.
 

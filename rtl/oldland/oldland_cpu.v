@@ -32,6 +32,9 @@ parameter	CPUID_MANUFACTURER = 16'h4a49;
 parameter	CPUID_MODEL = 16'h0001;
 parameter	CPU_CLOCK_SPEED = 32'd50000000;
 
+localparam	icache_nr_lines = ICACHE_SIZE / ICACHE_LINE_SIZE;
+localparam	icache_idx_bits = $clog2(icache_nr_lines);
+
 /* Debug control signals. */
 wire		cpu_run;
 wire		cpu_stopped;
@@ -53,7 +56,8 @@ wire [31:0]	dbg_mem_rd_val;
 wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
-wire		dbg_cache_sync;
+wire		dbg_icache_inval;
+wire [icache_idx_bits - 1:0] dbg_icache_idx;
 wire [2:0]	dbg_cpuid_sel;
 wire            dbg_bkpt_hit;
 
@@ -86,14 +90,16 @@ oldland_cache		#(.CACHE_SIZE(ICACHE_SIZE),
 			       .c_data(ic_data),
 			       .c_ack(ic_ack),
 			       .c_error(ic_error),
-			       .ctrl_inval(dbg_cache_sync),
+			       .c_inval(dbg_icache_inval),
+			       .c_index(dbg_icache_idx),
 			       .m_access(i_access),
 			       .m_addr(i_addr),
 			       .m_data(i_data),
 			       .m_ack(i_ack),
 			       .m_error(i_error));
 
-oldland_debug		debug(.clk(clk),
+oldland_debug		#(.icache_nr_lines(icache_nr_lines))
+			debug(.clk(clk),
 		              /* Controller to debug signals. */
 		              .dbg_clk(dbg_clk),
 		              .addr(dbg_addr),
@@ -129,7 +135,8 @@ oldland_debug		debug(.clk(clk),
 		              /* Reset. */
 		              .dbg_rst(dbg_rst),
 			      /* Cache maintenance. */
-			      .dbg_cache_sync(dbg_cache_sync),
+			      .dbg_icache_inval(dbg_icache_inval),
+			      .dbg_icache_idx(dbg_icache_idx),
 			      /* CPUID. */
 			      .cpuid_sel(dbg_cpuid_sel),
 			      .cpuid_val(cpuid_val));
