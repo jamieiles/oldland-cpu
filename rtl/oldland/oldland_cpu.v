@@ -26,13 +26,13 @@ module oldland_cpu(input wire		clk,
 		   output wire		dbg_ack,
 		   output wire		dbg_rst);
 
-parameter	ICACHE_SIZE = 8192;
-parameter	ICACHE_LINE_SIZE = 32;
-parameter	CPUID_MANUFACTURER = 16'h4a49;
-parameter	CPUID_MODEL = 16'h0001;
-parameter	CPU_CLOCK_SPEED = 32'd50000000;
+parameter	icache_size = 8192;
+parameter	icache_line_size = 32;
+parameter	cpuid_manufacturer = 16'h4a49;
+parameter	cpuid_model = 16'h0001;
+parameter	cpu_clock_speed = 32'd50000000;
 
-localparam	icache_nr_lines = ICACHE_SIZE / ICACHE_LINE_SIZE;
+localparam	icache_nr_lines = icache_size / icache_line_size;
 localparam	icache_idx_bits = $clog2(icache_nr_lines);
 
 /* Debug control signals. */
@@ -73,16 +73,16 @@ wire [2:0]	cpu_cpuid_sel;
 wire [2:0]	cpuid_sel = cpu_stopped ? dbg_cpuid_sel : cpu_cpuid_sel;
 wire [31:0]	cpuid_val;
 
-oldland_cpuid		#(.CPUID_MANUFACTURER(CPUID_MANUFACTURER),
-			  .CPUID_MODEL(CPUID_MODEL),
-			  .CPU_CLOCK_SPEED(CPU_CLOCK_SPEED),
-			  .ICACHE_SIZE(ICACHE_SIZE),
-			  .ICACHE_LINE_SIZE(ICACHE_LINE_SIZE))
+oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
+			  .cpuid_model(cpuid_model),
+			  .cpu_clock_speed(cpu_clock_speed),
+			  .icache_size(icache_size),
+			  .icache_line_size(icache_line_size))
 			oldland_cpuid(.reg_sel(cpuid_sel),
 				      .val(cpuid_val));
 
-oldland_cache		#(.CACHE_SIZE(ICACHE_SIZE),
-			  .CACHE_LINE_SIZE(ICACHE_LINE_SIZE))
+oldland_cache		#(.cache_size(icache_size),
+			  .cache_line_size(icache_line_size))
 			icache(.clk(clk),
 			       .rst(dbg_rst),
 			       .c_access(ic_access),

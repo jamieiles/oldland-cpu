@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "cache.h"
-#include "config.h"
 #include "cpu.h"
 #include "internal.h"
 #include "irq_ctrl.h"
@@ -90,13 +89,13 @@ enum cpuid_reg_names {
 	CPUID_DCACHE,
 };
 
-#define CACHE_LINE_SIZE		(1 << CACHE_OFFSET_BITS)
+#define CACHE_LINE_SIZE		(1 << ICACHE_OFFSET_BITS)
 #define CPUID_ICACHE_VAL	((CACHE_LINE_SIZE / sizeof(uint32_t)) | \
-				  ((1 << CACHE_INDEX_BITS) << 8))
+				  ((1 << ICACHE_INDEX_BITS) << 8))
 
 static const uint32_t cpuid_regs[] = {
-	[CPUID_VERSION]		= (CPUID_VENDOR << 16) | CPUID_MODEL,
-	[CPUID_CORE_SPEED]	= CPU_HZ,
+	[CPUID_VERSION]		= (CPUID_MANUFACTURER << 16) | CPUID_MODEL,
+	[CPUID_CORE_SPEED]	= CPU_CLOCK_SPEED,
 	[CPUID_FEATURES]	= 0,
 	[CPUID_ICACHE]		= CPUID_ICACHE_VAL,
 	[CPUID_DCACHE]		= 0,
@@ -284,22 +283,22 @@ struct cpu *new_cpu(const char *binary, int flags)
 	c->mem = mem_map_new();
 	assert(c->mem);
 
-	err = ram_init(c->mem, 0x00000000, 0x10000, binary);
+	err = ram_init(c->mem, RAM_ADDRESS, RAM_SIZE, binary);
 	assert(!err);
 
-	err = rom_init(c->mem, 0x10000000, 0x1000, ROM_FILE);
+	err = rom_init(c->mem, BOOTROM_ADDRESS, BOOTROM_SIZE, ROM_FILE);
 	assert(!err);
 
-	err = ram_init(c->mem, 0x20000000, 32 * 1024 * 1024, NULL);
+	err = ram_init(c->mem, SDRAM_ADDRESS, SDRAM_SIZE, NULL);
 	assert(!err);
 
-	err = sdram_ctrl_init(c->mem, 0x80001000, 4096);
+	err = sdram_ctrl_init(c->mem, SDRAM_CTRL_ADDRESS, SDRAM_CTRL_SIZE);
 	assert(!err);
 
-	err = debug_uart_init(c->mem, 0x80000000, 0x1000);
+	err = debug_uart_init(c->mem, UART_ADDRESS, UART_SIZE);
 	assert(!err);
 
-	c->irq_ctrl = irq_ctrl_init(c->mem, 0x80002000, cpu_raise_irq,
+	c->irq_ctrl = irq_ctrl_init(c->mem, IRQ_ADDRESS, cpu_raise_irq,
 				    cpu_clear_irq, c);
 	assert(c->irq_ctrl != NULL);
 
@@ -307,7 +306,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 		.irq_ctrl = c->irq_ctrl,
 		.irqs = { 0, 1, 2, 3 },
 	};
-	c->timers = timers_init(c->mem, 0x80003000, &c->events, &timer_data);
+	c->timers = timers_init(c->mem, TIMER_ADDRESS, &c->events, &timer_data);
 	assert(c->timers);
 
 	c->icache = cache_new(c->mem);

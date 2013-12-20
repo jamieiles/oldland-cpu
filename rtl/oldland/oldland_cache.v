@@ -16,17 +16,17 @@ module oldland_cache(input wire		clk,
 		     input wire		m_ack,
 		     input wire		m_error);
 
-parameter CACHE_SIZE		= 8192;
-parameter CACHE_LINE_SIZE	= 32;
+parameter cache_size		= 8192;
+parameter cache_line_size	= 32;
 
 localparam STATE_IDLE		= 3'b001;
 localparam STATE_COMPARE	= 3'b010;
 localparam STATE_FILL		= 3'b100;
 
-localparam NR_CACHE_WORDS	= CACHE_SIZE / 4;
-localparam NR_CACHE_LINES	= CACHE_SIZE / CACHE_LINE_SIZE;
+localparam NR_CACHE_WORDS	= cache_size / 4;
+localparam NR_CACHE_LINES	= cache_size / cache_line_size;
 
-localparam CACHE_LINE_WORDS	= CACHE_LINE_SIZE / 4;
+localparam CACHE_LINE_WORDS	= cache_line_size / 4;
 localparam CACHE_LINE_WORD_BITS	= $clog2(CACHE_LINE_WORDS);
 localparam CACHE_OFFSET_BITS	= $clog2(CACHE_LINE_WORDS);
 
@@ -94,7 +94,7 @@ block_ram		#(.data_bits(1),
 				  .write_data(valid_mem_wr_data));
 
 block_ram		#(.data_bits(32),
-			  .nr_entries(CACHE_SIZE / 4))
+			  .nr_entries(cache_size / 4))
 			data_ram(.clk(clk),
 				 .read_addr(cache_addr),
 				 .read_data(c_data),

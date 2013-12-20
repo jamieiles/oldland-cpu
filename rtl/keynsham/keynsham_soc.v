@@ -78,17 +78,6 @@ reg		d_default_error = 1'b0;
 reg		i_default_ack = 1'b0;
 reg		i_default_error = 1'b0;
 
-/*
- * Memory map:
- *
- * 0x00000000 -- 0x00000fff: On chip memory.
- * 0x10000000 -- 0x10000fff: Boot ROM.
- * 0x20000000 -- 0x2fffffff: SDRAM.
- * 0x80000000 -- 0x80000fff: UART0.
- * 0x80001000 -- 0x80001fff: SDRAM controller.
- * 0x80002000 -- 0x80002fff: IRQ controller.
- * 0x80003000 -- 0x80003fff: timers.
- */
 wire		ram_cs;
 wire		ram_i_cs;
 wire		rom_cs;
@@ -118,8 +107,8 @@ assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
 			  irq_data | timer_data;
 assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
-keynsham_ram	#(.bus_address(32'h00000000),
-		  .bus_size(32'h1000))
+keynsham_ram	#(.bus_address(`RAM_ADDRESS),
+		  .bus_size(`RAM_SIZE))
 		ram(.clk(clk),
 		    .i_access(i_access),
 		    .i_cs(ram_i_cs),
@@ -135,8 +124,8 @@ keynsham_ram	#(.bus_address(32'h00000000),
 		    .d_wr_en(d_wr_en),
 		    .d_ack(ram_ack));
 
-keynsham_bootrom #(.bus_address(32'h10000000),
-		   .bus_size(32'h200))
+keynsham_bootrom #(.bus_address(`BOOTROM_ADDRESS),
+		   .bus_size(`BOOTROM_SIZE))
 		 rom(.clk(clk),
 		     .i_access(i_access),
 		     .i_cs(rom_i_cs),
@@ -150,10 +139,10 @@ keynsham_bootrom #(.bus_address(32'h10000000),
 		     .d_bytesel(d_bytesel),
 		     .d_ack(rom_ack));
 
-keynsham_sdram	#(.bus_address(32'h20000000),
-		  .bus_size(32'h02000000),
-		  .ctrl_bus_address(32'h80010000),
-		  .ctrl_bus_size(32'h1000))
+keynsham_sdram	#(.bus_address(`SDRAM_ADDRESS),
+		  .bus_size(`SDRAM_SIZE),
+		  .ctrl_bus_address(`SDRAM_CTRL_ADDRESS),
+		  .ctrl_bus_size(`SDRAM_CTRL_SIZE))
 		sdram(.clk(clk),
 		      .ctrl_cs(d_sdram_ctrl_cs),
 		      .d_access(d_access),
@@ -181,8 +170,8 @@ keynsham_sdram	#(.bus_address(32'h20000000),
 		      .s_data(s_data),
 		      .s_banksel(s_banksel));
 
-keynsham_uart	#(.bus_address(32'h80000000),
-		  .bus_size(32'h1000))
+keynsham_uart	#(.bus_address(`UART_ADDRESS),
+		  .bus_size(`UART_SIZE))
 		  uart(.clk(clk),
 		     .bus_access(d_access),
 		     .bus_cs(uart_cs),
@@ -197,8 +186,8 @@ keynsham_uart	#(.bus_address(32'h80000000),
 		     .tx(uart_tx));
 
 keynsham_irq	#(.nr_irqs(4),
-		  .bus_address(32'h80002000),
-		  .bus_size(32'h1000))
+		  .bus_address(`IRQ_ADDRESS),
+		  .bus_size(`IRQ_SIZE))
 		irq(.clk(clk),
 		    .rst(dbg_rst),
 		    .bus_access(d_access),
@@ -213,8 +202,8 @@ keynsham_irq	#(.nr_irqs(4),
 		    .irq_in(irqs),
 		    .irq_req(irq_req));
 
-keynsham_timer_block	#(.bus_address(32'h80003000),
-			  .bus_size(32'h1000))
+keynsham_timer_block	#(.bus_address(`TIMER_ADDRESS),
+			  .bus_size(`TIMER_SIZE))
 			timer(.clk(clk),
 			      .rst(dbg_rst),
 			      .bus_access(d_access),
@@ -228,7 +217,12 @@ keynsham_timer_block	#(.bus_address(32'h80003000),
 			      .bus_data(timer_data),
 			      .irqs(timer_irqs));
 
-oldland_cpu	cpu(.clk(clk),
+oldland_cpu	#(.icache_size(`ICACHE_SIZE),
+		  .icache_line_size(`ICACHE_LINE_SIZE),
+		  .cpuid_manufacturer(`CPUID_MANUFACTURER),
+		  .cpuid_model(`CPUID_MODEL),
+		  .cpu_clock_speed(`CPU_CLOCK_SPEED))
+		cpu(.clk(clk),
 		    .running(running),
 		    .irq_req(irq_req),
 		    .i_access(i_access),
