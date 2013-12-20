@@ -29,3 +29,5 @@ fpga/*.rpt
 greybox_tmp
 *.orig
 *.lxt
+fpga/oldland_defines.v
+fpga/bootrom.hex

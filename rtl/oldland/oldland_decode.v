@@ -1,5 +1,3 @@
-`include "oldland_defines.v"
-
 `ifndef OLDLAND_ROM_PATH
 `define OLDLAND_ROM_PATH "./"
 `endif

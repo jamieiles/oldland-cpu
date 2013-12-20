@@ -19,6 +19,7 @@ oldland-elf-as -c $BOOTROM_DIR/bootrom.s -o bootrom.o
 oldland-elf-ld bootrom.o build.o -o bootrom -T $BOOTROM_DIR/bootrom.x
 oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x200
 $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
+$TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
 popd >/dev/null
 
 rm $BUILD_DIR -rf

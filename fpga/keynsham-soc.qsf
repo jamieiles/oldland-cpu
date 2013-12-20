@@ -133,7 +133,7 @@ set_global_assignment -name ALLOW_ANY_RAM_SIZE_FOR_RECOGNITION ON
 set_global_assignment -name VERILOG_FILE ../rtl/fpga/de0nano/toplevel.v
 set_global_assignment -name VERILOG_FILE sys_pll.v
 set_global_assignment -name VERILOG_FILE ../rtl/fpga/de0nano/vjtag_debug.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_defines.v
+set_global_assignment -name VERILOG_FILE oldland_defines.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_bootrom.v
 set_global_assignment -name VERILOG_FILE "../rtl/sdram/rtl/sdram_controller.v"
 set_global_assignment -name VERILOG_FILE "../rtl/sdram/rtl/counter.v"

@@ -1,4 +1,3 @@
-`include "oldland_defines.v"
 module oldland_exec(input wire		clk,
 		    input wire		rst,
 		    input wire [31:0]	ra,

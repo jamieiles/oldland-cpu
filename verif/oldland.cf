@@ -1,7 +1,7 @@
 +timescale+1ns/1ps
-../rtl/oldland/oldland_defines.v
 +incdir+../rtl
 +incdir+../rtl/oldland
+$(BUILD_DIR)/oldland_defines.v
 -y .
 -y ../rtl
 -y ../rtl/oldland

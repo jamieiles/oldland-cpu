@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import instructions
+import sys
 
 def write_defines():
     classes = {
@@ -8,7 +9,7 @@ def write_defines():
         'MEM': 2,
         'MISC': 3,
     }
-    with open('oldland_defines.v', 'w') as defines:
+    with open(sys.argv[1], 'w') as defines:
         defines.write("`define INSTR_NOP 32'b11111100000000000000000000000000\n")
         for k, v in classes.items():
             defines.write("`define CLASS_{0}\t2'h{1:x}\n".format(k.upper(), v))
