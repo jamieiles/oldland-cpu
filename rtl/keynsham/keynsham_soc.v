@@ -90,44 +90,15 @@ reg		i_default_error = 1'b0;
  * 0x80003000 -- 0x80003fff: timers.
  */
 wire		ram_cs;
-cs_gen		#(.address(32'h00000000), .size(32'h1000))
-		ram_cs_gen(.bus_addr(d_addr), .cs(ram_cs));
-
 wire		ram_i_cs;
-cs_gen		#(.address(32'h00000000), .size(32'h1000))
-		ram_i_cs_gen(.bus_addr(i_addr), .cs(ram_i_cs));
-
 wire		rom_cs;
-cs_gen		#(.address(32'h10000000), .size(32'h200))
-		rom_cs_gen(.bus_addr(d_addr), .cs(rom_cs));
-
 wire		rom_i_cs;
-cs_gen		#(.address(32'h10000000), .size(32'h200))
-		rom_i_cs_gen(.bus_addr(i_addr), .cs(rom_i_cs));
-
 wire		d_sdram_cs;
-cs_gen		#(.address(32'h20000000), .size(32'h2000000))
-		d_sdram_cs_gen(.bus_addr(d_addr), .cs(d_sdram_cs));
-
 wire		i_sdram_cs;
-cs_gen		#(.address(32'h20000000), .size(32'h2000000))
-		i_sdram_cs_gen(.bus_addr(i_addr), .cs(i_sdram_cs));
-
 wire		d_sdram_ctrl_cs;
-cs_gen		#(.address(32'h80001000), .size(32'h1000))
-		d_sdram_ctrl_cs_gen(.bus_addr(d_addr), .cs(d_sdram_ctrl_cs));
-
 wire		uart_cs;
-cs_gen		#(.address(32'h80000000), .size(32'h1000))
-		uart_cs_gen(.bus_addr(d_addr), .cs(uart_cs));
-
 wire		irq_cs;
-cs_gen		#(.address(32'h80002000), .size(32'h1000))
-		irq_cs_gen(.bus_addr(d_addr), .cs(irq_cs));
-
 wire		timer_cs;
-cs_gen		#(.address(32'h80003000), .size(32'h1000))
-		timer_cs_gen(.bus_addr(d_addr), .cs(timer_cs));
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs | irq_cs |
@@ -147,35 +118,43 @@ assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
 			  irq_data | timer_data;
 assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
-keynsham_ram	ram(.clk(clk),
+keynsham_ram	#(.bus_address(32'h00000000),
+		  .bus_size(32'h1000))
+		ram(.clk(clk),
 		    .i_access(i_access),
 		    .i_cs(ram_i_cs),
-		    .i_addr(i_addr[10:0]),
+		    .i_addr(i_addr),
 		    .i_data(i_ram_data),
 		    .i_ack(i_ram_ack),
 		    .d_access(d_access),
 		    .d_cs(ram_cs),
-		    .d_addr(d_addr[10:0]),
+		    .d_addr(d_addr),
 		    .d_data(ram_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_val(d_wr_val),
 		    .d_wr_en(d_wr_en),
 		    .d_ack(ram_ack));
 
-keynsham_bootrom rom(.clk(clk),
+keynsham_bootrom #(.bus_address(32'h10000000),
+		   .bus_size(32'h200))
+		 rom(.clk(clk),
 		     .i_access(i_access),
 		     .i_cs(rom_i_cs),
-		     .i_addr(i_addr[6:0]),
+		     .i_addr(i_addr),
 		     .i_data(i_rom_data),
 		     .i_ack(i_rom_ack),
 		     .d_access(d_access),
 		     .d_cs(rom_cs),
-		     .d_addr(d_addr[6:0]),
+		     .d_addr(d_addr),
 		     .d_data(rom_data),
 		     .d_bytesel(d_bytesel),
 		     .d_ack(rom_ack));
 
-keynsham_sdram	sdram(.clk(clk),
+keynsham_sdram	#(.bus_address(32'h20000000),
+		  .bus_size(32'h02000000),
+		  .ctrl_bus_address(32'h80010000),
+		  .ctrl_bus_size(32'h1000))
+		sdram(.clk(clk),
 		      .ctrl_cs(d_sdram_ctrl_cs),
 		      .d_access(d_access),
 		      .d_cs(d_sdram_cs),
@@ -202,7 +181,9 @@ keynsham_sdram	sdram(.clk(clk),
 		      .s_data(s_data),
 		      .s_banksel(s_banksel));
 
-keynsham_uart	uart(.clk(clk),
+keynsham_uart	#(.bus_address(32'h80000000),
+		  .bus_size(32'h1000))
+		  uart(.clk(clk),
 		     .bus_access(d_access),
 		     .bus_cs(uart_cs),
 		     .bus_addr(d_addr),
@@ -215,7 +196,9 @@ keynsham_uart	uart(.clk(clk),
 		     .rx(uart_rx),
 		     .tx(uart_tx));
 
-keynsham_irq	#(.nr_irqs(4))
+keynsham_irq	#(.nr_irqs(4),
+		  .bus_address(32'h80002000),
+		  .bus_size(32'h1000))
 		irq(.clk(clk),
 		    .rst(dbg_rst),
 		    .bus_access(d_access),
@@ -230,7 +213,9 @@ keynsham_irq	#(.nr_irqs(4))
 		    .irq_in(irqs),
 		    .irq_req(irq_req));
 
-keynsham_timer_block	timer(.clk(clk),
+keynsham_timer_block	#(.bus_address(32'h80003000),
+			  .bus_size(32'h1000))
+			timer(.clk(clk),
 			      .rst(dbg_rst),
 			      .bus_access(d_access),
 			      .bus_cs(timer_cs),

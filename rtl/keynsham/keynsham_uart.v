@@ -1,6 +1,6 @@
 module keynsham_uart(input wire		clk,
 		     input wire		bus_access,
-		     input wire		bus_cs,
+		     output wire	bus_cs,
 		     input wire [29:0]	bus_addr,
 		     input wire [31:0]	bus_wr_val,
 		     input wire		bus_wr_en,
@@ -11,6 +11,9 @@ module keynsham_uart(input wire		clk,
 		     input wire		rx,
 		     output wire	tx);
 
+parameter	bus_address = 32'h0;
+parameter	bus_size = 32'h0;
+
 reg		uart_write = 1'b0;
 reg [7:0]	uart_din = 8'b0;
 wire		uart_rdy;
@@ -20,6 +23,9 @@ wire		uart_tx_busy;
 
 wire [31:0] status_reg = (uart_tx_busy ? 32'b0 : 32'b1) |
 			 (uart_rdy ? 32'b10 : 32'b0);
+
+cs_gen		#(.address(bus_address), .size(bus_size))
+		d_cs_gen(.bus_addr(bus_addr), .cs(bus_cs));
 
 uart		uart0(.clk_50m(clk),
 		      .wr_en(uart_write),

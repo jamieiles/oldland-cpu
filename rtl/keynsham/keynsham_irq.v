@@ -5,7 +5,7 @@
 module keynsham_irq(input wire			clk,
 		    input wire			rst,
 		    input wire			bus_access,
-		    input wire			bus_cs,
+		    output wire			bus_cs,
 		    input wire [29:0]		bus_addr,
 		    input wire [31:0]		bus_wr_val,
 		    input wire			bus_wr_en,
@@ -16,6 +16,8 @@ module keynsham_irq(input wire			clk,
 		    input wire [nr_irqs - 1:0]	irq_in,
 		    output wire			irq_req);
 
+parameter bus_address = 32'h0;
+parameter bus_size = 32'h0;
 parameter nr_irqs	= 4;
 
 localparam REG_STATUS	= 2'd0;
@@ -38,6 +40,9 @@ reg [31:0]	data;
 assign bus_data	= bus_ack ? data : 32'b0;
 
 assign irq_req = |reg_irq_status;
+
+cs_gen		#(.address(bus_address), .size(bus_size))
+		d_cs_gen(.bus_addr(bus_addr), .cs(bus_cs));
 
 initial begin
 	bus_error = 1'b0;

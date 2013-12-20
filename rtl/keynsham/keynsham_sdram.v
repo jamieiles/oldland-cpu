@@ -1,8 +1,8 @@
 module keynsham_sdram(input wire		clk,
 		      /* Data bus. */
-		      input wire		ctrl_cs,
+		      output wire		ctrl_cs,
 		      input wire		d_access,
-		      input wire		d_cs,
+		      output wire		d_cs,
 		      input wire [29:0] 	d_addr,
 		      input wire [31:0] 	d_wr_val,
 		      input wire		d_wr_en,
@@ -12,7 +12,7 @@ module keynsham_sdram(input wire		clk,
 		      output wire [31:0]	d_data,
 		      /* Instruction bus. */
 		      input wire		i_access,
-		      input wire		i_cs,
+		      output wire		i_cs,
 		      input wire [29:0] 	i_addr,
 		      output reg		i_error,
 		      output wire		i_ack,
@@ -27,6 +27,11 @@ module keynsham_sdram(input wire		clk,
 		      output wire		s_clken,
 		      inout [15:0]		s_data,
 		      output wire [1:0]		s_banksel);
+
+parameter	bus_address = 32'h0;
+parameter	bus_size = 32'h0;
+parameter	ctrl_bus_address = 32'h0;
+parameter	ctrl_bus_size = 32'h0;
 
 wire [30:0]	bridge_addr;
 wire [15:0]	bridge_wdata;
@@ -60,6 +65,13 @@ wire [31:0]	data = d_cs ? q_data : ctrl_data;
 assign		i_data = q_ack ? q_data : 32'b0;
 
 assign		d_data = q_ack | ctrl_ack ? data : 32'b0;
+
+cs_gen		#(.address(bus_address), .size(bus_size))
+		d_cs_gen(.bus_addr(d_addr), .cs(d_cs));
+cs_gen		#(.address(bus_address), .size(bus_size))
+		i_cs_gen(.bus_addr(i_addr), .cs(i_cs));
+cs_gen		#(.address(ctrl_bus_address), .size(ctrl_bus_size))
+		ctrl_cs_gen(.bus_addr(d_addr), .cs(ctrl_cs));
 
 bridge_32_16		br(.clk(clk),
 			   .h_cs(q_cs),
