@@ -20,6 +20,7 @@ oldland-elf-ld bootrom.o build.o -o bootrom -T $BOOTROM_DIR/bootrom.x
 oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x200
 $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
 $TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
+$TOOL_DIR/gendecode/gendecode > $SCRIPT_PATH/decode.hex
 popd >/dev/null
 
 rm $BUILD_DIR -rf
