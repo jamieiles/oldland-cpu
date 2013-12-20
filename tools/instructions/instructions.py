@@ -3,7 +3,9 @@ from string import Template
 import json
 import os
 
-with open(os.path.join(os.path.dirname(__file__), 'instructions.json'),
+HERE = os.path.dirname(__file__)
+
+with open(os.path.join(HERE, '..', '..', 'config', 'instructions.json'),
           'r') as itab:
     data = json.loads(itab.read())
     instructions = data['instructions']
@@ -26,7 +28,7 @@ def gen_types(instructions, operands):
         opcode_types += 'enum {{ OPCODE_{0} = {1} }};\n'.format(name.upper(),
                                                               definition['opcode'])
 
-    with open('types.h.templ', 'r') as types_templ:
+    with open(os.path.join(HERE, 'types.h.templ'), 'r') as types_templ:
         templ = Template(types_templ.read())
         out = templ.substitute(operand_types = operand_types,
                                opcode_types = opcode_types,
@@ -140,7 +142,7 @@ def gen_instructions(instrlist, operands):
             instrs += gen_instruction(name, definition)
         instrs += '\n};\n\n'
 
-    with open('instructions.c.templ', 'r') as instr_templ:
+    with open(os.path.join(HERE, 'instructions.c.templ'), 'r') as instr_templ:
         templ = Template(instr_templ.read())
         out = templ.substitute(instructions = instrs,
                                operands = gen_operands(operands))
