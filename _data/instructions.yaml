@@ -1,0 +1,339 @@
+{
+    alu_opcodes : {
+        add:   0x00,
+        addc:  0x01,
+        sub:   0x02,
+        subc:  0x03,
+        lsl:   0x04,
+        lsr:   0x05,
+        and:   0x06,
+        xor:   0x07,
+        bic:   0x08,
+        bst:   0x09,
+        or:    0x0a,
+        copyb: 0x0b,
+        cmp:   0x0c,
+        movhi: 0x0d,
+        asr:   0x0e,
+        copya: 0x0f,
+        gcr:   0x10,
+        swi:   0x11,
+        rfe:   0x12,
+        cpuid: 0x13
+    },
+    operands: {
+        rd: {
+            type: register,
+            bitpos: 0,
+            length: 4
+        },
+        ra: {
+            type: register,
+            bitpos: 8,
+            length: 4
+        },
+        rb: {
+            type: register,
+            bitpos: 4,
+            length: 4
+        },
+        imm16: {
+            type: immediate,
+            bitpos: 10,
+            length: 16
+        },
+        imm16pc: {
+            type: immediate,
+            bitpos: 10,
+            length: 16,
+            pcrel: true
+        },
+        imm13: {
+            type: immediate,
+            bitpos: 12,
+            length: 13
+        },
+        imm13pc: {
+            type: immediate,
+            bitpos: 12,
+            length: 13,
+            pcrel: true
+        },
+        imm24: {
+            type: immediate,
+            bitpos: 0,
+            length: 24,
+            shift: 2,
+            pcrel: true
+        },
+        index: {
+            type: index,
+            operands: [ra, imm13]
+        }
+    },
+    instructions: {
+        add: {
+            class: 0,
+            opcode: 0,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra + OP2, OP2 may either be a register or a 13-bit signed immediate.",
+            flags_updated: [C]
+        },
+        addc: {
+            class: 0,
+            opcode: 1,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra + OP2 + C, OP2 may either be a register or a 13-bit signed immediate.",
+            flags_updated: [C]
+        },
+        sub: {
+            class: 0,
+            opcode: 2,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.",
+            flags_updated: [C]
+        },
+        subc: {
+            class: 0,
+            opcode: 3,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra - OP2 + C, OP2 may either be a register or a 13-bit signed immediate.",
+            flags_updated: [C]
+        },
+        lsl: {
+            class: 0,
+            opcode: 4,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra << OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        lsr: {
+            class: 0,
+            opcode: 5,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra >> OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        and: {
+            class: 0,
+            opcode: 6,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra & OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        xor: {
+            class: 0,
+            opcode: 7,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra ^ OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        bic: {
+            class: 0,
+            opcode: 8,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra &= ~(1 << OP2), OP2 may either be a register or a 13-bit signed immediate."
+        },
+        bst: {
+            class: 0,
+            opcode: 9,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra |= (1 << OP2), OP2 may either be a register or a 13-bit signed immediate."
+        },
+        or: {
+            class: 0,
+            opcode: 10,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra | OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        cmp: {
+            class: 0,
+            opcode: 12,
+            format: [[ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.  The result is discarded.",
+            flags_updated: [Z, C, O]
+        },
+        asr: {
+            class: 0,
+            opcode: 14,
+            format: [[ra], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        call: {
+            class: 1,
+            opcode: 0,
+            format: [[imm24, rb]],
+            formatsel: 25,
+            description: "PC := PC + (I << 2) if immediate, PC := Rb if register. LR := PC + 4."
+        },
+        ret: {
+            class: 1,
+            opcode: 1,
+            format: [],
+            constbits: 0x020000f0,
+            description: "PC := LR",
+        },
+        b: {
+            class: 1,
+            opcode: 4,
+            format: [[imm24, rb]],
+            description: "PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25
+        },
+        bne: {
+            class: 1,
+            opcode: 5,
+            format: [[imm24, rb]],
+            description: "If !Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 1
+        },
+        beq: {
+            class: 1,
+            opcode: 6,
+            format: [[imm24, rb]],
+            description: "If Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 2
+        },
+        bgt: {
+            class: 1,
+            opcode: 7,
+            format: [[imm24, rb]],
+            description: "If !C && !Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 3
+        },
+        blt: {
+            class: 1,
+            opcode: 8,
+            format: [[imm24, rb]],
+            description: "If C && !Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 4
+        },
+        bgts: {
+            class: 1,
+            opcode: 9,
+            format: [[imm24, rb]],
+            description: "If !Z && (N == O) PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 5
+        },
+        blts: {
+            class: 1,
+            opcode: 10,
+            format: [[imm24, rb]],
+            description: "If N != O PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 6
+        },
+        ldr32: {
+            class: 2,
+            opcode: 0,
+            format: [[rd], [imm13pc, index]],
+            description: "Rd := M[PC + I] (32-bits) if immediate, M[Ra + I] if register.",
+            formatsel: 25
+        },
+        ldr16: {
+            class: 2,
+            opcode: 1,
+            format: [[rd], [imm13pc, index]],
+            description: "Rd := M[PC + I] (16-bits) if immediate, M[Ra + I] if register.",
+            formatsel: 25
+        },
+        ldr8: {
+            class: 2,
+            opcode: 2,
+            format: [[rd], [imm13pc, index]],
+            description: "Rd := M[PC + I] (8-bits) if immediate, M[Ra + I] if register.",
+            formatsel: 25
+        },
+        str32: {
+            class: 2,
+            opcode: 4,
+            format: [[rb], [imm13pc, index]],
+            description: "M[PC + I] := Rb (32-bits) if immediate, M[Ra + I] := Rb if register.",
+            formatsel: 25
+        },
+        str16: {
+            class: 2,
+            opcode: 5,
+            format: [[rb], [imm13pc, index]],
+            description: "M[PC + I] := Rb (16-bits) if immediate, M[Ra + I] := Rb if register.",
+            formatsel: 25
+        },
+        str8: {
+            class: 2,
+            opcode: 6,
+            format: [[rb], [imm13pc, index]],
+            description: "M[PC + I] := Rb (8-bits) if immediate, M[Ra + I] := Rb if register.",
+            formatsel: 25
+        },
+        bkp: {
+            class: 3,
+            opcode: 0,
+            format: [],
+            description: "Hardware breakpoint."
+        },
+        nop: {
+            class: 3,
+            opcode: 15,
+            format: [],
+            description: "No operation."
+        },
+        movhi: {
+            class: 3,
+            opcode: 11,
+            format: [[rd], [imm16]],
+            description: "Rd := imm16 << 16."
+        },
+        orlo: {
+            class: 3,
+            opcode: 13,
+            format: [[rd], [rb], [imm16]],
+            description: "Rd := Rb | imm16."
+        },
+        cpuid: {
+            class: 3,
+            opcode: 7,
+            format: [[rd], [imm13]],
+            description: "Rd := cpuid[imm16]."
+        },
+        gcr: {
+            class: 3,
+            opcode: 1,
+            format: [[rd], [imm13]],
+            description: "Rd := control register N."
+        },
+        scr: {
+            class: 3,
+            opcode: 2,
+            format: [[imm13], [ra]],
+            description: "Control register N := ra."
+        },
+        swi: {
+            class: 1,
+            opcode: 15,
+            format: [[imm13]],
+            description: "Raise SWI imm13.",
+            comment: "marked as a branch so we get the stalling logic for free."
+        },
+        rfe: {
+            class: 1,
+            opcode: 2,
+            format: [],
+            description: "Return from exception.",
+            comment: "marked as a branch so we get the stalling logic for free."
+        }
+    }
+}
