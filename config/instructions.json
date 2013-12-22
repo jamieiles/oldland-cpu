@@ -181,54 +181,54 @@
             "format": [],
             "constbits": "0x020000f0"
         },
-	"b": {
+        "b": {
             "class": 1,
             "opcode": 4,
             "format": [["imm24", "rb"]],
             "formatsel": 25
-	},
-	"bne": {
+        },
+        "bne": {
             "class": 1,
             "opcode": 5,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 1
-	},
-	"beq": {
+            "branch_cc": 1
+        },
+        "beq": {
             "class": 1,
             "opcode": 6,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 2
-	},
-	"bgt": {
+            "branch_cc": 2
+        },
+        "bgt": {
             "class": 1,
             "opcode": 7,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 3
-	},
-	"blt": {
+            "branch_cc": 3
+        },
+        "blt": {
             "class": 1,
             "opcode": 8,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 4
-	},
-	"bgts": {
+            "branch_cc": 4
+        },
+        "bgts": {
             "class": 1,
             "opcode": 9,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 5
-	},
-	"blts": {
+            "branch_cc": 5
+        },
+        "blts": {
             "class": 1,
             "opcode": 10,
             "format": [["imm24", "rb"]],
             "formatsel": 25,
-	    "branch_cc": 6
-	},
+            "branch_cc": 6
+        },
         "ldr32": {
             "class": 2,
             "opcode": 0,
