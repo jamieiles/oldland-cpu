@@ -1,53 +1,6 @@
-Oldland CPU
-===========
-Jamie Iles <jamie@jamieiles.com>
-
 Oldland is a 32-bit RISC CPU designed primarily to learn more about Verilog
 and FPGA's.  At the moment this consists of the CPU core itself (Oldland), and
 a SoC implementation (Keynsham) that includes the CPU core, on-chip bootrom,
 internal SRAM, an SDRAM controller and UART.
 
-Included is an instruction set simulator, tools for debugging in gtkwave, a
-bootloader (and associated bootrom code).  Documentation is currently sparse
-and there are a few working limitations:
-
-- There is no hardware multiply implemented yet.
-
-The FPGA target is for a DE0 nano and runs at 50MHz, though it should
-synthesize at >80MHz at the moment.
-
-Testing
--------
-
-Grab binutils-oldland from https://github.com/jamieiles/binutils-oldland and
-build with:
-
-  ./configure --target=oldland-elf
-  make all
-  make install
-
-Make sure that the oldland-elf-* tools are in your path and build the CPU +
-tools with:
-
-  mkdir BUILD
-  cmake -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_PREFIX ..
-  make all
-  make install
-
-and add ${INSTALL_PREFIX}/bin to your path.
-
-Run `oldland-test` to run tests on both the instruction set and RTL
-simulations.
-
-Running on hardware
--------------------
-
-Build the FPGA image in Quartus and load it onto the device.  Run
-oldland-jtagd on the development machine, oldland-debug can then connect to
-the CPU over the virtual JTAG.
-
-Licensing
----------
-
-This project is currently licensed under GPLv2 except for oldland-jtagd which
-is under the Apache license v2.0.
+For documentation see http://jamieiles.github.io/oldland-cpu/
