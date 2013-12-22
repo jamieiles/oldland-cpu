@@ -122,6 +122,7 @@ always @(*) begin
 	`ALU_OPC_ADDC:  {alu_c, alu_q} = op1 + op2 + {31'b0, c_flag};
 	`ALU_OPC_SUB:   {alu_c, alu_q} = op1 - op2;
 	`ALU_OPC_SUBC:  {alu_c, alu_q} = op1 - op2 - {31'b0, c_flag};
+	`ALU_OPC_MUL:	{alu_c, alu_q} = op1 * op2;
 	`ALU_OPC_LSL:   {alu_c, alu_q} = {1'b0, op1} << op2[4:0];
 	`ALU_OPC_LSR:   alu_q = op1 >> op2[4:0];
 	`ALU_OPC_AND:   alu_q = op1 & op2;

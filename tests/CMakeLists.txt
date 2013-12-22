@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 add_subdirectory(addbranch)
+add_subdirectory(mul)
 add_subdirectory(badaddr)
 add_subdirectory(crbasic)
 add_subdirectory(swi)

@@ -421,6 +421,11 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 		alu->alu_q = v;
 		alu->alu_c = (v >> 32) & 0x1;
 		break;
+	case ALU_OPCODE_MUL:
+		v = op1 * op2;
+		alu->alu_q = v;
+		alu->alu_c = (v >> 32) & 0x1;
+		break;
 	case ALU_OPCODE_ADDC:
 		v = op1 + op2 + c->flagsbf.c;
 		alu->alu_q = v;

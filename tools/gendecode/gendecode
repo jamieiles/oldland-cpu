@@ -81,12 +81,16 @@ def is_misc_instruction(instr):
 
 def add_arith_instruction(opcode, idef):
     flags_updated = idef.get('flags_updated', '')
+    alu_opcode = idef['opcode']
+    if 'alu_opcode' in idef:
+        alu_opcode = instructions.alu_opcodes.get(idef['alu_opcode'],
+                                                  alu_opcode)
     rom_entries[(opcode, 'register')] = {
         'valid': 1,
         'op2rb': 1,
         'op1ra': 1,
         'wrrd':  opcode != 'cmp',
-        'aluop': idef['opcode'],
+        'aluop': alu_opcode,
         'upcc':  'Z' in flags_updated or 'O' in flags_updated,
         'upc':   'C' in flags_updated
     }
@@ -95,7 +99,7 @@ def add_arith_instruction(opcode, idef):
         'imsel': IMM13,
         'op1ra': 1,
         'wrrd':  opcode != 'cmp',
-        'aluop': idef['opcode'],
+        'aluop': alu_opcode,
         'upcc':  'Z' in flags_updated or 'O' in flags_updated,
         'upc':   'C' in flags_updated
     }
