@@ -19,13 +19,13 @@ add_custom_command(OUTPUT oldland-rtlsim
 		   DEPENDS oldland-rtlsim)
 add_custom_command(OUTPUT oldland_defines.v
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/instructions/vdefines ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.json)
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.yaml)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/decode.hex
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/gendecode/gendecode > ${CMAKE_CURRENT_BINARY_DIR}/decode.hex
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.json)
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.yaml)
 add_custom_command(OUTPUT keynsham_defines.v
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/config --verilog > keynsham_defines.v
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.json
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.yaml
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(rtl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/decode.hex keynsham_defines.v oldland_defines.v keynsham vpi_uart.vpi vpi_debug_stub.vpi oldland-rtlsim)
 

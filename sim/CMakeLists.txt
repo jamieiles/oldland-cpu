@@ -9,11 +9,11 @@ find_package(Threads)
 
 add_custom_command(OUTPUT oldland-types.h oldland-instructions.c
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/instructions/instructions.py
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.json
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.yaml
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(OUTPUT config.h
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/config --c > config.h
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.json
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.yaml
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(oldland-sim debug_uart.c io.c main.c memory.c trace.c cpu.c

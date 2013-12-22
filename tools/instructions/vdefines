@@ -17,7 +17,6 @@ def write_defines():
             defines.write("`define OPCODE_{0}\t4'h{1:x}\n".format(name.upper(),
                 instr_def['opcode']))
         for name, val in instructions.alu_opcodes.items():
-            val = int(val, 16)
             defines.write("`define ALU_OPC_{0}\t5'b{1:05b}\n".format(name.upper(),
                                                                      val))
 

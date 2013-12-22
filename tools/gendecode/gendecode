@@ -101,7 +101,7 @@ def add_arith_instruction(opcode, idef):
     }
 
 def alu_opcode_val(name):
-    return int(instructions.alu_opcodes[name], 16)
+    return instructions.alu_opcodes[name]
 
 def add_branch_instruction(opcode, idef):
     cc = idef.get('branch_cc', '7')

@@ -1,0 +1,48 @@
+{
+    cpu: {
+        icache: {
+            size: 8192,
+            line_size: 32
+        },
+        manufacturer: 0x4a49,
+        model: 0x0001,
+        clock_speed: 50000000
+    },
+    peripherals: [
+        {
+            name: ram,
+            address: "0x0000000",
+            size: "0x0001000"
+        },
+        {
+            name: bootrom,
+            address: "0x10000000",
+            size: "0x0001000"
+        },
+        {
+            name: sdram,
+            address: "0x20000000",
+            size: "0x02000000"
+        },
+        {
+            name: sdram_ctrl,
+            address: "0x80010000",
+            size: "0x00001000"
+        },
+        {
+            name: uart,
+            address: "0x80000000",
+            size: "0x0001000"
+        },
+        {
+            name: irq,
+            address: "0x80002000",
+            size: "0x00001000"
+        },
+        {
+            name: timer,
+            address: "0x80003000",
+            size: "0x00001000"
+        }
+    ]
+}

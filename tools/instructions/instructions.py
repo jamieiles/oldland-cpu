@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from string import Template
-import json
+import yaml
 import os
 
 HERE = os.path.dirname(__file__)
 
-with open(os.path.join(HERE, '..', '..', 'config', 'instructions.json'),
+with open(os.path.join(HERE, '..', '..', 'config', 'instructions.yaml'),
           'r') as itab:
-    data = json.loads(itab.read())
+    data = yaml.load(itab.read())
     instructions = data['instructions']
     operands = data['operands']
     alu_opcodes = data['alu_opcodes']
@@ -106,7 +106,7 @@ def gen_instruction(name, definition):
     fdict = {
         'name': name,
         'name_upper': name.upper(),
-        'constbits': int(definition.get('constbits', '0'), 0),
+        'constbits': definition.get('constbits', 0),
         'class': definition['class'],
         'nr_operands': len(definition['format']),
         'formatsel': definition.get('formatsel', -1)
@@ -137,7 +137,7 @@ def gen_instructions(instrlist, operands):
     for cls in range(0, 4):
         instrs += 'const struct oldland_instruction oldland_instructions_{0}[16] = {{'.format(cls)
         for name, definition in instrlist.items():
-            if int(definition['class']) != cls:
+            if definition['class'] != cls:
                 continue
             instrs += gen_instruction(name, definition)
         instrs += '\n};\n\n'

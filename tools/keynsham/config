@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import json
+import yaml
 import math
 import os
 import sys
 
 HERE = os.path.dirname(__file__)
 
-with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.json'),
+with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.yaml'),
           'r') as config:
-    keynsham_config = json.loads(config.read())
+    keynsham_config = yaml.load(config.read())
 
 def verilog_writer(name, value):
     print('`define {0} {1}'.format(name, value))
@@ -17,15 +17,17 @@ def verilog_writer(name, value):
 def c_writer(name, value):
     print('#define {0} {1}'.format(name, value))
 
-def verilog_int_format(value, width = 32, base = 16):
-    v = int(value, 16)
+def verilog_int_format(v, width = 32, base = 16):
+    if isinstance(v, str):
+        v = int(v, 16)
     if base == 16:
         return "{0}'h{1:x}".format(width, v)
     assert base == 10
     return "{0}'d{1:d}".format(width, v)
 
-def c_int_format(value, width = 32, base = 16):
-    v = int(value, 16)
+def c_int_format(v, width = 32, base = 16):
+    if isinstance(v, str):
+        v = int(v, 16)
     if base == 16:
         return "0x{0:x}".format(v)
     assert base == 10
