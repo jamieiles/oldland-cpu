@@ -19,7 +19,8 @@
         gcr:   0x10,
         swi:   0x11,
         rfe:   0x12,
-        cpuid: 0x13
+        cpuid: 0x13,
+        mul:   0x14
     },
     operands: {
         rd: {
@@ -152,6 +153,14 @@
             format: [[rd], [ra], [imm13, rb]],
             formatsel: 25,
             description: "Rd := Ra | OP2, OP2 may either be a register or a 13-bit signed immediate."
+        },
+        mul: {
+            class: 0,
+            opcode: 11,
+            format: [[rd], [ra], [imm13, rb]],
+            formatsel: 25,
+            alu_opcode: "mul",
+            description: "Rd := Ra * OP2, OP2 may either be a register or a 13-bit signed immediate."
         },
         cmp: {
             class: 0,
