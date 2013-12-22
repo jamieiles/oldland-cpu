@@ -1,8 +1,8 @@
 {
     cpu: {
         icache: {
-            size: "8192",
-            line_size: "32"
+            size: 8192,
+            line_size: 32
         },
         manufacturer: 0x4a49,
         model: 0x0001,
