@@ -63,9 +63,6 @@ wire		ef_stall_clear;
 wire [3:0]	d_ra_sel;
 wire [3:0]	d_rb_sel;
 
-reg [3:0]	e_ra_sel = 4'b0;
-reg [3:0]	e_rb_sel = 4'b0;
-
 /* Decode -> execute signals. */
 wire [3:0]	de_rd_sel;
 wire		de_update_rd;
@@ -87,8 +84,6 @@ wire		de_update_flags;
 wire		de_update_carry;
 wire [2:0]      de_cr_sel;
 wire            de_write_cr;
-reg [31:0]	de_ra = 32'b0;
-reg [31:0]	de_rb = 32'b0;
 wire            de_is_swi;
 wire            de_is_rfe;
 wire		df_illegal_instr;
@@ -126,6 +121,16 @@ wire		stalling;
 assign		running = run;
 
 wire		pipeline_busy = fd_i_fetched | de_i_valid | em_i_valid | m_busy;
+
+reg		ra_forward_exec = 1'b0;
+reg		ra_forward_mem = 1'b0;
+reg		rb_forward_exec = 1'b0;
+reg		rb_forward_mem = 1'b0;
+
+wire [31:0]	de_ra = ra_forward_exec ? em_alu_out :
+			ra_forward_mem ? mw_wr_val : ra;
+wire [31:0]	de_rb = rb_forward_exec ? em_alu_out :
+			rb_forward_mem ? mw_wr_val : rb;
 
 oldland_fetch	fetch(.clk(clk),
 		      .rst(dbg_rst),
@@ -294,29 +299,11 @@ oldland_regfile	regfile(.clk(clk),
 			.dbg_reg_wr_en(dbg_reg_wr_en),
 			.dbg_en(stopped));
 
-/*
- * Forwarding logic.  We need to forward results from the end of the execute
- * stage back to the input of the ALU.
- */
 always @(posedge clk) begin
-	e_ra_sel <= d_ra_sel;
-	e_rb_sel <= d_rb_sel;
-end
-
-always @(*) begin
-	if (em_rd_sel == e_ra_sel && em_update_rd)
-		de_ra = em_alu_out;
-	else if (mw_rd_sel == e_ra_sel && mw_update_rd)
-		de_ra = mw_wr_val;
-	else
-		de_ra = ra;
-
-	if (em_rd_sel == e_rb_sel && em_update_rd)
-		de_rb = em_alu_out;
-	else if (mw_rd_sel == e_rb_sel && mw_update_rd)
-		de_rb = mw_wr_val;
-	else
-		de_rb = rb;
+	ra_forward_exec <= de_rd_sel == d_ra_sel && de_update_rd;
+	ra_forward_mem <= em_rd_sel == d_ra_sel && em_update_rd;
+	rb_forward_exec <= de_rd_sel == d_rb_sel && de_update_rd;
+	rb_forward_mem <= em_rd_sel == d_rb_sel && em_update_rd;
 end
 
 endmodule
