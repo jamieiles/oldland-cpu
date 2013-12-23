@@ -23,6 +23,7 @@
 #include <lua5.2/lauxlib.h>
 #include <lua5.2/lualib.h>
 
+#include "breakpoint.h"
 #include "debugger.h"
 #include "protocol.h"
 
@@ -432,12 +433,46 @@ static struct target *target_alloc(const char *hostname,
 	return t;
 }
 
+static void wait_until_stopped(struct target *t)
+{
+	target->interrupted = false;
+	uint32_t exec_status = 0;
+
+	do {
+		if (dbg_get_exec_status(target, &exec_status))
+			err(1, "failed to get execution status.");
+	} while (!target->interrupted && (exec_status & EXEC_STATUS_RUNNING));
+
+	if (dbg_reload_pc(t))
+		err(1, "failed to read PC");
+
+	target->breakpoint_hit = exec_status & EXEC_STATUS_STOPPED_ON_BKPT;
+}
+
+static void do_exec(struct target *target,
+		    int (*fn)(struct target *))
+{
+	struct breakpoint *bkp;
+
+	bkp = breakpoint_at_addr(target->pc);
+	if (bkp)
+		breakpoint_exec_orig(bkp);
+
+	if (fn(target))
+		warnx("failed to step target");
+
+	wait_until_stopped(target);
+
+	bkp = breakpoint_at_addr(target->pc);
+	if (bkp)
+		printf("breakpoint %d hit at %08x\n", bkp->id, bkp->addr);
+}
+
 static int lua_step(lua_State *L)
 {
 	assert_target(L);
 
-	if (dbg_step(target))
-		warnx("failed to step target");
+	do_exec(target, dbg_step);
 
 	return 0;
 }
@@ -461,30 +496,11 @@ static int lua_stop(lua_State *L)
 	return 0;
 }
 
-static void wait_until_stopped(struct target *t)
-{
-	target->interrupted = false;
-	uint32_t exec_status = 0;
-
-	do {
-		if (dbg_get_exec_status(target, &exec_status))
-			err(1, "failed to get execution status.");
-	} while (!target->interrupted && (exec_status & EXEC_STATUS_RUNNING));
-
-	if (dbg_reload_pc(t))
-		err(1, "failed to read PC");
-
-	target->breakpoint_hit = exec_status & EXEC_STATUS_STOPPED_ON_BKPT;
-}
-
 static int lua_run(lua_State *L)
 {
 	assert_target(L);
 
-	if (dbg_run(target))
-		warnx("failed to step target");
-
-	wait_until_stopped(target);
+	do_exec(target, dbg_run);
 
 	return 0;
 }
@@ -539,6 +555,56 @@ static int lua_read_cpuid(lua_State *L)
 	lua_pushinteger(L, v);
 
 	return 1;
+}
+
+static int lua_set_bkp(lua_State *L)
+{
+	uint32_t addr;
+	struct breakpoint *bkp;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no breakpoint address");
+		lua_error(L);
+	}
+
+	addr = lua_tointeger(L, 1);
+	bkp = breakpoint_register(target, addr);
+	if (!bkp) {
+		lua_pushstring(L, "failed to set breakpoint");
+		lua_error(L);
+	}
+
+	lua_pop(L, 1);
+	lua_pushinteger(L, bkp->id);
+
+	return 1;
+}
+
+static int lua_del_bkp(lua_State *L)
+{
+	int id;
+	struct breakpoint *bkp;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no breakpoint id");
+		lua_error(L);
+	}
+
+	id = lua_tointeger(L, 1);
+	bkp = breakpoint_get(id);
+	if (!bkp) {
+		lua_pushstring(L, "failed to delete breakpoint");
+		lua_error(L);
+	}
+
+	breakpoint_remove(bkp);
+	lua_pop(L, 1);
+
+	return 0;
 }
 
 static int lua_write_reg(lua_State *L)
@@ -660,6 +726,8 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "term", lua_term },
 	{ "reset", lua_reset },
 	{ "read_cpuid", lua_read_cpuid },
+	{ "set_bkp", lua_set_bkp },
+	{ "del_bkp", lua_del_bkp },
 	{}
 };
 
