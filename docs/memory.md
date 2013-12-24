@@ -1,3 +1,8 @@
+---
+title: Oldland Memory Hierarchy
+layout: default
+---
+
 Oldland Memory Hierarchy
 ========================
 
@@ -31,20 +36,21 @@ Maintenance Instructions
 ------------------------
 
 Instruction cache:
-  I_INV		index
-    - Invalidate cache line for index.
+
+- `I_INV	index`
 
 Data cache:
-  D_INV		index
-    - Invalidate cache line for index.
-  D_FLUSH	index
-    - Flush cache line for index.
-  DMB
-    - Flush the write buffer for coherence.
+
+- `D_INV	index`
+  Invalidate cache line for index.
+- `D_FLUSH	index`
+  Flush cache line for index.
+- `DMB`
+  Flush the write buffer for coherence.
 
 All maintenance instructions are encoded into a single cache instruction:
 
-  cache	op, $rn
+  `cache	op, $rn`
 
 For instructions that don't take a parameter the $rn register should be set to
 0.
