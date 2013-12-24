@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/stylesheet.css">
+
+    <title>Oldland-cpu</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
+
+          <h1 id="project_title"></h1>
+          <h2 id="project_tagline">Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jamieiles/oldland-cpu/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+<h1 id="oldland_memory_hierarchy">Oldland Memory Hierarchy</h1>
+
+<p>CPU core has 2 memory busses:</p>
+
+<ul>
+<li>32 bit read-only word addressed instruction bus.</li>
+
+<li>32 bit read/write word addressed data bus with byte enables.</li>
+</ul>
+
+<p>The instruction bus feeds to the instruction cache which is configurable size. There are inputs to invalidate the entire cache or an address range. The cache is physically indexed and physically tagged if the MMU is enabled, otherwise physically indexed.</p>
+
+<p>Peripherals on the instruction bus are:</p>
+
+<ul>
+<li>Onchip bootrom.</li>
+
+<li>SDRAM.</li>
+
+<li>Onchip memory.</li>
+</ul>
+
+<p>The data cache is physically indexed and physically tagged. Allocation policy is allocate on read. The cache is write-back and write-misses go through a write buffer.</p>
+
+<p>Each peripheral indicates the cacheability for the entirety of the peripherals address space. Non-cacheable peripherals will never have data cached regardless of any page table settings (though page tables can be used to control read/write access).</p>
+
+<p>Instruction cache is enabled with the C bit of the PSR, data cache is enabled with the D bit of the PSR.</p>
+
+<h2 id="maintenance_instructions">Maintenance Instructions</h2>
+
+<p>Instruction cache:</p>
+
+<ul>
+<li><code>I_INV	index</code></li>
+</ul>
+
+<p>Data cache:</p>
+
+<ul>
+<li><code>D_INV	index</code> Invalidate cache line for index.</li>
+
+<li><code>D_FLUSH	index</code> Flush cache line for index.</li>
+
+<li><code>DMB</code> Flush the write buffer for coherence.</li>
+</ul>
+
+<p>All maintenance instructions are encoded into a single cache instruction:</p>
+
+<p><code>cache	op, $rn</code></p>
+
+<p>For instructions that don’t take a parameter the $rn register should be set to 0.</p>
+
+<h2 id="cache_tags__indexes">Cache tags + indexes</h2>
+
+<p>Cache lines are 32 bytes, so 5 bits for byte offset, cache line is word indexed so only 3 bits for the real offset. For a cache of N bytes we have N/32 indexes so $clog2(N/32) bits.</p>
+
+<p>8KB cache:</p>
+
+<ul>
+<li>19 bits tag.</li>
+
+<li>8 bits index.</li>
+
+<li>5 bits offset.</li>
+</ul>
+
+<h2 id="reset">Reset</h2>
+
+<p>On reset, all cache lines are clean + invalid.</p>
+
+<h2 id="debug">Debug</h2>
+
+<p>For debugging, a new operation CACHE_SYNC flushes the data cache and invalidates the entire instruction cache and should be used after memory writes.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Oldland-cpu maintained by <a href="https://github.com/jamieiles">jamieiles</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-43848066-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
+

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/stylesheet.css">
+
+    <title>Oldland-cpu</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
+
+          <h1 id="project_title"></h1>
+          <h2 id="project_tagline">Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jamieiles/oldland-cpu/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+<p>For interactive simulation:</p>
+
+<ul>
+<li>
+<p>Run the simulation:<br /> <code>oldland-rtlsim --interactive</code></p>
+</li>
+
+<li>
+<p>Observe the PTS number.</p>
+</li>
+
+<li>
+<p>Load the application binary through the onchip bootrom<br /> <code>./tools/bootterm/bootterm /dev/pts/PTS_NUM binary_file</code></p>
+</li>
+
+<li>
+<p>Attach minicom to the uart:<br /> <code>minicom -p /dev/pts/PTS_NUM</code></p>
+</li>
+</ul>
+
+<p>To bypass the onchip bootrom for quicker loads:</p>
+
+<ul>
+<li>
+<p>Run the simulation:<br /> <code>oldland-rtlsim --interactive --ramfile=path_to_ram_file --bootrom=sim.hex</code></p>
+</li>
+
+<li>
+<p>Observe the PTS number.</p>
+</li>
+
+<li>
+<p>Attach minicom to the uart:<br /> <code>minicom -p /dev/pts/PTS_NUM</code></p>
+</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Oldland-cpu maintained by <a href="https://github.com/jamieiles">jamieiles</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-43848066-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
+

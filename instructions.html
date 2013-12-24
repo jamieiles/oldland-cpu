@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/stylesheet.css">
+
+    <title>Oldland-cpu</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
+
+          <h1 id="project_title"></h1>
+          <h2 id="project_tagline">Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jamieiles/oldland-cpu/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+<h1>Oldland Instruction Set</h1>
+<p><a id='top' /></p>
+<ul>
+
+<li><a href='#add'>add</a></li>
+
+<li><a href='#addc'>addc</a></li>
+
+<li><a href='#sub'>sub</a></li>
+
+<li><a href='#subc'>subc</a></li>
+
+<li><a href='#lsl'>lsl</a></li>
+
+<li><a href='#lsr'>lsr</a></li>
+
+<li><a href='#and'>and</a></li>
+
+<li><a href='#xor'>xor</a></li>
+
+<li><a href='#bic'>bic</a></li>
+
+<li><a href='#bst'>bst</a></li>
+
+<li><a href='#or'>or</a></li>
+
+<li><a href='#mul'>mul</a></li>
+
+<li><a href='#cmp'>cmp</a></li>
+
+<li><a href='#asr'>asr</a></li>
+
+<li><a href='#call'>call</a></li>
+
+<li><a href='#ret'>ret</a></li>
+
+<li><a href='#b'>b</a></li>
+
+<li><a href='#bne'>bne</a></li>
+
+<li><a href='#beq'>beq</a></li>
+
+<li><a href='#bgt'>bgt</a></li>
+
+<li><a href='#blt'>blt</a></li>
+
+<li><a href='#bgts'>bgts</a></li>
+
+<li><a href='#blts'>blts</a></li>
+
+<li><a href='#ldr32'>ldr32</a></li>
+
+<li><a href='#ldr16'>ldr16</a></li>
+
+<li><a href='#ldr8'>ldr8</a></li>
+
+<li><a href='#str32'>str32</a></li>
+
+<li><a href='#str16'>str16</a></li>
+
+<li><a href='#str8'>str8</a></li>
+
+<li><a href='#bkp'>bkp</a></li>
+
+<li><a href='#nop'>nop</a></li>
+
+<li><a href='#movhi'>movhi</a></li>
+
+<li><a href='#orlo'>orlo</a></li>
+
+<li><a href='#cpuid'>cpuid</a></li>
+
+<li><a href='#gcr'>gcr</a></li>
+
+<li><a href='#scr'>scr</a></li>
+
+<li><a href='#swi'>swi</a></li>
+
+<li><a href='#rfe'>rfe</a></li>
+
+</ul>
+<p><a id='add'><h2>add</h2></a></p>
+<p><strong>Class: 0, Opcode: 0</strong></p><h3>Description</h3><p><em>Rd := Ra + OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='addc'><h2>addc</h2></a></p>
+<p><strong>Class: 0, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := Ra + OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='sub'><h2>sub</h2></a></p>
+<p><strong>Class: 0, Opcode: 2</strong></p><h3>Description</h3><p><em>Rd := Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='subc'><h2>subc</h2></a></p>
+<p><strong>Class: 0, Opcode: 3</strong></p><h3>Description</h3><p><em>Rd := Ra - OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='lsl'><h2>lsl</h2></a></p>
+<p><strong>Class: 0, Opcode: 4</strong></p><h3>Description</h3><p><em>Rd := Ra &lt;&lt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='lsr'><h2>lsr</h2></a></p>
+<p><strong>Class: 0, Opcode: 5</strong></p><h3>Description</h3><p><em>Rd := Ra &gt;&gt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='and'><h2>and</h2></a></p>
+<p><strong>Class: 0, Opcode: 6</strong></p><h3>Description</h3><p><em>Rd := Ra &amp; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='xor'><h2>xor</h2></a></p>
+<p><strong>Class: 0, Opcode: 7</strong></p><h3>Description</h3><p><em>Rd := Ra ^ OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bic'><h2>bic</h2></a></p>
+<p><strong>Class: 0, Opcode: 8</strong></p><h3>Description</h3><p><em>Rd := Ra &amp;= ~(1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bst'><h2>bst</h2></a></p>
+<p><strong>Class: 0, Opcode: 9</strong></p><h3>Description</h3><p><em>Rd := Ra |= (1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='or'><h2>or</h2></a></p>
+<p><strong>Class: 0, Opcode: 10</strong></p><h3>Description</h3><p><em>Rd := Ra | OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='mul'><h2>mul</h2></a></p>
+<p><strong>Class: 0, Opcode: 11</strong></p><h3>Description</h3><p><em>Rd := Ra * OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='cmp'><h2>cmp</h2></a></p>
+<p><strong>Class: 0, Opcode: 12</strong></p><h3>Description</h3><p><em>Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.  The result is discarded.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='asr'><h2>asr</h2></a></p>
+<p><strong>Class: 0, Opcode: 14</strong></p><h3>Description</h3><p><em>Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='call'><h2>call</h2></a></p>
+<p><strong>Class: 1, Opcode: 0</strong></p><h3>Description</h3><p><em>PC := PC + (I &lt;&lt; 2) if immediate, PC := Rb if register. LR := PC + 4.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='ret'><h2>ret</h2></a></p>
+<p><strong>Class: 1, Opcode: 1</strong></p><h3>Description</h3><p><em>PC := LR</em></p>
+<p><a id='b'><h2>b</h2></a></p>
+<p><strong>Class: 1, Opcode: 4</strong></p><h3>Description</h3><p><em>PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bne'><h2>bne</h2></a></p>
+<p><strong>Class: 1, Opcode: 5</strong></p><h3>Description</h3><p><em>If !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='beq'><h2>beq</h2></a></p>
+<p><strong>Class: 1, Opcode: 6</strong></p><h3>Description</h3><p><em>If Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bgt'><h2>bgt</h2></a></p>
+<p><strong>Class: 1, Opcode: 7</strong></p><h3>Description</h3><p><em>If !C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='blt'><h2>blt</h2></a></p>
+<p><strong>Class: 1, Opcode: 8</strong></p><h3>Description</h3><p><em>If C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bgts'><h2>bgts</h2></a></p>
+<p><strong>Class: 1, Opcode: 9</strong></p><h3>Description</h3><p><em>If !Z &amp;&amp; (N == O) PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='blts'><h2>blts</h2></a></p>
+<p><strong>Class: 1, Opcode: 10</strong></p><h3>Description</h3><p><em>If N != O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='ldr32'><h2>ldr32</h2></a></p>
+<p><strong>Class: 2, Opcode: 0</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (32-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='ldr16'><h2>ldr16</h2></a></p>
+<p><strong>Class: 2, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (16-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='ldr8'><h2>ldr8</h2></a></p>
+<p><strong>Class: 2, Opcode: 2</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (8-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='str32'><h2>str32</h2></a></p>
+<p><strong>Class: 2, Opcode: 4</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (32-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rb</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='str16'><h2>str16</h2></a></p>
+<p><strong>Class: 2, Opcode: 5</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (16-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rb</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='str8'><h2>str8</h2></a></p>
+<p><strong>Class: 2, Opcode: 6</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (8-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rb</li>
+      
+    
+  
+  
+    
+      <li>imm13pc or index</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bkp'><h2>bkp</h2></a></p>
+<p><strong>Class: 3, Opcode: 0</strong></p><h3>Description</h3><p><em>Hardware breakpoint.</em></p>
+<p><a id='nop'><h2>nop</h2></a></p>
+<p><strong>Class: 3, Opcode: 15</strong></p><h3>Description</h3><p><em>No operation.</em></p>
+<p><a id='movhi'><h2>movhi</h2></a></p>
+<p><strong>Class: 3, Opcode: 11</strong></p><h3>Description</h3><p><em>Rd := imm16 &lt;&lt; 16.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm16</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='orlo'><h2>orlo</h2></a></p>
+<p><strong>Class: 3, Opcode: 13</strong></p><h3>Description</h3><p><em>Rd := Rb | imm16.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>rb</li>
+      
+    
+  
+  
+    
+      <li>imm16</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='cpuid'><h2>cpuid</h2></a></p>
+<p><strong>Class: 3, Opcode: 7</strong></p><h3>Description</h3><p><em>Rd := cpuid[imm16].</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm13</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='gcr'><h2>gcr</h2></a></p>
+<p><strong>Class: 3, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := control register N.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>rd</li>
+      
+    
+  
+  
+    
+      <li>imm13</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='scr'><h2>scr</h2></a></p>
+<p><strong>Class: 3, Opcode: 2</strong></p><h3>Description</h3><p><em>Control register N := ra.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm13</li>
+      
+    
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='swi'><h2>swi</h2></a></p>
+<p><strong>Class: 1, Opcode: 15</strong></p><h3>Description</h3><p><em>Raise SWI imm13.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm13</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='rfe'><h2>rfe</h2></a></p>
+<p><strong>Class: 1, Opcode: 2</strong></p><h3>Description</h3><p><em>Return from exception.</em></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Oldland-cpu maintained by <a href="https://github.com/jamieiles">jamieiles</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-43848066-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
+

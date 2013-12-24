@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/stylesheet.css">
+
+    <title>Oldland-cpu</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
+
+          <h1 id="project_title"></h1>
+          <h2 id="project_tagline">Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jamieiles/oldland-cpu/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+<p>JTAG crosses multiple clock domains, need to synchronize signals across those domains, simplest way is to use a dual port ram as a buffer for the command + data and then have ready + ack handshaking.</p>
+
+<p>Memory map (Nx32-bit ram, word addresses):</p>
+
+<ul>
+<li>0x0: Command</li>
+
+<li>0x1: Address/Register number</li>
+
+<li>0x2: Data word</li>
+
+<li>0x3: Result</li>
+</ul>
+
+<p>JTAG commands:</p>
+
+<ul>
+<li>Write buffer address - 2 bit address, 32 bit data.</li>
+
+<li>Read buffer address - 2 bit address.</li>
+</ul>
+
+<p>Reads are 33 bits - a valid bit (32) + data (31:0). Commands are executed when address 0 is written.</p>
+
+<p>Command list:</p>
+
+<ul>
+<li>0x0: Enter debug - halts CPU
+<ul>
+<li>No address/data word.</li>
+</ul>
+</li>
+
+<li>0x1: Exit debug - resumes execution.
+<ul>
+<li>No address/data word.</li>
+</ul>
+</li>
+
+<li>0x2: Step CPU.
+<ul>
+<li>No address, data word must be 0, reserved for future use.</li>
+</ul>
+</li>
+
+<li>0x3: Read register
+<ul>
+<li>Address is register number, no data word.</li>
+</ul>
+</li>
+
+<li>0x4: Write register
+<ul>
+<li>Address is register number, data is value to write.</li>
+</ul>
+</li>
+
+<li>0x5: Read memory 32 bits
+<ul>
+<li>Address is the memory address, no data word.</li>
+</ul>
+</li>
+
+<li>0x6: Read memory 16 bits</li>
+
+<li>0x7: Read memory 8 bits</li>
+
+<li>0x8: Write memory 32 bits
+<ul>
+<li>Address is the memory address, data word is the value to write.</li>
+</ul>
+</li>
+
+<li>0x9: Write memory 16 bits</li>
+
+<li>0xa: Write memory 8 bits</li>
+
+<li>0xb: Reset CPU core</li>
+
+<li>0xc: Synchronize caches</li>
+
+<li>0xd: Read CPUID register
+<ul>
+<li>Address is register number, no data word.</li>
+</ul>
+</li>
+
+<li>0xe: Get execution status
+<ul>
+<li>Read data:
+<ul>
+<li>[0] running</li>
+
+<li>[1] breakpoint hit, cleared on run</li>
+
+<li>[31:2] SBZ</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Register/memory operations may only be issued whilst the CPU is stopped.</p>
+
+<p>For handshaking:</p>
+
+<ul>
+<li>After writing command word, JTAG domain sets dbg_req high</li>
+
+<li>The CPU domain executes the command and sets dbg_compl high.</li>
+
+<li>The JTAG domain sets dbg_req low and waits for dbg_compl to go low before issuing another command.</li>
+
+<li>The JTAG valid bit is set when dbg_compl has gone high but another command has not yet been issued.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Oldland-cpu maintained by <a href="https://github.com/jamieiles">jamieiles</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-43848066-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
+
