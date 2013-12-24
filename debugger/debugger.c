@@ -791,12 +791,14 @@ static void run_command_script(lua_State *L, const char *path)
 }
 
 static struct argp_option options[] = {
-	{"command", 'x', "FILE", 0 },
+	{ "command", 'x', "FILE", 0 },
+	{ "startup", 's', "FILE", 0 },
 	{}
 };
 
 struct arguments {
 	const char *command_script;
+	const char *startup_script;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -806,6 +808,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	switch (key) {
 	case 'x':
 		args->command_script = arg;
+		break;
+	case 's':
+		args->startup_script = arg;
 		break;
 	case ARGP_KEY_ARG:
 	case ARGP_KEY_END:
@@ -838,6 +843,13 @@ int main(int argc, char *argv[])
 		run_command_script(L, args.command_script);
 	} else {
 		interactive = true;
+		if (args.startup_script) {
+			if (luaL_dofile(L, args.startup_script)) {
+				fprintf(stderr, "%s\n", lua_tostring(L, -1));
+				exit(EXIT_FAILURE);
+			}
+		}
+
 		run_interactive(L);
 	}
 
