@@ -46,14 +46,25 @@ function read_cpuid(reg)
 	print(string.format("%08x", target.read_cpuid(reg)))
 end
 
-regnames = { 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7',
-	     'r8', 'r9', 'r10', 'r11', 'r12', 'fp', 'sp', 'lr', 'pc' }
-
 function regs()
-	for idx, name in ipairs(regnames) do
-		v = target.read_reg(idx - 1)
-		print(string.format("%03s: %08x", name, v))
-	end
+	print(string.format(" PSR: %08x", target.read_cr(1)))
+	print(string.format("SPSR: %08x", target.read_cr(2)))
+	print(string.format(" FAR: %08x", target.read_cr(3)))
+	print(string.format("DFAR: %08x", target.read_cr(4)))
+	print(string.format("  r0: %08x %08x %08x %08x", target.read_reg(0),
+			    target.read_reg(1), target.read_reg(2),
+			    target.read_reg(3)))
+	print(string.format("  r4: %08x %08x %08x %08x", target.read_reg(4),
+			    target.read_reg(5), target.read_reg(6),
+			    target.read_reg(7)))
+	print(string.format("  r8: %08x %08x %08x %08x", target.read_reg(8),
+			    target.read_reg(9), target.read_reg(10),
+			    target.read_reg(11)))
+	print(string.format(" r12: %08x", target.read_reg(12)))
+	print(string.format("  fp: %08x sp: %08x lr: %08x",
+			    target.read_reg(13), target.read_reg(14),
+			    target.read_reg(15)))
+	print(string.format("  pc: %08x", target.read_reg(16)))
 end
 
 function target_read_string(addr)
