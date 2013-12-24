@@ -1,6 +1,7 @@
 ---
 title: Simulating Oldland CPU
 layout: default
+root: "../"
 ---
 
 For interactive simulation:

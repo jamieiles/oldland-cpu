@@ -1,6 +1,7 @@
 ---
 title: Oldland Architecture Definition
 layout: default
+root: "../"
 ---
 
 Oldland CPU

@@ -1,6 +1,7 @@
 ---
 title: Oldland Memory Hierarchy
 layout: default
+root: "../"
 ---
 
 Oldland Memory Hierarchy

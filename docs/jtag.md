@@ -1,6 +1,7 @@
 ---
 title: Oldland JTAG Protocol
 layout: default
+root: "../"
 ---
 
 JTAG crosses multiple clock domains, need to synchronize signals across those
