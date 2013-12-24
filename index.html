@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/stylesheet.css">
 
     <title>Oldland-cpu</title>
   </head>
@@ -18,8 +18,10 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
 
-          <h1 id="project_title">Oldland-cpu</h1>
+	  <a href="http://jamieiles.github.io/oldland-cpu/">
+          <h1 id="project_title"></h1>
           <h2 id="project_tagline">Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools</h2>
+	  </a>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
@@ -31,67 +33,56 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>
-<a name="oldland-cpu" class="anchor" href="#oldland-cpu"><span class="octicon octicon-link"></span></a>Oldland CPU</h1>
 
-<p>Oldland is a 32-bit RISC CPU designed primarily to learn more about Verilog
-and FPGA's.  At the moment this consists of the CPU core itself (Oldland), and
-a SoC implementation (Keynsham) that includes the CPU core, on-chip bootrom,
-internal SRAM, an SDRAM controller and UART.</p>
+<h2 id="introduction">Introduction</h2>
 
-<p>Included is an instruction set simulator, tools for debugging in gtkwave, a
-bootloader (and associated bootrom code).  Documentation is currently
-sparse.</p>
+<p>Oldland is a 32-bit RISC CPU designed primarily to learn more about Verilog and FPGA’s. At the moment this consists of the CPU core itself (Oldland), and a SoC implementation (Keynsham) that includes the CPU core, on-chip bootrom, internal SRAM, an SDRAM controller and UART.</p>
 
-<p>The FPGA target is for a DE0 nano and runs at 50MHz, though it should
-synthesize at &gt;80MHz at the moment.</p>
+<p>Included is an instruction set simulator, tools for debugging in gtkwave, a bootloader (and associated bootrom code), lua based debugger, JTAG for hardware.</p>
 
-<h2>Documentation</h2>
+<p>The FPGA target is for a DE0 nano and runs at 50MHz, though it should synthesize at &gt;80MHz at the moment.</p>
+
+<h2 id="documentation">Documentation</h2>
+
 <ul>
 <li><a href="instructions.html">Instruction set</a></li>
+
 <li><a href="keynsham.html">Keynsham SoC configuration</a></li>
+
 <li><a href="docs/design.html">Architecture</a></li>
+
 <li><a href="docs/jtag.html">JTAG protocol</a></li>
+
 <li><a href="docs/simulating.html">How to simulate</a></li>
 </ul>
 
-<h2>
-<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+<h2 id="testing">Testing</h2>
 
-<p>Grab binutils-oldland from <a href="https://github.com/jamieiles/binutils-oldland">https://github.com/jamieiles/binutils-oldland</a> and
-build with:</p>
+<ol>
+<li>
+<p>Download <a href="https://github.com/jamieiles/binutils-oldland"">binutils-oldland</a> and build with:<br /><code>./configure --target=oldland-elf</code><br /><code>make all</code><br /><code>make install</code></p>
+</li>
 
-<pre lang="shell"><code>  ./configure --target=oldland-elf
-  make all
-  make install
-</code></pre>
+<li>
+<p>Make sure that the <code>oldland-elf-*</code> tools are in your path and build the CPU + tools with:<br /><code>mkdir BUILD</code><br /><code>cd BUILD</code><br /><code>cmake -DCMAKE_ISNTALL_PREFIX:PATH=INSTALL_PREFIX ..</code><br /><code>make all install</code></p>
+</li>
 
-<p>Make sure that the oldland-elf-* tools are in your path and build the CPU +
-tools with:</p>
+<li>
+<p>Add <code>${INSTALL_PREFIX}/bin</code> to your path.</p>
+</li>
 
-<pre lang="shell"><code>  mkdir BUILD
-  cmake -DCMAKE_INSTALL_PREFIX:PATH=INSTALL_PREFIX ..
-  make all
-  make install
-</code></pre>
+<li>
+<p>Run <code>oldland-test</code> to run the self-tests.</p>
+</li>
+</ol>
 
-<p>and add <code>${INSTALL_PREFIX}/bin</code> to your path.</p>
+<h2 id="running_on_hardware">Running On Hardware</h2>
 
-<p>Run <code>oldland-test</code> to run tests on both the instruction set and RTL
-simulations.</p>
+<p>Build the FPGA image in Quartus and load it onto the device. Run oldland-jtagd on the development machine, oldland-debug can then connect to the CPU over the virtual JTAG.</p>
 
-<h2>
-<a name="running-on-hardware" class="anchor" href="#running-on-hardware"><span class="octicon octicon-link"></span></a>Running on hardware</h2>
+<h2 id="licensing">Licensing</h2>
 
-<p>Build the FPGA image in Quartus and load it onto the device.  Run
-oldland-jtagd on the development machine, oldland-debug can then connect to
-the CPU over the virtual JTAG.</p>
-
-<h2>
-<a name="licensing" class="anchor" href="#licensing"><span class="octicon octicon-link"></span></a>Licensing</h2>
-
-<p>This project is currently licensed under GPLv2 except for oldland-jtagd which
-is under the Apache license v2.0.</p>
+<p>This project is currently licensed under GPLv2 except for oldland-jtagd which is under the Apache License v2.0.</p>
       </section>
     </div>
 
@@ -117,3 +108,4 @@ is under the Apache license v2.0.</p>
 
   </body>
 </html>
+
