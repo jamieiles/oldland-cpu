@@ -49,7 +49,10 @@ module oldland_exec(input wire		clk,
 		    input wire		irq_start,
 		    input wire [31:0]	irq_fault_address,
 		    output wire [2:0]	cpuid_sel,
-		    input wire [31:0]	cpuid_val);
+		    input wire [31:0]	cpuid_val,
+		    input wire		cache_instr,
+		    output reg		cache_instr_out,
+		    output reg [1:0]	cache_op);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -291,6 +294,11 @@ always @(posedge clk) begin
 		pc_plus_4_out <= pc_plus_4;
 		i_valid_out <= i_valid;
 	end
+end
+
+always @(posedge clk) begin
+	cache_op <= op2[1:0];
+	cache_instr_out <= cache_instr;
 end
 
 endmodule

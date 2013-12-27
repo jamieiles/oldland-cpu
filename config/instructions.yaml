@@ -343,6 +343,13 @@
             format: [],
             description: "Return from exception.",
             comment: "marked as a branch so we get the stalling logic for free."
+        },
+        cache: {
+            class: 2,
+            opcode: 15,
+            format: [[ra], [imm13]],
+            alu_opcode: "copya",
+            description: "Cache operation imm13, with index Ra if index valid."
         }
     }
 }

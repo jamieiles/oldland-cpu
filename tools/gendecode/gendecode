@@ -13,6 +13,7 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
+  [26]    cache Cache operation.
   [25]    upc   Update carry flag.
   [24]    rfe   Is return-from-exception.
   [23]    swi   Is software interrupt.
@@ -47,6 +48,7 @@ itab = instructions.instructions
 rom_entries = {}
 
 field_shifts = {
+    'cache': 26,
     'upc':   25,
     'rfe':   24,
     'swi':   23,
@@ -148,22 +150,35 @@ def add_mem_instruction(opcode, idef):
             'str8':  0.
         }[opcode])
 
-    rom_entries[(opcode, 'register')] = {
-        'valid': 1,
-        'maw':   access_width(opcode),
-        'mstr':  'str' in opcode,
-        'mldr':  'ldr' in opcode,
-        'op1ra': 1,
-        'aluop': alu_opcode_val('add'),
-    }
-    # PC-relative load/store.
-    rom_entries[(opcode, 'immediate')] = {
-        'valid': 1,
-        'maw':   access_width(opcode),
-        'mstr':  'str' in opcode,
-        'mldr':  'ldr' in opcode,
-        'aluop': alu_opcode_val('add'),
-    }
+    if not 'cache' in opcode:
+        rom_entries[(opcode, 'register')] = {
+            'valid': 1,
+            'maw':   access_width(opcode),
+            'mstr':  'str' in opcode,
+            'mldr':  'ldr' in opcode,
+            'op1ra': 1,
+            'aluop': alu_opcode_val('add'),
+        }
+        # PC-relative load/store.
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'maw':   access_width(opcode),
+            'mstr':  'str' in opcode,
+            'mldr':  'ldr' in opcode,
+            'aluop': alu_opcode_val('add'),
+        }
+    else:
+        alu_opcode = idef['opcode']
+        if 'alu_opcode' in idef:
+            alu_opcode = instructions.alu_opcodes.get(idef['alu_opcode'],
+                                                    alu_opcode)
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'aluop': alu_opcode,
+            'imsel': 0,
+            'op1ra': True,
+            'cache': 1,
+        }
 
 def add_misc_instruction(opcode, idef):
     if opcode in ['movhi', 'orlo']:

@@ -6,6 +6,8 @@ module oldland_pipeline(input wire		clk,
 			input wire [31:0]	i_data,
 			input wire		i_ack,
 			input wire		i_error,
+			output wire		i_inval,
+			output wire [icache_idx_bits - 1:0] i_idx,
 			/* Data bus. */
 			output wire [29:0]	d_addr,
 			output wire [3:0]	d_bytesel,
@@ -45,6 +47,8 @@ module oldland_pipeline(input wire		clk,
 			/* CPUID> */
 			output wire [2:0]	cpuid_sel,
 			input wire [31:0]	cpuid_val);
+
+parameter	icache_idx_bits = 0;
 
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
@@ -89,6 +93,7 @@ wire            de_is_rfe;
 wire		df_illegal_instr;
 wire		de_exception_start;
 wire		de_i_valid;
+wire		de_cache_instr;
 
 /* Execute -> memory signals. */
 wire [31:0]	em_alu_out;
@@ -106,6 +111,8 @@ wire [25:0]	e_vector_base;
 wire		em_i_valid;
 wire		m_busy; /* Memory/writeback busy. */
 wire		ei_irqs_enabled;
+wire		em_cache_instr;
+wire [1:0]	em_cache_op;
 
 /* Memory -> writeback signals. */
 wire [31:0]	mw_wr_val;
@@ -194,7 +201,8 @@ oldland_decode	decode(.clk(clk),
 		       .exception_start_out(de_exception_start),
 		       .i_fetched(fd_i_fetched),
 		       .i_valid(de_i_valid),
-		       .bkpt_hit(bkpt_hit));
+		       .bkpt_hit(bkpt_hit),
+		       .cache_instr(de_cache_instr));
 
 oldland_exec	execute(.clk(clk),
 			.rst(dbg_rst),
@@ -247,9 +255,13 @@ oldland_exec	execute(.clk(clk),
 			.irq_start(fe_irq_start),
 			.irq_fault_address(fe_irq_fault_address),
 			.cpuid_sel(cpuid_sel),
-			.cpuid_val(cpuid_val));
+			.cpuid_val(cpuid_val),
+			.cache_instr(de_cache_instr),
+			.cache_instr_out(em_cache_instr),
+			.cache_op(em_cache_op));
 
-oldland_memory	mem(.clk(clk),
+oldland_memory	#(.icache_idx_bits(icache_idx_bits))
+		mem(.clk(clk),
 		    .rst(dbg_rst),
 		    .load(em_mem_load),
 		    .store(em_mem_store),
@@ -282,7 +294,11 @@ oldland_memory	mem(.clk(clk),
 		    .dbg_compl(dbg_mem_compl),
 		    .data_abort(m_data_abort),
 		    .i_valid(em_i_valid),
-		    .busy(m_busy));
+		    .busy(m_busy),
+		    .cache_instr(em_cache_instr),
+		    .cache_op(em_cache_op),
+		    .i_idx(i_idx),
+		    .i_inval(i_inval));
 
 oldland_regfile	regfile(.clk(clk),
 			.rst(dbg_rst),

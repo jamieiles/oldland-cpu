@@ -590,20 +590,28 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 		     const struct alu_result *alu)
 {
 	uint32_t v, addr = alu->alu_q;
-	int err;
+	int err = 0;
 
-	if (!ucode_mstr(ucode) && !ucode_mldr(ucode))
+	if (!ucode_mstr(ucode) && !ucode_mldr(ucode) && !ucode_cache(ucode))
 		return 0;
 
 	if (ucode_mstr(ucode)) {
 		err = cpu_mem_map_write(c, alu->alu_q,
 					maw_to_bits(ucode_maw(ucode)),
 					alu->mem_write_val);
-	} else {
+	} else if (ucode_mldr(ucode)) {
 		err = mem_map_read(c->mem, alu->alu_q,
 				   maw_to_bits(ucode_maw(ucode)), &v);
 		if (!err)
 			cpu_wr_reg(c, instr_rd(instr), v);
+	} else if (ucode_cache(ucode)) {
+		uint32_t op2 = fetch_op2(c, instr, ucode);
+
+		switch (op2) {
+		case 0x0:
+			cache_inval_index(c->icache, alu->alu_q);
+			break;
+		}
 	}
 
 	if (err) {

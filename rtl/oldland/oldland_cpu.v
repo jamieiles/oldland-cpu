@@ -35,6 +35,15 @@ parameter	cpu_clock_speed = 32'd50000000;
 localparam	icache_nr_lines = icache_size / icache_line_size;
 localparam	icache_idx_bits = $clog2(icache_nr_lines);
 
+/* CPU<->I$ signals. */
+wire		ic_access;
+wire [29:0]	ic_addr;
+wire [31:0]	ic_data;
+wire		ic_ack;
+wire		ic_error;
+wire		pipeline_icache_inval;
+wire [icache_idx_bits - 1:0] pipeline_icache_idx;
+
 /* Debug control signals. */
 wire		cpu_run;
 wire		cpu_stopped;
@@ -57,16 +66,11 @@ wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
 wire		dbg_icache_inval;
+wire		icache_inval = cpu_stopped ? dbg_icache_inval : pipeline_icache_inval;
 wire [icache_idx_bits - 1:0] dbg_icache_idx;
+wire [icache_idx_bits - 1:0] icache_idx = cpu_stopped ? dbg_icache_idx : pipeline_icache_idx;
 wire [2:0]	dbg_cpuid_sel;
 wire            dbg_bkpt_hit;
-
-/* CPU<->I$ signals. */
-wire		ic_access;
-wire [29:0]	ic_addr;
-wire [31:0]	ic_data;
-wire		ic_ack;
-wire		ic_error;
 
 /* CPUID signals. */
 wire [2:0]	cpu_cpuid_sel;
@@ -90,8 +94,8 @@ oldland_cache		#(.cache_size(icache_size),
 			       .c_data(ic_data),
 			       .c_ack(ic_ack),
 			       .c_error(ic_error),
-			       .c_inval(dbg_icache_inval),
-			       .c_index(dbg_icache_idx),
+			       .c_inval(icache_inval),
+			       .c_index(icache_idx),
 			       .m_access(i_access),
 			       .m_addr(i_addr),
 			       .m_data(i_data),
@@ -141,7 +145,8 @@ oldland_debug		#(.icache_nr_lines(icache_nr_lines))
 			      .cpuid_sel(dbg_cpuid_sel),
 			      .cpuid_val(cpuid_val));
 
-oldland_pipeline	pipeline(.clk(clk),
+oldland_pipeline	#(.icache_idx_bits(icache_idx_bits))
+			pipeline(.clk(clk),
 				 .irq_req(irq_req),
 				 .running(running),
 				 /* Instruction bus. */
@@ -150,6 +155,8 @@ oldland_pipeline	pipeline(.clk(clk),
 				 .i_data(ic_data),
 				 .i_ack(ic_ack),
 				 .i_error(ic_error),
+				 .i_idx(pipeline_icache_idx),
+				 .i_inval(pipeline_icache_inval),
 				 /* Data bus. */
 				 .d_addr(d_addr),
 				 .d_bytesel(d_bytesel),

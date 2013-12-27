@@ -36,12 +36,40 @@ target:
 	nop	/* 20 */
 	nop	/* 24 */
 cl_end:	orlo	$r1, $r1, 0xfeed	/* 28, last word in cache line. */
+        /* New cache line. */
 	TESTPOINT	TP_USER, 1
 	nop
-	b	success
+	b	patch
+
+
+.align  4
+patch:
+	ldr32	$r0, incr3
+	str32	$r0, ptarget
+	nop
+	nop
+	nop
+ptarget:
+	nop
+	nop
+	nop
+	/* Invalidate cache line. */
+	movhi	$r2, %hi(patch)
+	orlo	$r2, $r2, %lo(patch)
+	/* 32-byte cache line size only, assume that tag bits are clear. */
+	lsr	$r2, $r2, 5
+	cache	$r2, 0
+	cmp	$r3, 1
+	beq	success
+	b	ptarget
+
+	FAILURE
 
 loop:
 	b	loop
+
+incr3:
+	add	$r3, $r3, 1
 
 success:
 	SUCCESS

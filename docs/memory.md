@@ -51,7 +51,7 @@ Data cache:
 
 All maintenance instructions are encoded into a single cache instruction:
 
-  `cache	op, $rn`
+  `cache	$rn, op`
 
 For instructions that don't take a parameter the $rn register should be set to
 0.

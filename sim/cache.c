@@ -59,8 +59,8 @@ static inline uint32_t addr_tag(uint32_t addr)
 
 void cache_inval_index(struct cache *cache, uint32_t indx)
 {
-	assert(indx < CACHE_INDEX_SZ);
-	cache->lines[indx].valid = 0;
+	if (indx <= CACHE_INDEX_SZ)
+		cache->lines[indx].valid = 0;
 }
 
 void cache_inval_all(struct cache *cache)

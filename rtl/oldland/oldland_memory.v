@@ -33,7 +33,13 @@ module oldland_memory(input wire		clk,
 		      output wire [31:0]	dbg_rd_val,
 		      output wire		dbg_compl,
 		      input wire		i_valid,
-		      output wire		busy);
+		      output wire		busy,
+		      input wire		cache_instr,
+		      input wire [1:0]		cache_op,
+		      output wire		i_inval,
+		      output wire [icache_idx_bits - 1:0] i_idx);
+
+parameter	icache_idx_bits = 0;
 
 reg [31:0]	wr_val_bypass;
 reg		update_rd_bypass = 1'b0;
@@ -51,9 +57,10 @@ reg [3:0]	mem_rd = 4'b0;
 reg		mem_update_rd = 1'b0;
 reg [31:0]	rd_mask = 32'b0;
 wire [1:0]	mem_width = dbg_en ? dbg_width : width;
+reg		cache_complete = 1'b0;
 
 assign		reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
-assign		complete = d_ack | d_error;
+assign		complete = d_ack | d_error | cache_complete;
 assign		update_rd_out = complete && !dbg_en && !d_error ?
 			mem_update_rd : update_rd_bypass;
 assign		rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
@@ -63,6 +70,8 @@ assign		dbg_compl = complete;
 assign		data_abort = d_error;
 
 assign		busy = load | store | update_rd_out;
+assign		i_idx = addr[icache_idx_bits - 1:0];
+assign		i_inval = cache_instr && cache_op == 2'b00;
 
 initial begin
 	wr_val_bypass = 32'b0;
@@ -86,6 +95,9 @@ always @(posedge clk) begin
 			mem_update_rd <= load;
 	end
 end
+
+always @(posedge clk)
+	cache_complete <= cache_instr;
 
 /* Byte enables and rotated data write value. */
 always @(*) begin

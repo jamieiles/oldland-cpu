@@ -16,6 +16,7 @@ function step_to_tp()
                         print("Maximum cycle count exceeded")
 			break
 		end
+		read_reg(16)
 
 		pc = target.read_reg(16)
 		tp = get_testpoint(pc)
