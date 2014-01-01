@@ -31,16 +31,21 @@ struct io_ops {
 		    void *priv);
 };
 
+enum {
+    MEM_MAPF_CACHEABLE = (1 << 0),
+};
+
 /*
  * Add a new I/O region.  Returned as a cookie for further use.
  */
 struct region *mem_map_region_add(struct mem_map *map, physaddr_t base,
 				  size_t len, const struct io_ops *ops,
-				  void *priv);
+				  void *priv, int flags);
 int mem_map_write(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 		  uint32_t val);
 int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 		 uint32_t *val);
+int mem_map_addr_cacheable(struct mem_map *map, physaddr_t addr);
 
 /*
  * Devices.

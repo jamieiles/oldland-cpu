@@ -78,7 +78,8 @@ int ram_init(struct mem_map *mem, physaddr_t base, size_t len,
 	ram = mmap(NULL, len, PROT_READ | PROT_WRITE,
 		   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	assert(ram != MAP_FAILED);
-	r = mem_map_region_add(mem, base, len, &ram_io_ops, ram);
+	r = mem_map_region_add(mem, base, len, &ram_io_ops, ram,
+			       MEM_MAPF_CACHEABLE);
 	assert(r != NULL);
 
 	if (init_contents) {
@@ -107,7 +108,8 @@ int rom_init(struct mem_map *mem, physaddr_t base, size_t len,
 	assert(fd >= 0);
 	rom = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
 	assert(rom != MAP_FAILED);
-	r = mem_map_region_add(mem, base, len, &rom_io_ops, rom);
+	r = mem_map_region_add(mem, base, len, &rom_io_ops, rom,
+			       MEM_MAPF_CACHEABLE);
 	assert(r != NULL);
 
 	return 0;
@@ -135,7 +137,7 @@ static const struct io_ops sdram_ctrl_ops = {
 int sdram_ctrl_init(struct mem_map *mem, physaddr_t base, size_t len)
 {
 	struct region *r = mem_map_region_add(mem, base, len, &sdram_ctrl_ops,
-					      NULL);
+					      NULL, 0);
 	assert(r != NULL);
 
 	return 0;

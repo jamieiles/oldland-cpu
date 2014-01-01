@@ -130,7 +130,7 @@ struct irq_ctrl *irq_ctrl_init(struct mem_map *mem, physaddr_t base,
 	ctrl->cpu_clear_irq = cpu_clear_irq;
 	ctrl->cb_data = data;
 
-	r = mem_map_region_add(mem, base, 4096, &irq_ctrl_ops, ctrl);
+	r = mem_map_region_add(mem, base, 4096, &irq_ctrl_ops, ctrl, 0);
 	assert(r);
 
 	return ctrl;

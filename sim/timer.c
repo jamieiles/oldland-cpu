@@ -156,7 +156,7 @@ struct timer_base *timers_init(struct mem_map *mem, physaddr_t base,
 		assert(t->timers[i].event != NULL);
 	}
 
-	r = mem_map_region_add(mem, base, 4096, &timer_ops, t);
+	r = mem_map_region_add(mem, base, 4096, &timer_ops, t, 0);
 	assert(r != NULL);
 
 	return t;

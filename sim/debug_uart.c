@@ -117,7 +117,7 @@ int debug_uart_init(struct mem_map *mem, physaddr_t base, size_t len)
 			die("failed to connect to uart socket %s\n", sock);
 	}
 
-	r = mem_map_region_add(mem, base, len, &uart_io_ops, u);
+	r = mem_map_region_add(mem, base, len, &uart_io_ops, u, 0);
 	assert(r != NULL);
 
 	return 0;

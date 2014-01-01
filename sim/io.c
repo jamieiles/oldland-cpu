@@ -27,6 +27,7 @@
 
 struct region {
 	physaddr_t base;
+	int flags;
 	void *priv;
 	int (*read)(unsigned int offs, uint32_t *val, size_t nr_bits,
 		    void *priv);
@@ -117,7 +118,7 @@ static struct region *insert_region(struct supersect *ss, unsigned int idx,
 
 struct region *mem_map_region_add(struct mem_map *map, physaddr_t base,
 				  size_t len, const struct io_ops *ops,
-				  void *priv)
+				  void *priv, int flags)
 {
 	struct region *r = calloc(1, sizeof(*r));
 	
@@ -129,6 +130,7 @@ struct region *mem_map_region_add(struct mem_map *map, physaddr_t base,
 	r->priv = priv;
 	r->read = ops->read;
 	r->write = ops->write;
+	r->flags = flags;
 
 	while (len > 0) {
 		struct supersect *ss =
@@ -171,4 +173,14 @@ int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 	r = mem_map_lookup(map, addr);
 
 	return r->read(addr - r->base, val, nr_bits, r->priv);
+}
+
+int mem_map_addr_cacheable(struct mem_map *map, physaddr_t addr)
+{
+	const struct region *r = mem_map_lookup(map, addr);
+
+	if (r)
+		return !!(r->flags & MEM_MAPF_CACHEABLE);
+
+	return 0;
 }
