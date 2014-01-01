@@ -79,6 +79,7 @@ struct cpu {
 	struct irq_ctrl *irq_ctrl;
 	struct timer_base *timers;
 	struct cache *icache;
+	struct cache *dcache;
 };
 
 enum cpuid_reg_names {
@@ -89,16 +90,17 @@ enum cpuid_reg_names {
 	CPUID_DCACHE,
 };
 
-#define CACHE_LINE_SIZE		(1 << ICACHE_OFFSET_BITS)
-#define CPUID_ICACHE_VAL	((CACHE_LINE_SIZE / sizeof(uint32_t)) | \
+#define CPUID_ICACHE_VAL	((ICACHE_LINE_SIZE / sizeof(uint32_t)) | \
 				  ((1 << ICACHE_INDEX_BITS) << 8))
+#define CPUID_DCACHE_VAL	((DCACHE_LINE_SIZE / sizeof(uint32_t)) | \
+				  ((1 << DCACHE_INDEX_BITS) << 8))
 
 static const uint32_t cpuid_regs[] = {
 	[CPUID_VERSION]		= (CPUID_MANUFACTURER << 16) | CPUID_MODEL,
 	[CPUID_CORE_SPEED]	= CPU_CLOCK_SPEED,
 	[CPUID_FEATURES]	= 0,
 	[CPUID_ICACHE]		= CPUID_ICACHE_VAL,
-	[CPUID_DCACHE]		= 0,
+	[CPUID_DCACHE]		= CPUID_DCACHE_VAL,
 };
 
 enum psr_flags {
@@ -161,11 +163,17 @@ int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
 
 int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits)
 {
+	if (mem_map_addr_cacheable(c->mem, addr))
+		return cache_read(c->dcache, addr, nbits, v);
+
 	return mem_map_read(c->mem, addr, nbits, v);
 }
 
 int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
 {
+	if (mem_map_addr_cacheable(c->mem, addr))
+		return cache_write(c->dcache, addr, nbits, v);
+
 	return mem_map_write(c->mem, addr, nbits, v);
 }
 
@@ -312,6 +320,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	c->icache = cache_new(c->mem);
 	assert(c->icache);
 
+	c->dcache = cache_new(c->mem);
+	assert(c->dcache);
+
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
 
@@ -333,7 +344,7 @@ static int cpu_mem_map_write(struct cpu *c, physaddr_t addr,
 	trace(c->trace_file, TRACE_DADDR, addr);
 	trace(c->trace_file, TRACE_DOUT, val);
 
-	return mem_map_write(c->mem, addr, nr_bits, val);
+	return cpu_write_mem(c, addr, val, nr_bits);
 }
 
 static uint32_t fetch_op1(struct cpu *c, uint32_t instr, uint32_t ucode)
@@ -600,8 +611,8 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 					maw_to_bits(ucode_maw(ucode)),
 					alu->mem_write_val);
 	} else if (ucode_mldr(ucode)) {
-		err = mem_map_read(c->mem, alu->alu_q,
-				   maw_to_bits(ucode_maw(ucode)), &v);
+		err = cpu_read_mem(c, alu->alu_q,
+				   &v, maw_to_bits(ucode_maw(ucode)));
 		if (!err)
 			cpu_wr_reg(c, instr_rd(instr), v);
 	} else if (ucode_cache(ucode)) {
@@ -610,6 +621,12 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 		switch (op2) {
 		case 0x0:
 			cache_inval_index(c->icache, alu->alu_q);
+			break;
+		case 0x1:
+			cache_inval_index(c->dcache, alu->alu_q);
+			break;
+		case 0x2:
+			cache_flush_index(c->dcache, alu->alu_q);
 			break;
 		}
 	}
@@ -687,6 +704,7 @@ out:
 
 void cpu_cache_sync(struct cpu *cpu)
 {
+	cache_flush_all(cpu->dcache);
 	cache_inval_all(cpu->icache);
 }
 
@@ -714,4 +732,5 @@ void cpu_reset(struct cpu *c)
 	irq_ctrl_reset(c->irq_ctrl);
 	timers_reset(c->timers);
 	cache_inval_all(c->icache);
+	cache_inval_all(c->dcache);
 }

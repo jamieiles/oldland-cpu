@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "cache.h"
 #include "io.h"
 
 #define CACHE_OFFSET_SZ		(1 << ICACHE_OFFSET_BITS)
@@ -59,16 +60,20 @@ static inline uint32_t addr_tag(uint32_t addr)
 
 void cache_inval_index(struct cache *cache, uint32_t indx)
 {
-	if (indx <= CACHE_INDEX_SZ)
+	if (indx <= CACHE_INDEX_SZ) {
 		cache->lines[indx].valid = 0;
+		cache->lines[indx].dirty = 0;
+	}
 }
 
 void cache_inval_all(struct cache *cache)
 {
 	int i;
 
-	for (i = 0; i < CACHE_INDEX_SZ; ++i)
+	for (i = 0; i < CACHE_INDEX_SZ; ++i) {
 		cache->lines[i].valid = 0;
+		cache->lines[i].dirty = 0;
+	}
 }
 
 static int cache_fill_line(const struct cache *cache, struct cache_line *line,
@@ -99,10 +104,9 @@ int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 	uint32_t offs = addr_offs(addr);
 	int rc = 0;
 
-	/* Writes not yet implemented. */
-	assert(!line->dirty);
-
 	if (!line->valid || tag != line->tag) {
+		cache_flush_index(cache, addr_index(addr));
+
 		rc = cache_fill_line(cache, line, addr & ~CACHE_OFFSET_MASK);
 		if (rc != 0)
 			goto out;
@@ -123,5 +127,73 @@ int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 	}
 
 out:
+	return rc;
+}
+
+int cache_write(struct cache *cache, uint32_t addr, unsigned int nr_bits,
+		uint32_t val)
+{
+	struct cache_line *line = &cache->lines[addr_index(addr)];
+	uint32_t tag = addr_tag(addr);
+	uint32_t offs = addr_offs(addr);
+	int rc = 0;
+
+	/* No allocate on write. */
+	if (!line->valid || tag != line->tag)
+		return mem_map_write(cache->mem, addr, nr_bits, val);
+
+	switch (nr_bits) {
+	case 8:
+		line->data8[offs] = val;
+		break;
+	case 16:
+		line->data16[offs / sizeof(uint16_t)] = val;
+		break;
+	case 32:
+		line->data32[offs / sizeof(uint32_t)] = val;
+		break;
+	default:
+		return -EIO;
+	}
+	line->dirty = 1;
+
+	return rc;
+}
+
+int cache_flush_index(struct cache *cache, uint32_t indx)
+{
+	int rc = 0;
+	unsigned int m;
+	uint32_t addr = (cache->lines[indx].tag << CACHE_TAG_SHIFT) |
+		(indx << CACHE_INDEX_SHIFT);
+
+	if (indx >= CACHE_INDEX_SZ)
+		return 0;
+
+	if (!cache->lines[indx].dirty)
+		return 0;
+
+	for (m = 0; m < CACHE_OFFSET_SZ / 4; ++m) {
+		rc = mem_map_write(cache->mem, addr + m * 4, 32,
+				   cache->lines[indx].data32[m]);
+		if (rc)
+			return rc;
+	}
+
+	cache->lines[indx].dirty = 0;
+
+	return 0;
+}
+
+int cache_flush_all(struct cache *cache)
+{
+	int rc = 0, i;
+
+	for (i = 0; i < CACHE_INDEX_SZ; ++i) {
+		rc = cache_flush_index(cache, i);
+		if (rc)
+			break;
+	}
+
 	return rc;
 }
