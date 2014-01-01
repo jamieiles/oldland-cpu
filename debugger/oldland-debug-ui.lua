@@ -147,4 +147,10 @@ function cpuid()
 	size = bit32.rshift(icache, 8) * line_size
 	print(string.format("  Size: %uKB", size / 1024))
 	print(string.format("  Line: %u", line_size))
+	print("Data Cache:")
+	dcache = target.read_cpuid(4)
+	line_size = bit32.band(dcache, 0xff) * 4
+	size = bit32.rshift(dcache, 8) * line_size
+	print(string.format("  Size: %uKB", size / 1024))
+	print(string.format("  Line: %u", line_size))
 end
