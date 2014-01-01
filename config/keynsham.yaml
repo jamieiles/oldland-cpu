@@ -4,6 +4,10 @@
             size: 8192,
             line_size: 32
         },
+        dcache: {
+            size: 8192,
+            line_size: 32
+        },
         manufacturer: 0x4a49,
         model: 0x0001,
         clock_speed: 50000000

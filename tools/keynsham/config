@@ -37,6 +37,8 @@ def write_output(writer, int_formatter):
     cpu = keynsham_config['cpu']
     writer('ICACHE_SIZE', cpu['icache']['size'])
     writer('ICACHE_LINE_SIZE', cpu['icache']['line_size'])
+    writer('DCACHE_SIZE', cpu['dcache']['size'])
+    writer('DCACHE_LINE_SIZE', cpu['dcache']['line_size'])
     writer('CPUID_MANUFACTURER',
            int_formatter(cpu['manufacturer'], width = 16))
     writer('CPUID_MODEL', int_formatter(cpu['model'], width = 16))
@@ -53,6 +55,10 @@ def write_output(writer, int_formatter):
                int(math.log(cpu['icache']['line_size'], 2)))
         writer('ICACHE_INDEX_BITS',
                int(math.log(cpu['icache']['size'] / cpu['icache']['line_size'], 2)))
+        writer('DCACHE_OFFSET_BITS',
+               int(math.log(cpu['dcache']['line_size'], 2)))
+        writer('DCACHE_INDEX_BITS',
+               int(math.log(cpu['dcache']['size'] / cpu['dcache']['line_size'], 2)))
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:
