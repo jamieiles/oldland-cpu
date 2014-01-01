@@ -128,6 +128,10 @@ function run_test(test)
 		target.reset()
 		loadelf(test.elf)
 
+		if test.setup then
+			test.setup()
+		end
+
 		handlers = {
 			["step"] = step_testpoints,
 			["run"] = run_testpoints,
