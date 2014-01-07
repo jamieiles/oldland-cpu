@@ -114,6 +114,8 @@
 
 <li><a href='#rfe'>rfe</a></li>
 
+<li><a href='#cache'>cache</a></li>
+
 </ul>
 <p><a id='add'><h2>add</h2></a></p>
 <p><strong>Class: 0, Opcode: 0</strong></p><h3>Description</h3><p><em>Rd := Ra + OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
@@ -663,6 +665,22 @@
   </ul><p><a href='#top'>top of page</a></p>
 <p><a id='rfe'><h2>rfe</h2></a></p>
 <p><strong>Class: 1, Opcode: 2</strong></p><h3>Description</h3><p><em>Return from exception.</em></p>
+<p><a id='cache'><h2>cache</h2></a></p>
+<p><strong>Class: 2, Opcode: 15</strong></p><h3>Description</h3><p><em>Cache operation imm13, with index Ra if index valid.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>ra</li>
+      
+    
+  
+  
+    
+      <li>imm13</li>
+      
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
       </section>
     </div>
 
