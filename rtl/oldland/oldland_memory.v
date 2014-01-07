@@ -93,6 +93,8 @@ always @(posedge clk) begin
 			mem_rd <= rd_sel;
 		if (store || load)
 			mem_update_rd <= load;
+		else if (complete)
+			mem_update_rd <= 1'b0;
 	end
 end
 
