@@ -22,6 +22,7 @@ module oldland_pipeline(input wire		clk,
 			output wire		stopped,
 			output wire		running,
 			output wire		bkpt_hit,
+			input wire		dbg_en,
 			/* Memory debug. */
 			input wire [31:0]	dbg_mem_addr,
 			input wire [1:0]	dbg_mem_width,
@@ -284,7 +285,7 @@ oldland_memory	#(.icache_idx_bits(icache_idx_bits))
 		    .d_ack(d_ack),
 		    .d_error(d_error),
 		    .complete(mf_complete),
-		    .dbg_en(stopped),
+		    .dbg_en(dbg_en),
 		    .dbg_access(dbg_mem_access),
 		    .dbg_wr_en(dbg_mem_wr_en),
 		    .dbg_addr(dbg_mem_addr),
@@ -313,7 +314,7 @@ oldland_regfile	regfile(.clk(clk),
 			.dbg_reg_val(dbg_reg_val),
 			.dbg_reg_wr_val(dbg_reg_wr_val),
 			.dbg_reg_wr_en(dbg_reg_wr_en),
-			.dbg_en(stopped));
+			.dbg_en(dbg_en));
 
 always @(posedge clk) begin
 	ra_forward_exec <= de_rd_sel == d_ra_sel && de_update_rd;

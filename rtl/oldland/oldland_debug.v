@@ -6,6 +6,7 @@ module oldland_debug(input wire		clk,
 		     input wire		wr_en,
 		     input wire		req,
 		     output wire	ack,
+		     output reg		dbg_en,
 		     /* Execution control signals. */
 		     output wire	run,
 		     input wire		stopped,
@@ -141,6 +142,7 @@ initial begin
 	mem_wr_en = 1'b0;
 	mem_access = 1'b0;
 	dbg_icache_idx = {icache_idx_bits{1'b1}};
+	dbg_en = 1'b0;
 end
 
 always @(*) begin
@@ -177,6 +179,7 @@ always @(*) begin
 	dbg_cr_wr_en = 1'b0;
 	dbg_reg_wr_en = 1'b0;
 	mem_access = 1'b0;
+	dbg_en = 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
@@ -199,31 +202,43 @@ always @(*) begin
 		CMD_HALT: next_state = STATE_WAIT_STOPPED;
 		CMD_RUN: next_state = STATE_COMPL;
 		CMD_STEP: next_state = STATE_STEP;
-		CMD_READ_REG: next_state = STATE_STORE_REG_RVAL;
-		CMD_WRITE_REG: next_state = STATE_WRITE_REG;
+		CMD_READ_REG: begin
+			next_state = STATE_STORE_REG_RVAL;
+			dbg_en = 1'b1;
+		end
+		CMD_WRITE_REG: begin
+			next_state = STATE_WRITE_REG;
+			dbg_en = 1'b1;
+		end
 		CMD_RMEM8: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_RMEM16: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_RMEM32: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_WMEM8: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_WMEM16: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_WMEM32: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
+			dbg_en = 1'b1;
 		end
 		CMD_RESET: begin
 			next_state = STATE_RESET;
@@ -236,6 +251,7 @@ always @(*) begin
 			ctl_addr = 2'b11;
 			ctl_wr_en = 1'b1;
 			ctl_din = cpuid_val;
+			dbg_en = 1'b1;
 		end
 		CMD_GET_EXEC_STATUS: begin
 			next_state = STATE_COMPL;
@@ -252,6 +268,7 @@ always @(*) begin
 	STATE_CACHE_SYNC: begin
 		next_state = dbg_icache_idx == {icache_idx_bits{1'b1}} ?
 			STATE_COMPL : STATE_CACHE_SYNC;
+		dbg_en = 1'b1;
 	end
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
@@ -261,9 +278,11 @@ always @(*) begin
 		else
 			dbg_reg_wr_en = 1'b1;
 		next_state = STATE_COMPL;
+		dbg_en = 1'b1;
 	end
 	STATE_WAIT_WMEM: begin
 		next_state = mem_compl ? STATE_COMPL : STATE_WAIT_WMEM;
+		dbg_en = 1'b1;
 	end
 	STATE_WAIT_RMEM: begin
 		if (mem_compl) begin
@@ -274,6 +293,7 @@ always @(*) begin
 		end else begin
 			next_state = STATE_WAIT_RMEM;
 		end
+		dbg_en = 1'b1;
 	end
 	STATE_STEP: begin
 		next_state = STATE_WAIT_STOPPED;
@@ -292,6 +312,7 @@ always @(*) begin
 		ctl_din = debug_addr[4] ? dbg_pc :
 			  debug_addr[5] ? dbg_cr_val : dbg_reg_val;
 		next_state = STATE_COMPL;
+		dbg_en = 1'b1;
 	end
 	STATE_COMPL: begin
 		next_state = req_sync ? STATE_COMPL : STATE_IDLE;

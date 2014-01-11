@@ -47,6 +47,7 @@ wire [icache_idx_bits - 1:0] pipeline_icache_idx;
 /* Debug control signals. */
 wire		cpu_run;
 wire		cpu_stopped;
+wire		dbg_en;
 wire [3:0]	dbg_reg_sel;
 wire [31:0]	dbg_reg_wr_val;
 wire [31:0]	dbg_reg_val;
@@ -66,15 +67,15 @@ wire		dbg_mem_wr_en;
 wire		dbg_mem_access;
 wire		dbg_mem_compl;
 wire		dbg_icache_inval;
-wire		icache_inval = cpu_stopped ? dbg_icache_inval : pipeline_icache_inval;
+wire		icache_inval = dbg_en ? dbg_icache_inval : pipeline_icache_inval;
 wire [icache_idx_bits - 1:0] dbg_icache_idx;
-wire [icache_idx_bits - 1:0] icache_idx = cpu_stopped ? dbg_icache_idx : pipeline_icache_idx;
+wire [icache_idx_bits - 1:0] icache_idx = dbg_en ? dbg_icache_idx : pipeline_icache_idx;
 wire [2:0]	dbg_cpuid_sel;
 wire            dbg_bkpt_hit;
 
 /* CPUID signals. */
 wire [2:0]	cpu_cpuid_sel;
-wire [2:0]	cpuid_sel = cpu_stopped ? dbg_cpuid_sel : cpu_cpuid_sel;
+wire [2:0]	cpuid_sel = dbg_en ? dbg_cpuid_sel : cpu_cpuid_sel;
 wire [31:0]	cpuid_val;
 
 oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
@@ -112,6 +113,7 @@ oldland_debug		#(.icache_nr_lines(icache_nr_lines))
 		              .wr_en(dbg_wr_en),
 		              .req(dbg_req),
 		              .ack(dbg_ack),
+			      .dbg_en(dbg_en),
 		              /* Execution control. */
 		              .run(cpu_run),
 		              .stopped(cpu_stopped),
@@ -170,6 +172,7 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits))
 				 .run(cpu_run),
 				 .stopped(cpu_stopped),
                                  .bkpt_hit(dbg_bkpt_hit),
+				 .dbg_en(dbg_en),
 				 /* Memory debug. */
 				 .dbg_mem_addr(dbg_mem_addr),
 				 .dbg_mem_width(dbg_mem_width),
