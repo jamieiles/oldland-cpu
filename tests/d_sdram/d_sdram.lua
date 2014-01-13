@@ -1,9 +1,5 @@
 require "common"
 
-MAX_CYCLE_COUNT = 10000
-
-connect_and_load("d_sdram")
-
 function validate_sdram()
 	addr = 0x20000000
 	data = ""
@@ -19,9 +15,12 @@ function validate_sdram()
 	end
 end
 
-expect_testpoints = {
-	{ TP_USER, 0, validate_sdram },
-	{ TP_SUCCESS, 0 },
-}
-
-return run_testpoints(expect_testpoints)
+return run_test({
+	elf = "d_sdram",
+	max_cycle_count = 1000,
+	modes = {"step", "run"},
+	testpoints = {
+		{ TP_USER, 0, validate_sdram },
+		{ TP_SUCCESS, 0 },
+	}
+})

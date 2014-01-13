@@ -1,11 +1,7 @@
 require "common"
 
-MAX_CYCLE_COUNT = 1024
-
-connect_and_load("timer_irq")
-
-expect_testpoints = {
-	{ TP_SUCCESS, 0 },
-}
-
-return step_testpoints(expect_testpoints)
+return run_test({
+	elf = "timer_irq",
+	max_cycle_count = 1024,
+	modes = {"step", "run"}
+})

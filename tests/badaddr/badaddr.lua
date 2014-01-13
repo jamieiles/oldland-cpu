@@ -1,11 +1,7 @@
 require "common"
 
-MAX_CYCLE_COUNT = 128
-
-connect_and_load("badaddr")
-
-expect_testpoints = {
-	{ TP_SUCCESS, 0 },
-}
-
-return run_testpoints(expect_testpoints)
+return run_test({
+	elf = "badaddr",
+	max_cycle_count = 128,
+	modes = {"step", "run"}
+})

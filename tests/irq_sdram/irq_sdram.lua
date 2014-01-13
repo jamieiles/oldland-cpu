@@ -1,19 +1,18 @@
 require "common"
 
-MAX_CYCLE_COUNT = 8192
-
-connect_and_load("irq_sdram")
-
-expect_testpoints = {
-	{ TP_USER, 2 },
-	{ TP_USER, 0 },
-	{ TP_USER, 2 },
-	{ TP_USER, 1 },
-	{ TP_USER, 2 },
-	{ TP_USER, 0 },
-	{ TP_USER, 2 },
-	{ TP_USER, 1 },
-	{ TP_SUCCESS, 0 },
-}
-
-return step_testpoints(expect_testpoints)
+return run_test({
+	elf = "irq_sdram",
+	max_cycle_count = 8192,
+	modes = {"step", "run"},
+	testpoints = {
+		{ TP_USER, 2 },
+		{ TP_USER, 0 },
+		{ TP_USER, 2 },
+		{ TP_USER, 1 },
+		{ TP_USER, 2 },
+		{ TP_USER, 0 },
+		{ TP_USER, 2 },
+		{ TP_USER, 1 },
+		{ TP_SUCCESS, 0 },
+	}
+})

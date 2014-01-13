@@ -1,9 +1,5 @@
 require "common"
 
-MAX_CYCLE_COUNT = 128
-
-connect_and_load("cpuid")
-
 function validate_cpuid()
 	for i = 0, 4 do
 		c = target.read_cpuid(i)
@@ -15,8 +11,11 @@ function validate_cpuid()
 	if target.read_reg(0) == 0 then return -1 end
 end
 
-expect_testpoints = {
-	{ TP_SUCCESS, 0, validate_cpuid }
-}
-
-return step_testpoints(expect_testpoints)
+return run_test({
+	elf = "cpuid",
+	max_cycle_count = 128,
+	modes = {"step", "run"},
+	testpoints = {
+		{ TP_SUCCESS, 0, validate_cpuid }
+	}
+})

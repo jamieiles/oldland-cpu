@@ -8,11 +8,11 @@ end
 
 cycle_count = 0
 
-function step_to_tp()
+function step_to_tp(max_cycle_count)
 	while true do
 		target.step()
 		cycle_count = cycle_count + 1
-		if _G['MAX_CYCLE_COUNT'] and cycle_count > MAX_CYCLE_COUNT then
+		if max_cycle_count and cycle_count > max_cycle_count then
                         print("Maximum cycle count exceeded")
 			break
 		end
@@ -46,9 +46,9 @@ function tp_type(typ)
         return "???"
 end
 
-function step_testpoints(expected_testpoints)
+function step_testpoints(expected_testpoints, max_cycle_count)
 	for _, v in pairs(expected_testpoints) do
-		tp = step_to_tp()
+		tp = step_to_tp(max_cycle_count)
 		if not tp or
 		tp.type ~= v[1] or
 		tp.tag ~= v[2] then
@@ -117,7 +117,26 @@ function connect_test_target()
 	target.connect(host, port)
 end
 
-function connect_and_load(elf)
+function run_test(test)
 	connect_test_target()
-	loadelf(elf)
+
+	if test.testpoints == nil then
+		test.testpoints = { {TP_SUCCESS, 0} }
+	end
+
+	for _, mode in pairs(test.modes) do
+		target.reset()
+		loadelf(test.elf)
+
+		handlers = {
+			["step"] = step_testpoints,
+			["run"] = run_testpoints,
+		}
+		rc = handlers[mode](test.testpoints, test.max_cycle_count)
+		if rc and rc ~= 0 then
+			return rc
+		end
+	end
+
+	return 0
 end

@@ -1,11 +1,7 @@
 require "common"
 
-MAX_CYCLE_COUNT = 1000
-
-connect_and_load("addbranch")
-
-expect_testpoints = {
-	{ TP_SUCCESS, 0 }
-}
-
-return run_testpoints(expect_testpoints)
+return run_test({
+	elf = "addbranch",
+	max_cycle_count = 1000,
+	modes = {"step", "run"}
+})
