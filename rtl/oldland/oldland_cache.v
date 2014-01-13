@@ -10,7 +10,7 @@ module oldland_cache(input wire		clk,
 		     input wire		c_inval,
 		     input wire [CACHE_INDEX_BITS - 1:0] c_index,
 		     /* Cache<->memory signals. */
-		     output reg		m_access,
+		     output wire	m_access,
 		     output wire [29:0]	m_addr,
 		     input wire [31:0]	m_data,
 		     input wire		m_ack,
@@ -71,6 +71,7 @@ wire hit			= (tag_match && valid);
 reg latched_access		= 1'b0;
 reg fill_complete		= 1'b0;
 assign c_ack			= (latched_access & hit) | fill_complete | c_error;
+assign m_access			= state == STATE_FILL && !m_ack;
 
 reg [2:0]			state = STATE_IDLE;
 reg [2:0]			next_state = STATE_IDLE;
@@ -103,7 +104,6 @@ block_ram		#(.data_bits(32),
 				 .write_data(m_data));
 
 initial begin
-	m_access = 1'b0;
 	c_error = 1'b0;
 end
 
@@ -119,13 +119,11 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
-	m_access <= 1'b0;
 	fill_complete <= 1'b0;
 
 	if (rst) begin
 		word_offs <= {CACHE_LINE_WORD_BITS{1'b0}};
 	end else if (state == STATE_FILL) begin
-		m_access <= 1'b1;
 		if (m_ack)
 			word_offs <= next_offs;
 
