@@ -49,7 +49,9 @@ end
 
 always @(posedge clk) begin
 	if (enabled) begin
-		if (|count && !periodic)
+		if (|count && !periodic && enabled)
+			count <= count - 32'b1;
+		else if (periodic && enabled)
 			count <= count - 32'b1;
 		if (~|count && irq_enable && !irq_active && !irq_cleared)
 			irq_active <= 1'b1;
