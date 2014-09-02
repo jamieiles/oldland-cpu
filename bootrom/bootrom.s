@@ -66,6 +66,8 @@ next_data_byte:
 	b	next_data_byte
 
 done:
+	call	cache_sync
+
 	/* Be friendly and set the registers to zero. */
 	xor	$r0, $r0, $r0
 	xor	$r1, $r1, $r1
@@ -77,6 +79,21 @@ done:
 	xor	$sp, $sp, $sp
 	/* Here we go! */
 	b	$r0
+
+cache_sync:
+	xor	$r0, $r0, $r0
+sync_loop:
+	cmp	$r0, $r2
+	bgt	sync_done
+	cache	$r0, 2		/* Flush data cache line. */
+	cache	$r0, 0		/* Invalidate instruction cache line. */
+	add	$r0, $r0, 32
+
+	b	sync_loop
+
+sync_done:
+	ret
+
 
 	/*
 	 * Read the next character.  Clobbers $r0.
