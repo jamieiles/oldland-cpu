@@ -280,6 +280,10 @@ int dbg_read##width(struct target *t, unsigned addr, uint32_t *val)		\
 {										\
 	int rc;									\
 										\
+	rc = dbg_cache_sync(target);						\
+	if (rc)									\
+		return rc;							\
+										\
 	rc = dbg_write(t, REG_ADDRESS, addr);					\
 	if (rc)									\
 		return rc;							\

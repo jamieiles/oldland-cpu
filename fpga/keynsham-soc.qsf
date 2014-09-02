@@ -164,6 +164,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/common/sync2ff.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/dc_ram.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/cs_gen.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/block_ram.v
+set_global_assignment -name VERILOG_FILE ../rtl/common/cache_data_ram.v
 set_global_assignment -name VERILOG_FILE bootrom.v
 set_global_assignment -name QIP_FILE ram.qip
 set_global_assignment -name QIP_FILE bootrom.qip
@@ -172,5 +173,6 @@ set_global_assignment -name QIP_FILE jtag.qip
 
 set_location_assignment PIN_L3 -to running
 set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to running
+
 
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

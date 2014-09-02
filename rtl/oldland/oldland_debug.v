@@ -37,14 +37,21 @@ module oldland_debug(input wire		clk,
 		     output wire	dbg_rst,
 		     /* Cache maintenance. */
 		     output reg	[icache_idx_bits - 1:0] dbg_icache_idx,
+		     output reg [dcache_idx_bits - 1:0] dbg_dcache_idx,
 		     output wire	dbg_icache_inval,
+		     output wire	dbg_dcache_inval,
+		     output wire	dbg_dcache_flush,
+		     input wire		dbg_icache_complete,
+		     input wire		dbg_dcache_complete,
 		     /* CPUID. */
 		     output wire [2:0]	cpuid_sel,
 		     input wire [31:0]	cpuid_val);
 
 parameter icache_nr_lines	= 0;
+parameter dcache_nr_lines	= 0;
 
 localparam icache_idx_bits	= $clog2(icache_nr_lines);
+localparam dcache_idx_bits	= $clog2(dcache_nr_lines);
 
 localparam STATE_IDLE		= 4'b0000;
 localparam STATE_LOAD_CMD	= 4'b0001;
@@ -59,7 +66,8 @@ localparam STATE_WAIT_RMEM	= 4'b1110;
 localparam STATE_WAIT_WMEM	= 4'b1100;
 localparam STATE_EXECUTE	= 4'b1000;
 localparam STATE_RESET		= 4'b1001;
-localparam STATE_CACHE_SYNC	= 4'b1011;
+localparam STATE_CACHE_FLUSH	= 4'b1011;
+localparam STATE_CACHE_INVAL	= 4'b1101;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
@@ -110,7 +118,9 @@ assign		mem_wr_val = debug_data;
 assign		dbg_rst = state == STATE_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
-assign		dbg_icache_inval = state == STATE_CACHE_SYNC;
+assign		dbg_icache_inval = state == STATE_CACHE_INVAL | dbg_rst;
+assign		dbg_dcache_inval = state == STATE_CACHE_INVAL | dbg_rst;
+assign		dbg_dcache_flush = state == STATE_CACHE_FLUSH;
 assign		cpuid_sel = debug_addr[2:0];
 
 dc_ram		#(.addr_bits(2),
@@ -141,7 +151,8 @@ initial begin
 	dbg_cr_wr_en = 1'b0;
 	mem_wr_en = 1'b0;
 	mem_access = 1'b0;
-	dbg_icache_idx = {icache_idx_bits{1'b1}};
+	dbg_icache_idx = {icache_idx_bits{1'b0}};
+	dbg_dcache_idx = {dcache_idx_bits{1'b0}};
 	dbg_en = 1'b0;
 end
 
@@ -242,9 +253,10 @@ always @(*) begin
 		end
 		CMD_RESET: begin
 			next_state = STATE_RESET;
+			dbg_en = 1'b1;
 		end
 		CMD_CACHE_SYNC: begin
-			next_state = STATE_CACHE_SYNC;
+			next_state = STATE_CACHE_FLUSH;
 		end
 		CMD_CPUID: begin
 			next_state = STATE_COMPL;
@@ -265,9 +277,14 @@ always @(*) begin
 	STATE_RESET: begin
 		next_state = |reset_count ? STATE_RESET : STATE_COMPL;
 	end
-	STATE_CACHE_SYNC: begin
+	STATE_CACHE_FLUSH: begin
+		next_state = dbg_dcache_idx == {dcache_idx_bits{1'b1}} ?
+			STATE_CACHE_INVAL : STATE_CACHE_FLUSH;
+		dbg_en = 1'b1;
+	end
+	STATE_CACHE_INVAL: begin
 		next_state = dbg_icache_idx == {icache_idx_bits{1'b1}} ?
-			STATE_COMPL : STATE_CACHE_SYNC;
+			STATE_COMPL : STATE_CACHE_INVAL;
 		dbg_en = 1'b1;
 	end
 	STATE_WRITE_REG: begin
@@ -357,16 +374,27 @@ always @(posedge clk) begin
 		if (|reset_count) begin
 			reset_count <= reset_count - 8'b1;
 			dbg_icache_idx <= dbg_icache_idx + 1'b1;
+			dbg_dcache_idx <= dbg_dcache_complete ? dbg_dcache_idx + 1'b1 :
+				dbg_dcache_idx;
+		end else begin
+			dbg_icache_idx <= {icache_idx_bits{1'b0}};
+			dbg_dcache_idx <= {dcache_idx_bits{1'b0}};
 		end
 	end
 	STATE_STEP: begin
 		do_run <= 1'b0;
 	end
-	STATE_CACHE_SYNC: begin
+	STATE_CACHE_FLUSH: begin
+		dbg_dcache_idx <= dbg_dcache_complete ? dbg_dcache_idx + 1'b1 :
+			dbg_dcache_idx;
+	end
+	STATE_CACHE_INVAL: begin
 		dbg_icache_idx <= dbg_icache_idx + 1'b1;
 	end
 	STATE_COMPL: begin
 		ack_internal <= 1'b1;
+                dbg_icache_idx <= {icache_idx_bits{1'b0}};
+                dbg_dcache_idx <= {dcache_idx_bits{1'b0}};
 	end
 	default: begin
 	end

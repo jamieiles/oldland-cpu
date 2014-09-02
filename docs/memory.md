@@ -33,6 +33,9 @@ control read/write access).
 Instruction cache is enabled with the C bit of the PSR, data cache is enabled
 with the D bit of the PSR.
 
+Physical addresses with the MSB (31) set are automatically non-cached accesses
+and therefore used for peripherals where memory-mapped I/O is performed.
+
 Maintenance Instructions
 ------------------------
 

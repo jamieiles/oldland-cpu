@@ -42,7 +42,7 @@ cl_end:	orlo	$r1, $r1, 0xfeed	/* 28, last word in cache line. */
 	b	patch
 
 
-.align  4
+.align  5
 patch:
 	ldr32	$r0, incr3
 	str32	$r0, ptarget

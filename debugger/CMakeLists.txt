@@ -5,7 +5,7 @@ set(CMAKE_C_FLAGS "-I${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_C_FLAGS}")
 set(CMAKE_C_FLAGS "-ggdb3 -Wall -Werror -O2 -DINSTALL_PATH=\\\"${CMAKE_INSTALL_PREFIX}\\\" ${CMAKE_C_FLAGS}")
 
 find_package(Lua52 REQUIRED)
-include_directories(${LUA_INCLUDE_DIRS})
+include_directories(${LUA_INCLUDE_DIR})
 
 find_package(Readline REQUIRED)
 include_directories(${READLINE_INCLUDE_DIRS})

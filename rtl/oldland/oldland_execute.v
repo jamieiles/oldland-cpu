@@ -113,6 +113,8 @@ initial begin
 	pc_plus_4_out = 32'b0;
 	i_valid_out = 1'b0;
 	irqs_enabled = 1'b0;
+	cache_instr_out = 1'b0;
+	cache_op = 2'b00;
 end
 
 always @(*) begin

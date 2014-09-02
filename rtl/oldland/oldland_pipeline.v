@@ -8,6 +8,7 @@ module oldland_pipeline(input wire		clk,
 			input wire		i_error,
 			output wire		i_inval,
 			output wire [icache_idx_bits - 1:0] i_idx,
+			input wire		i_cacheop_complete,
 			/* Data bus. */
 			output wire [29:0]	d_addr,
 			output wire [3:0]	d_bytesel,
@@ -17,6 +18,10 @@ module oldland_pipeline(input wire		clk,
 			output wire		d_access,
 			input wire		d_ack,
 			input wire		d_error,
+			output wire [dcache_idx_bits - 1:0] d_idx,
+			output wire		d_inval,
+			output wire		d_flush,
+			input wire		d_cacheop_complete,
 			/* Debug signals. */
 			input wire		run,
 			output wire		stopped,
@@ -50,6 +55,7 @@ module oldland_pipeline(input wire		clk,
 			input wire [31:0]	cpuid_val);
 
 parameter	icache_idx_bits = 0;
+parameter	dcache_idx_bits = 0;
 
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
@@ -261,7 +267,8 @@ oldland_exec	execute(.clk(clk),
 			.cache_instr_out(em_cache_instr),
 			.cache_op(em_cache_op));
 
-oldland_memory	#(.icache_idx_bits(icache_idx_bits))
+oldland_memory	#(.icache_idx_bits(icache_idx_bits),
+		  .dcache_idx_bits(dcache_idx_bits))
 		mem(.clk(clk),
 		    .rst(dbg_rst),
 		    .load(em_mem_load),
@@ -299,7 +306,12 @@ oldland_memory	#(.icache_idx_bits(icache_idx_bits))
 		    .cache_instr(em_cache_instr),
 		    .cache_op(em_cache_op),
 		    .i_idx(i_idx),
-		    .i_inval(i_inval));
+		    .i_inval(i_inval),
+		    .i_cacheop_complete(i_cacheop_complete),
+		    .d_idx(d_idx),
+		    .d_inval(d_inval),
+		    .d_cacheop_complete(d_cacheop_complete),
+		    .d_flush(d_flush));
 
 oldland_regfile	regfile(.clk(clk),
 			.rst(dbg_rst),

@@ -85,6 +85,7 @@ initial begin
         is_swi = 1'b0;
 	is_rfe = 1'b0;
 	i_valid = 1'b0;
+	cache_instr = 1'b0;
 end
 
 always @(posedge clk) begin
