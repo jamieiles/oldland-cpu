@@ -31,7 +31,7 @@ wire [29:0]	i_addr;
 wire [31:0]	i_data;
 wire [29:0]	d_addr;
 wire [31:0]	d_data;
-wire [31:0]	d_wr_val;
+wire [31:0]	d_wr_val = d_wr_en ? cpu_d_out : 32'b0;
 wire [3:0]	d_bytesel;
 wire		d_wr_en;
 wire		d_access;
@@ -69,6 +69,8 @@ wire [31:0]	i_sdram_data;
 wire		i_sdram_ack;
 wire		i_sdram_error;
 
+wire [31:0]	cpu_d_out;
+
 /*
  * For invalid addresses - ack so we don't stall the CPU on a bus access and
  * set the error bit.
@@ -104,7 +106,7 @@ wire		i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
 wire		i_error = i_default_error | i_sdram_error;
 
 assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
-			  irq_data | timer_data;
+			  irq_data | timer_data | d_wr_val;
 assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 keynsham_ram	#(.bus_address(`RAM_ADDRESS),
@@ -120,7 +122,7 @@ keynsham_ram	#(.bus_address(`RAM_ADDRESS),
 		    .d_addr(d_addr),
 		    .d_data(ram_data),
 		    .d_bytesel(d_bytesel),
-		    .d_wr_val(d_wr_val),
+		    .d_wr_val(d_data),
 		    .d_wr_en(d_wr_en),
 		    .d_ack(ram_ack));
 
@@ -148,7 +150,7 @@ keynsham_sdram	#(.bus_address(`SDRAM_ADDRESS),
 		      .d_access(d_access),
 		      .d_cs(d_sdram_cs),
 		      .d_addr(d_addr),
-		      .d_wr_val(d_wr_val),
+		      .d_wr_val(d_data),
 		      .d_wr_en(d_wr_en),
 		      .d_bytesel(d_bytesel),
 		      .d_error(d_sdram_error),
@@ -176,7 +178,7 @@ keynsham_uart	#(.bus_address(`UART_ADDRESS),
 		     .bus_access(d_access),
 		     .bus_cs(uart_cs),
 		     .bus_addr(d_addr),
-		     .bus_wr_val(d_wr_val),
+		     .bus_wr_val(d_data),
 		     .bus_wr_en(d_wr_en),
 		     .bus_bytesel(d_bytesel),
 		     .bus_error(uart_error),
@@ -193,7 +195,7 @@ keynsham_irq	#(.nr_irqs(4),
 		    .bus_access(d_access),
 		    .bus_cs(irq_cs),
 		    .bus_addr(d_addr),
-		    .bus_wr_val(d_wr_val),
+		    .bus_wr_val(d_data),
 		    .bus_wr_en(d_wr_en),
 		    .bus_bytesel(d_bytesel),
 		    .bus_error(irq_error),
@@ -209,7 +211,7 @@ keynsham_timer_block	#(.bus_address(`TIMER_ADDRESS),
 			      .bus_access(d_access),
 			      .bus_cs(timer_cs),
 			      .bus_addr(d_addr),
-			      .bus_wr_val(d_wr_val),
+			      .bus_wr_val(d_data),
 			      .bus_wr_en(d_wr_en),
 			      .bus_bytesel(d_bytesel),
 			      .bus_error(timer_error),
@@ -234,7 +236,7 @@ oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		    .d_data(d_data),
 		    .d_bytesel(d_bytesel),
 		    .d_wr_en(d_wr_en),
-		    .d_wr_val(d_wr_val),
+		    .d_wr_val(cpu_d_out),
 		    .d_access(d_access),
 		    .d_ack(d_ack),
 		    .d_error(d_error),
