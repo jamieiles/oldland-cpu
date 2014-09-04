@@ -153,7 +153,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_soc.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_regfile.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_memory.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_fetch.v
-set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_execute.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_exec.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_decode.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_debug.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cpu.v

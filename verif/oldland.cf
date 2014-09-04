@@ -24,7 +24,7 @@ cpu_tb.v
 ../rtl/oldland/oldland_pipeline.v
 ../rtl/oldland/oldland_fetch.v
 ../rtl/oldland/oldland_decode.v
-../rtl/oldland/oldland_execute.v
+../rtl/oldland/oldland_exec.v
 ../rtl/oldland/oldland_regfile.v
 ../rtl/oldland/oldland_debug.v
 ../rtl/oldland/oldland_cache.v
