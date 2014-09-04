@@ -12,6 +12,11 @@ module dc_ram(input wire			clk_a,
 parameter addr_bits = 32;
 parameter data_bits = 32;
 
+// The RAM is driven by two clocks for synchronization between clock domains,
+// but in use only one domain will write at a time.
+// verilator lint_save
+// verilator lint_off MULTIDRIVEN
+
 (* ramstyle = "M9K" *) reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0];
 
 integer i;
@@ -32,5 +37,7 @@ always @(posedge clk_b) begin
 		ram[addr_b] <= din_b;
 	dout_b <= ram[addr_b];
 end
+
+// verilator lint_restore
 
 endmodule
