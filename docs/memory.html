@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="../stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="..//stylesheets/stylesheet.css">
 
     <title>Oldland-cpu</title>
   </head>
@@ -61,6 +61,8 @@
 <p>Each peripheral indicates the cacheability for the entirety of the peripherals address space. Non-cacheable peripherals will never have data cached regardless of any page table settings (though page tables can be used to control read/write access).</p>
 
 <p>Instruction cache is enabled with the C bit of the PSR, data cache is enabled with the D bit of the PSR.</p>
+
+<p>Physical addresses with the MSB (31) set are automatically non-cached accesses and therefore used for peripherals where memory-mapped I/O is performed.</p>
 
 <h2 id="maintenance_instructions">Maintenance Instructions</h2>
 
