@@ -19,11 +19,13 @@ reg [7:0]	rom [BOOTROM_BYTES - 1:0];
 reg [8 * 128:0] rom_filename;
 
 initial begin
+	// verilator lint_off WIDTH
 	if (!$value$plusargs("romfile=%s", rom_filename) ||
 	    rom_filename == 0) begin
 		$display("+romfile=PATH_TO_rom.hex required");
 		$finish;
 	end
+	// verilator lint_on WIDTH
 	$readmemh(rom_filename, rom, 0, BOOTROM_BYTES - 1);
 	i_data = 32'hffffffff;
 	d_data = 32'h00000000;

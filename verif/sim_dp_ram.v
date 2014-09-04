@@ -17,11 +17,13 @@ module sim_dp_ram(input wire		clk,
 
 reg [7:0]	ram [4096:0];
 reg [8 * 128:0] ram_filename;
-reg [4096:0]	ram_i;
+reg [$clog2(4096):0]	ram_i;
 
 initial begin
+	// verilator lint_off WIDTH
 	if ($value$plusargs("ramfile=%s", ram_filename) &&
 	    ram_filename != 0)
+	// verilator lint_on WIDTH
 		$readmemh(ram_filename, ram);
 	else
 		for (ram_i = 0; ram_i < 4096; ram_i = ram_i + 1)
