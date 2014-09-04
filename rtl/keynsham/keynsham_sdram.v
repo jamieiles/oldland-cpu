@@ -59,7 +59,7 @@ wire		q_wr_en = d_active ? d_wr_en : 1'b0;
 wire [3:0]	q_bytesel = d_active ? d_bytesel : 4'b1111;
 wire		q_ack;
 
-assign		d_ack = ctrl_ack | (d_active ? q_ack : 1'b0);
+assign		d_ack = ctrl_ack | q_ack;
 assign		i_ack = !d_active ? q_ack : 1'b0;
 wire [31:0]	data = d_cs ? q_data : ctrl_data;
 assign		i_data = q_ack ? q_data : 32'b0;
