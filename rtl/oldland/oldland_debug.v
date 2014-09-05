@@ -190,7 +190,6 @@ always @(*) begin
 	dbg_cr_wr_en = 1'b0;
 	dbg_reg_wr_en = 1'b0;
 	mem_access = 1'b0;
-	dbg_en = 1'b0;
 
 	case (state)
 	STATE_IDLE: begin
@@ -215,45 +214,36 @@ always @(*) begin
 		CMD_STEP: next_state = STATE_STEP;
 		CMD_READ_REG: begin
 			next_state = STATE_STORE_REG_RVAL;
-			dbg_en = 1'b1;
 		end
 		CMD_WRITE_REG: begin
 			next_state = STATE_WRITE_REG;
-			dbg_en = 1'b1;
 		end
 		CMD_RMEM8: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_RMEM16: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_RMEM32: begin
 			next_state = STATE_WAIT_RMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_WMEM8: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_WMEM16: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_WMEM32: begin
 			next_state = STATE_WAIT_WMEM;
 			mem_access = 1'b1;
-			dbg_en = 1'b1;
 		end
 		CMD_RESET: begin
 			next_state = STATE_RESET;
-			dbg_en = 1'b1;
 		end
 		CMD_CACHE_SYNC: begin
 			next_state = STATE_CACHE_FLUSH;
@@ -263,7 +253,6 @@ always @(*) begin
 			ctl_addr = 2'b11;
 			ctl_wr_en = 1'b1;
 			ctl_din = cpuid_val;
-			dbg_en = 1'b1;
 		end
 		CMD_GET_EXEC_STATUS: begin
 			next_state = STATE_COMPL;
@@ -280,12 +269,10 @@ always @(*) begin
 	STATE_CACHE_FLUSH: begin
 		next_state = dbg_dcache_idx == {dcache_idx_bits{1'b1}} ?
 			STATE_CACHE_INVAL : STATE_CACHE_FLUSH;
-		dbg_en = 1'b1;
 	end
 	STATE_CACHE_INVAL: begin
 		next_state = dbg_icache_idx == {icache_idx_bits{1'b1}} ?
 			STATE_COMPL : STATE_CACHE_INVAL;
-		dbg_en = 1'b1;
 	end
 	STATE_WRITE_REG: begin
 		if (debug_addr[4])
@@ -295,11 +282,9 @@ always @(*) begin
 		else
 			dbg_reg_wr_en = 1'b1;
 		next_state = STATE_COMPL;
-		dbg_en = 1'b1;
 	end
 	STATE_WAIT_WMEM: begin
 		next_state = mem_compl ? STATE_COMPL : STATE_WAIT_WMEM;
-		dbg_en = 1'b1;
 	end
 	STATE_WAIT_RMEM: begin
 		if (mem_compl) begin
@@ -310,7 +295,6 @@ always @(*) begin
 		end else begin
 			next_state = STATE_WAIT_RMEM;
 		end
-		dbg_en = 1'b1;
 	end
 	STATE_STEP: begin
 		next_state = STATE_WAIT_STOPPED;
@@ -329,7 +313,6 @@ always @(*) begin
 		ctl_din = debug_addr[4] ? dbg_pc :
 			  debug_addr[5] ? dbg_cr_val : dbg_reg_val;
 		next_state = STATE_COMPL;
-		dbg_en = 1'b1;
 	end
 	STATE_COMPL: begin
 		next_state = req_sync ? STATE_COMPL : STATE_IDLE;
@@ -354,6 +337,21 @@ always @(posedge clk) begin
 	end
 	STATE_LOAD_ADDR: begin
 		debug_addr <= ctl_dout;
+
+		case (debug_cmd)
+		CMD_READ_REG: dbg_en <= 1'b1;
+		CMD_WRITE_REG: dbg_en <= 1'b1;
+		CMD_RMEM8: dbg_en <= 1'b1;
+		CMD_RMEM16: dbg_en <= 1'b1;
+		CMD_RMEM32: dbg_en <= 1'b1;
+		CMD_WMEM8: dbg_en <= 1'b1;
+		CMD_WMEM16: dbg_en <= 1'b1;
+		CMD_WMEM32: dbg_en <= 1'b1;
+		CMD_RESET: dbg_en <= 1'b1;
+		CMD_CPUID: dbg_en <= 1'b1;
+		CMD_CACHE_SYNC: dbg_en <= 1'b1;
+		default: dbg_en <= 1'b0;
+		endcase
 	end
 	STATE_LOAD_DATA: begin
 		debug_data <= ctl_dout;
@@ -395,6 +393,7 @@ always @(posedge clk) begin
 		ack_internal <= 1'b1;
                 dbg_icache_idx <= {icache_idx_bits{1'b0}};
                 dbg_dcache_idx <= {dcache_idx_bits{1'b0}};
+		dbg_en <= 1'b0;
 	end
 	default: begin
 	end
