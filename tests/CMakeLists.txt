@@ -23,6 +23,7 @@ add_subdirectory(timer_irq)
 add_subdirectory(selfmod)
 add_subdirectory(cpuid)
 add_subdirectory(bkpt)
+add_subdirectory(step)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"
