@@ -29,6 +29,19 @@ add_custom_command(OUTPUT keynsham_defines.v
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(rtl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/decode.hex keynsham_defines.v oldland_defines.v keynsham vpi_uart.vpi vpi_debug_stub.vpi oldland-rtlsim)
 
+set(VERILATOR_INCLUDES
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/common
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/oldland
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/uart
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/sdram/rtl
+    -I${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_target(lint ALL
+		  DEPENDS keynsham_defines.v
+		  COMMAND verilator --lint-only -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)
+
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_uart.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_debug_stub.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/keynsham.vvp DESTINATION lib)
