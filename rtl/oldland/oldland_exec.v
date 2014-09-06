@@ -81,7 +81,7 @@ reg [31:0]	data_fault_address = 32'b0;
 
 assign		vector_base = vector_addr;
 
-wire [31:0]	control_regs[0:7];
+wire [31:0]	control_regs[7:0];
 assign		control_regs[0] = {vector_addr, 6'b0};
 assign		control_regs[1] = {27'b0, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
 assign		control_regs[2] = {27'b0, saved_psr};

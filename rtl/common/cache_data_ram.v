@@ -13,7 +13,7 @@ localparam addr_bits = $clog2(nr_entries);
 genvar		m;
 integer		i;
 
-wire [7:0] q [0:3];
+wire [7:0] q [3:0];
 
 generate
 for (m = 0; m < 4; m = m + 1) begin: cache_ram

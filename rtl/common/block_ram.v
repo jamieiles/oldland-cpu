@@ -10,7 +10,7 @@ parameter nr_entries = 32;
 
 localparam addr_bits = $clog2(nr_entries);
 
-reg [data_bits - 1:0]	mem[0:nr_entries - 1];
+reg [data_bits - 1:0]	mem[nr_entries - 1:0];
 reg [data_bits - 1:0] 	q = {data_bits{1'b0}};
 reg [data_bits - 1:0] 	bypass_data = {data_bits{1'b0}};
 reg			bypass = 1'b0;

@@ -20,7 +20,7 @@ localparam	tbits = $clog2(nr_timers) - 1;
 wire [tbits:0]	timer_sel = bus_addr[tbits + 2:2];
 wire [tbits:0]	reg_sel = bus_addr[tbits:0];
 
-wire [31:0]	timer_data[0:nr_timers - 1];
+wire [31:0]	timer_data[nr_timers - 1:0];
 wire [nr_timers - 1:0] timer_ack;
 wire [nr_timers - 1:0] timer_error;
 
