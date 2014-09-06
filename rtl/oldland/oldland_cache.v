@@ -111,7 +111,7 @@ wire [CACHE_INDEX_BITS - 1:0]	index = c_addr[CACHE_INDEX_IDX+:CACHE_INDEX_BITS];
 wire [CACHE_TAG_BITS - 1:0]	cache_tag;
 wire				valid;
 reg [30 - CACHE_TAG_BITS - 1:0]	data_ram_read_addr = {30 - CACHE_TAG_BITS{1'b0}};
-reg [CACHE_OFFSET_BITS - 1:0]	words_done = {CACHE_OFFSET_BITS{1'b0}};
+reg [CACHE_OFFSET_BITS:0]	words_done = {CACHE_OFFSET_BITS + 1{1'b0}};
 reg				valid_mem_wr_en = 1'b0;
 wire				tags_match = latched_tag == cache_tag;
 wire				hit = tags_match && valid;
@@ -119,7 +119,6 @@ reg				latched_wr_en = 1'b0;
 reg				latched_access = 1'b0;
 reg [3:0]			latched_bytesel = 4'b0;
 reg [31:0]			latched_wr_val = 32'b0;
-reg				line_complete = 1'b0;
 wire				valid_mem_wr_data = ~(rst | c_inval | dbg_inval);
 reg [CACHE_INDEX_BITS - 1:0]	valid_index = {CACHE_INDEX_BITS{1'b0}};
 reg				data_ram_wr_en = 1'b0;
@@ -147,12 +146,15 @@ block_ram		#(.data_bits(1),
 				  .write_addr(dbg_inval ? c_index : valid_index),
 				  .write_data(valid_mem_wr_data));
 
+wire [CACHE_OFFSET_BITS - 1:0]	data_write_offset = latched_wr_en ?
+					latched_offset : words_done[CACHE_OFFSET_BITS - 1:0];
+
 cache_data_ram		#(.nr_entries(cache_size / 4))
 			data_ram(.clk(clk),
 				 .read_addr(data_ram_read_addr),
 				 .read_data(cm_data),
 				 .wr_en(data_ram_wr_en),
-				 .write_addr({latched_index, latched_wr_en ? latched_offset : words_done}),
+				 .write_addr({latched_index, data_write_offset}),
 				 .write_data(latched_wr_en ? latched_wr_val : m_data),
 				 .bytesel(data_bytesel));
 
@@ -210,13 +212,14 @@ always @(*) begin
 	endcase
 end
 
+wire	line_complete = m_ack &&
+		words_done == CACHE_LINE_WORDS[CACHE_OFFSET_BITS:0] - 1'b1;
+
 task mem_write_word;
 	input [29:0]	address;
 	input [31:0]	data;
 begin
-	line_complete = m_ack && words_done == {CACHE_OFFSET_BITS{1'b1}};
-	data_ram_read_addr = {latched_index, words_done + {{CACHE_OFFSET_BITS-1{1'b0}}, m_ack}};
-	cm_access = ~line_complete & valid;
+	cm_access = ~line_complete & valid & ~m_ack;
 	cm_addr = address;
 	cm_wr_en = ~line_complete;
 	cm_wr_val = cm_data;
@@ -227,7 +230,6 @@ always @(*) begin
 	tag_wr_en = 1'b0;
 	valid_mem_wr_en = 1'b0;
 	data_ram_wr_en = 1'b0;
-	line_complete = 1'b0;
 
 	cm_wr_en = 1'b0;
 	cm_addr = 30'b0;
@@ -241,18 +243,21 @@ always @(*) begin
 
 	case (state)
 	STATE_IDLE: begin
-		data_ram_read_addr = {index, c_flush || dbg_flush ? {CACHE_OFFSET_BITS{1'b0}} : offset};
+		data_ram_read_addr = {c_flush || dbg_flush ? c_index : index,
+				      c_flush || dbg_flush ? {CACHE_OFFSET_BITS{1'b0}} : offset};
 
 		if (cacheable_addr) begin
 			valid_mem_wr_en = c_inval;
-			valid_index = c_inval | dbg_inval | rst ? c_index : index;
+			valid_index = c_inval | dbg_inval | dbg_flush | rst ? c_index : index;
 		end
 	end
 	STATE_COMPARE: begin
-		/* Pipelined access. */
-		if (valid && !tags_match && !latched_wr_en)
+		if (dbg_flush)
+			data_ram_read_addr = {c_index, {CACHE_OFFSET_BITS{1'b0}}};
+		else if (valid && !tags_match && !latched_wr_en)
 			data_ram_read_addr = {index, {CACHE_OFFSET_BITS{1'b0}}};
 		else
+			/* Pipelined access. */
 			data_ram_read_addr = {index, offset};
 		data_ram_wr_en = latched_access && latched_wr_en && hit;
 		data_bytesel = c_bytesel;
@@ -261,25 +266,31 @@ always @(*) begin
 	end
 	STATE_FILL: begin
 		data_ram_read_addr = {latched_index, latched_offset};
-		line_complete = m_ack && words_done == {CACHE_OFFSET_BITS{1'b1}};
 		cm_access = ~line_complete;
 		/*
 		 * Pipeline read accesses to start reading the next word on
 		 * finishing the previous word.
 		 */
-		cm_addr = {latched_tag, latched_index, words_done + {{CACHE_OFFSET_BITS-1{1'b0}}, m_ack}};
+		cm_addr = {latched_tag, latched_index,
+			   words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS-1{1'b0}}, m_ack}};
 		data_ram_wr_en = m_ack;
 		tag_wr_en = 1'b1;
 		valid_mem_wr_en = line_complete;
 		valid_index = latched_index;
 	end
 	STATE_FLUSH: begin
+		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
+				      words_done[CACHE_OFFSET_BITS - 1:0] + 1'b1};
 		valid_index = dbg_flush ? c_index : latched_index;
-		mem_write_word({cache_tag, dbg_flush ? c_index : latched_index, words_done},
-			       cm_data);
+		if (valid)
+			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
+					words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
 	end
 	STATE_EVICT: begin
-		mem_write_word({cache_tag, latched_index, words_done}, cm_data);
+		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
+				      words_done[CACHE_OFFSET_BITS - 1:0] + 1'b1};
+		mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
+				words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
 	end
 	STATE_BYPASS: begin
 		cm_addr = latched_addr;
@@ -330,9 +341,12 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (state == STATE_FILL || state == STATE_FLUSH || state == STATE_EVICT)
+	if (state == STATE_FILL || state == STATE_FLUSH || state == STATE_EVICT) begin
 		if (m_ack)
 			words_done <= words_done + 1'b1;
+	end else begin
+		words_done <= {CACHE_OFFSET_BITS + 1{1'b0}};
+	end
 end
 
 always @(posedge clk) begin

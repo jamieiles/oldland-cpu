@@ -118,9 +118,9 @@ assign		mem_wr_val = debug_data;
 assign		dbg_rst = state == STATE_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
-assign		dbg_icache_inval = state == STATE_CACHE_INVAL | dbg_rst;
-assign		dbg_dcache_inval = state == STATE_CACHE_INVAL | dbg_rst;
-assign		dbg_dcache_flush = state == STATE_CACHE_FLUSH;
+assign		dbg_icache_inval = state == STATE_CACHE_INVAL & ~dbg_icache_complete | dbg_rst;
+assign		dbg_dcache_inval = state == STATE_CACHE_INVAL & ~dbg_dcache_complete | dbg_rst;
+assign		dbg_dcache_flush = state == STATE_CACHE_FLUSH & ~dbg_dcache_complete;
 assign		cpuid_sel = debug_addr[2:0];
 
 dc_ram		#(.addr_bits(2),
@@ -372,8 +372,7 @@ always @(posedge clk) begin
 		if (|reset_count) begin
 			reset_count <= reset_count - 8'b1;
 			dbg_icache_idx <= dbg_icache_idx + 1'b1;
-			dbg_dcache_idx <= dbg_dcache_complete ? dbg_dcache_idx + 1'b1 :
-				dbg_dcache_idx;
+			dbg_dcache_idx <= dbg_dcache_idx + 1'b1;
 		end else begin
 			dbg_icache_idx <= {icache_idx_bits{1'b0}};
 			dbg_dcache_idx <= {dcache_idx_bits{1'b0}};
@@ -388,6 +387,7 @@ always @(posedge clk) begin
 	end
 	STATE_CACHE_INVAL: begin
 		dbg_icache_idx <= dbg_icache_idx + 1'b1;
+		dbg_dcache_idx <= dbg_dcache_idx + 1'b1;
 	end
 	STATE_COMPL: begin
 		ack_internal <= 1'b1;
