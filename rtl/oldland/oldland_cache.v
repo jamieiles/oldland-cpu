@@ -71,7 +71,8 @@ reg 				dbg_flush_complete = 1'b0;
 assign				dbg_complete = dbg_inval_complete | dbg_flush_complete;
 assign 				cacheop_complete = inval_complete | flush_complete;
 
-assign				c_data = cm_data | bypass_data;
+reg				read_from_bypass = 1'b0;
+assign				c_data = read_from_bypass ? bypass_data : cm_data;
 assign				c_ack = cm_ack | (state == STATE_COMPARE && hit) | cm_error;
 assign				c_error = cm_error;
 
@@ -222,7 +223,7 @@ begin
 	cm_access = ~line_complete & valid & ~m_ack;
 	cm_addr = address;
 	cm_wr_en = ~line_complete;
-	cm_wr_val = cm_data;
+	cm_wr_val = cm_wr_en ? cm_data : 32'b0;
 end
 endtask
 
@@ -288,7 +289,7 @@ always @(*) begin
 	end
 	STATE_BYPASS, STATE_WRITE_MISS: begin
 		cm_addr = latched_addr;
-		cm_wr_val = latched_wr_val;
+		cm_wr_val = latched_wr_en ? latched_wr_val : 32'b0;
 		cm_wr_en = latched_wr_en;
 		cm_bytesel = latched_bytesel;
 		cm_access = ~m_ack;
@@ -303,6 +304,8 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
+	read_from_bypass <= 1'b0;
+
 	case (state)
 	STATE_FILL: begin
 		cm_ack <= line_complete;
@@ -315,6 +318,7 @@ always @(posedge clk) begin
 	STATE_BYPASS: begin
 		cm_ack <= m_ack;
 		cm_error <= m_error;
+		read_from_bypass <= 1'b1;
 	end
 	STATE_WRITE_MISS: begin
 		cm_ack <= m_ack;
