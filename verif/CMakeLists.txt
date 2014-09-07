@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 project(OldlandRTLSim)
+
+option(DEBUG_UART "Enable fast, debug uart." OFF)
+
+set(IVERILOG_FLAGS
+    -Wall
+    -I${CMAKE_CURRENT_BINARY_DIR}
+    -DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\")
+
+if(DEBUG_UART)
+set(IVERILOG_FLAGS ${IVERILOG_FLAGS} -DUSE_DEBUG_UART)
+endif(DEBUG_UART)
+
 add_custom_target(keynsham ALL
 		  COMMAND BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}
-			iverilog -Wall -c ${CMAKE_CURRENT_SOURCE_DIR}/oldland.cf
-			-I${CMAKE_CURRENT_BINARY_DIR}
-			-DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\"
+			iverilog ${IVERILOG_FLAGS} -c ${CMAKE_CURRENT_SOURCE_DIR}/oldland.cf
 			-o ${CMAKE_CURRENT_BINARY_DIR}/keynsham.vvp
 		  DEPENDS oldland.cf ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -40,7 +50,7 @@ set(VERILATOR_INCLUDES
 
 add_custom_target(lint ALL
 		  DEPENDS keynsham_defines.v
-		  COMMAND verilator --lint-only -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)
+		  COMMAND verilator --lint-only ${VERILATOR_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_uart.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_debug_stub.vpi DESTINATION lib)

@@ -1,6 +1,12 @@
 /* First instruction will be the boot rom at 0x10000000. */
 `define OLDLAND_RESET_ADDR	32'h10000000
 
+`ifdef USE_DEBUG_UART
+`define CONFIG_UART simuart
+`else
+`define CONFIG_UART keynsham_uart
+`endif
+
 module keynsham_soc(input wire		clk,
 		    output wire		running,
 		    /* UART I/O signals. */
@@ -172,20 +178,20 @@ keynsham_sdram	#(.bus_address(`SDRAM_ADDRESS),
 		      .s_data(s_data),
 		      .s_banksel(s_banksel));
 
-keynsham_uart	#(.bus_address(`UART_ADDRESS),
+`CONFIG_UART	#(.bus_address(`UART_ADDRESS),
 		  .bus_size(`UART_SIZE))
 		  uart(.clk(clk),
-		     .bus_access(d_access),
-		     .bus_cs(uart_cs),
-		     .bus_addr(d_addr),
-		     .bus_wr_val(d_data),
-		     .bus_wr_en(d_wr_en),
-		     .bus_bytesel(d_bytesel),
-		     .bus_error(uart_error),
-		     .bus_ack(uart_ack),
-		     .bus_data(uart_data),
-		     .rx(uart_rx),
-		     .tx(uart_tx));
+		       .bus_access(d_access),
+		       .bus_cs(uart_cs),
+		       .bus_addr(d_addr),
+		       .bus_wr_val(d_data),
+		       .bus_wr_en(d_wr_en),
+		       .bus_bytesel(d_bytesel),
+		       .bus_error(uart_error),
+		       .bus_ack(uart_ack),
+		       .bus_data(uart_data),
+		       .rx(uart_rx),
+		       .tx(uart_tx));
 
 keynsham_irq	#(.nr_irqs(4),
 		  .bus_address(`IRQ_ADDRESS),

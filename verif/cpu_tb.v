@@ -7,10 +7,15 @@ wire		rx;
 wire		tx;
 wire		rx_rdy;
 reg		rx_rdy_clr = 1'b0;
+
+`ifndef USE_DEBUG_UART
 wire [7:0]	uart_rx_data;
 reg [7:0]	uart_tx_data = 8'b0;
 reg		uart_tx_en = 1'b0;
 wire		uart_tx_busy;
+
+reg [8:0]	uart_buf = 9'b0;
+`endif
 
 wire		s_ras_n;
 wire		s_cas_n;
@@ -28,8 +33,6 @@ wire [31:0]	dbg_dout;
 wire		dbg_wr_en;
 wire		dbg_req;
 wire		dbg_ack;
-
-reg [8:0]	uart_buf = 9'b0;
 
 mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Addr(s_addr),
@@ -62,6 +65,7 @@ keynsham_soc	soc(.clk(clk),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack));
 
+`ifndef USE_DEBUG_UART
 uart		tb_uart(.clk_50m(clk),
 			.wr_en(uart_tx_en),
 			.din(uart_tx_data),
@@ -71,6 +75,7 @@ uart		tb_uart(.clk_50m(clk),
 			.rdy(rx_rdy),
 			.rdy_clr(rx_rdy_clr),
 			.dout(uart_rx_data));
+`endif
 
 debug_controller	dbg(.clk(dbg_clk),
 			    .addr(dbg_addr),
@@ -93,6 +98,7 @@ end
 always #10 clk = ~clk;
 always #25 dbg_clk = ~dbg_clk;
 
+`ifndef USE_DEBUG_UART
 always @(posedge clk) begin
 	if (rx_rdy && !rx_rdy_clr) begin
 		if (!$test$plusargs("interactive")) begin
@@ -115,5 +121,6 @@ always @(posedge clk) begin
 		uart_tx_en <= 1'b0;
 	end
 end
+`endif
 
 endmodule
