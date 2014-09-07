@@ -278,7 +278,7 @@ always @(*) begin
 		valid_mem_wr_en = line_complete;
 		valid_index = latched_index;
 	end
-	STATE_FLUSH: begin
+	STATE_FLUSH, STATE_EVICT: begin
 		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
 				      words_done[CACHE_OFFSET_BITS - 1:0] + 1'b1};
 		valid_index = dbg_flush ? c_index : latched_index;
@@ -286,25 +286,12 @@ always @(*) begin
 			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
 					words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
 	end
-	STATE_EVICT: begin
-		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
-				      words_done[CACHE_OFFSET_BITS - 1:0] + 1'b1};
-		mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
-				words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
-	end
-	STATE_BYPASS: begin
+	STATE_BYPASS, STATE_WRITE_MISS: begin
 		cm_addr = latched_addr;
 		cm_wr_val = latched_wr_val;
 		cm_wr_en = latched_wr_en;
 		cm_bytesel = latched_bytesel;
 		cm_access = ~m_ack;
-	end
-	STATE_WRITE_MISS: begin
-		cm_access = ~m_ack;
-		cm_addr = latched_addr;
-		cm_wr_en = 1'b1;
-		cm_wr_val = latched_wr_val;
-		cm_bytesel = c_bytesel;
 	end
 	default: ;
 	endcase
@@ -355,10 +342,12 @@ end
 
 always @(posedge clk) begin
 	latched_access <= c_access;
-	latched_wr_en <= c_wr_en;
-	latched_addr <= c_addr;
-	latched_wr_val <= c_wr_val;
-	latched_bytesel <= c_bytesel;
+	if (c_access) begin
+		latched_wr_en <= c_wr_en;
+		latched_addr <= c_addr;
+		latched_wr_val <= c_wr_val;
+		latched_bytesel <= c_bytesel;
+	end
 end
 
 always @(posedge clk) begin
