@@ -113,7 +113,8 @@ oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
 				      .val(cpuid_val));
 
 oldland_cache		#(.cache_size(icache_size),
-			  .cache_line_size(icache_line_size))
+			  .cache_line_size(icache_line_size),
+			  .read_only(1'b1))
 			icache(.clk(clk),
 			       .rst(dbg_rst),
 			       .c_access(ic_access),

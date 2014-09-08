@@ -51,6 +51,7 @@ module oldland_cache(input wire		clk,
 
 parameter cache_size		= 8192;
 parameter cache_line_size	= 32;
+parameter read_only		= 1'b0;
 
 reg [31:0]			bypass_data = 32'b0;
 
@@ -79,7 +80,7 @@ assign				c_error = cm_error;
 assign				m_access = cm_access;
 assign				m_addr = cm_addr;
 assign				m_wr_val = cm_wr_val;
-assign				m_wr_en = cm_wr_en;
+assign				m_wr_en = cm_wr_en & ~read_only;
 assign				m_bytesel = cm_bytesel;
 
 localparam STATE_IDLE		= 7'b0000001;
@@ -166,14 +167,16 @@ always @(*) begin
 			next_state = STATE_BYPASS;
 		else if (c_access)
 			next_state = STATE_COMPARE;
-		else if (c_flush || dbg_flush)
+		else if ((c_flush || dbg_flush) && ~read_only)
 			next_state = STATE_FLUSH;
 		else
 			next_state = STATE_IDLE;
 	end
 	STATE_COMPARE: begin
-		if (valid && !tags_match && !latched_wr_en)
+		if (valid && !tags_match && !latched_wr_en && ~read_only)
 			next_state = STATE_EVICT;
+		else if (valid && !tags_match && !latched_wr_en)
+			next_state = STATE_FILL;
 		else if (!hit && !latched_wr_en)
 			next_state = STATE_FILL;
 		else if (!hit && latched_wr_en)
