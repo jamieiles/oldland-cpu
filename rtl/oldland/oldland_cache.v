@@ -112,7 +112,7 @@ wire [CACHE_INDEX_BITS - 1:0]	index = c_addr[CACHE_INDEX_IDX+:CACHE_INDEX_BITS];
 wire [CACHE_TAG_BITS - 1:0]	cache_tag;
 wire				valid;
 reg [30 - CACHE_TAG_BITS - 1:0]	data_ram_read_addr = {30 - CACHE_TAG_BITS{1'b0}};
-reg [CACHE_OFFSET_BITS:0]	words_done = {CACHE_OFFSET_BITS + 1{1'b0}};
+reg [CACHE_OFFSET_BITS - 1:0]	words_done = {CACHE_OFFSET_BITS{1'b0}};
 reg				valid_mem_wr_en = 1'b0;
 wire				tags_match = latched_tag == cache_tag;
 wire				hit = tags_match && valid;
@@ -148,7 +148,7 @@ block_ram		#(.data_bits(1),
 				  .write_data(valid_mem_wr_data));
 
 wire [CACHE_OFFSET_BITS - 1:0]	data_write_offset = latched_wr_en ?
-					latched_offset : words_done[CACHE_OFFSET_BITS - 1:0];
+					latched_offset : words_done;
 
 cache_data_ram		#(.nr_entries(cache_size / 4))
 			data_ram(.clk(clk),
@@ -214,7 +214,7 @@ always @(*) begin
 end
 
 wire	line_complete = m_ack &&
-		words_done == CACHE_LINE_WORDS[CACHE_OFFSET_BITS:0] - 1'b1;
+		words_done == CACHE_LINE_WORDS[CACHE_OFFSET_BITS - 1:0] - 1'b1;
 
 task mem_write_word;
 	input [29:0]	address;
@@ -273,7 +273,7 @@ always @(*) begin
 		 * finishing the previous word.
 		 */
 		cm_addr = {latched_tag, latched_index,
-			   words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS-1{1'b0}}, m_ack}};
+			   words_done + {{CACHE_OFFSET_BITS-1{1'b0}}, m_ack}};
 		data_ram_wr_en = m_ack;
 		tag_wr_en = 1'b1;
 		valid_mem_wr_en = line_complete;
@@ -281,11 +281,11 @@ always @(*) begin
 	end
 	STATE_FLUSH, STATE_EVICT: begin
 		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
-				      words_done[CACHE_OFFSET_BITS - 1:0] + 1'b1};
+				      words_done + 1'b1};
 		valid_index = dbg_flush ? c_index : latched_index;
 		if (valid)
 			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
-					words_done[CACHE_OFFSET_BITS - 1:0] + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
+					words_done + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
 	end
 	STATE_BYPASS, STATE_WRITE_MISS: begin
 		cm_addr = latched_addr;
@@ -336,7 +336,7 @@ always @(posedge clk) begin
 		if (m_ack)
 			words_done <= words_done + 1'b1;
 	end else begin
-		words_done <= {CACHE_OFFSET_BITS + 1{1'b0}};
+		words_done <= {CACHE_OFFSET_BITS{1'b0}};
 	end
 end
 
