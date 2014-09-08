@@ -63,7 +63,10 @@ keynsham_soc	soc(.clk(clk),
 		    .dbg_dout(dbg_dout),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
-		    .dbg_ack(dbg_ack));
+		    .dbg_ack(dbg_ack),
+		    .miso(1'b0),
+		    .mosi(),
+		    .sclk());
 
 `ifndef USE_DEBUG_UART
 uart		tb_uart(.clk_50m(clk),

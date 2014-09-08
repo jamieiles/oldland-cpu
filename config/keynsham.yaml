@@ -47,6 +47,11 @@
             name: timer,
             address: "0x80003000",
             size: "0x00001000"
+        },
+        {
+            name: spimaster,
+            address: "0x80004000",
+            size: "0x00004000"
         }
     ]
 }

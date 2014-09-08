@@ -59,7 +59,10 @@ keynsham_soc	soc(.clk(sys_clk),
 		    .dbg_dout(dbg_dout),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
-		    .dbg_ack(dbg_ack));
+		    .dbg_ack(dbg_ack),
+		    .miso(1'b0),
+		    .mosi(),
+		    .sclk());
 
 /*
  * Make the effects of running a little more visible - if we run for at least

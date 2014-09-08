@@ -29,7 +29,11 @@ module keynsham_soc(input wire		clk,
 		    output wire [31:0]	dbg_dout,
 		    input wire		dbg_wr_en,
 		    input wire		dbg_req,
-		    output wire		dbg_ack);
+		    output wire		dbg_ack,
+		    /* SPI bus. */
+		    input wire		miso,
+		    output wire		mosi,
+		    output wire		sclk);
 
 wire		dbg_rst;
 
@@ -60,6 +64,10 @@ wire [31:0]	timer_data;
 wire		timer_ack;
 wire		timer_error;
 wire [3:0]	timer_irqs;
+
+wire [31:0]	spimaster_data;
+wire		spimaster_ack;
+wire		spimaster_error;
 
 wire [31:0]	irq_data;
 wire		irq_ack;
@@ -96,23 +104,24 @@ wire		d_sdram_ctrl_cs;
 wire		uart_cs;
 wire		irq_cs;
 wire		timer_cs;
+wire		spimaster_cs;
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs | irq_cs |
-				    timer_cs);
+				    timer_cs | spimaster_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
 
 wire		d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
-			timer_ack | d_default_ack;
+			timer_ack | d_default_ack | spimaster_ack;
 wire		d_error = uart_error | d_sdram_error | irq_error |
-			  timer_error | d_default_error;
+			  timer_error | d_default_error | spimaster_error;
 
 wire		i_access;
 wire		i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
 wire		i_error = i_default_error | i_sdram_error;
 
 assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
-			  irq_data | timer_data | d_wr_val;
+			  irq_data | timer_data | d_wr_val | spimaster_data;
 assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 keynsham_ram	#(.bus_address(`RAM_ADDRESS),
@@ -224,6 +233,22 @@ keynsham_timer_block	#(.bus_address(`TIMER_ADDRESS),
 			      .bus_ack(timer_ack),
 			      .bus_data(timer_data),
 			      .irqs(timer_irqs));
+
+keynsham_spimaster	#(.bus_address(`SPIMASTER_ADDRESS),
+			  .bus_size(`SPIMASTER_SIZE))
+			spi(.clk(clk),
+			    .bus_access(d_access),
+			    .bus_cs(spimaster_cs),
+			    .bus_addr(d_addr),
+			    .bus_wr_val(d_data),
+			    .bus_wr_en(d_wr_en),
+			    .bus_bytesel(d_bytesel),
+			    .bus_error(spimaster_error),
+			    .bus_ack(spimaster_ack),
+			    .bus_data(spimaster_data),
+			    .miso(miso),
+			    .mosi(mosi),
+			    .sclk(sclk));
 
 oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		  .icache_line_size(`ICACHE_LINE_SIZE),

@@ -8,11 +8,13 @@ $(BUILD_DIR)/keynsham_defines.v
 -y ../rtl/oldland
 -y ../rtl/common
 -y ../rtl/uart
+-y ../rtl/spimaster
 -y ../rtl/sdram/rtl
 -y ../rtl/sdram/verif
 cpu_tb.v
 ../rtl/keynsham/keynsham_soc.v
 ../rtl/keynsham/keynsham_uart.v
+../rtl/keynsham/keynsham_spimaster.v
 ../rtl/keynsham/keynsham_irq.v
 ../rtl/keynsham/keynsham_timer.v
 ../rtl/keynsham/keynsham_timer_block.v
@@ -20,6 +22,9 @@ cpu_tb.v
 ../rtl/keynsham/keynsham_bootrom.v
 ../rtl/keynsham/keynsham_ram.v
 ../rtl/uart/uart.v
+../rtl/spimaster/spibuf.v
+../rtl/spimaster/spimaster.v
+../rtl/spimaster/spisequencer.v
 ../rtl/oldland/oldland_cpu.v
 ../rtl/oldland/oldland_pipeline.v
 ../rtl/oldland/oldland_fetch.v

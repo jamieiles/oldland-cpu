@@ -45,6 +45,7 @@ set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/oldland
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/uart
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/spimaster
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/sdram/rtl
     -I${CMAKE_CURRENT_SOURCE_DIR})
 

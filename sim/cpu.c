@@ -18,6 +18,7 @@
 #include "trace.h"
 #include "oldland-types.h"
 #include "periodic.h"
+#include "spimaster.h"
 
 #ifndef ROM_FILE
 #define ROM_FILE NULL
@@ -78,6 +79,7 @@ struct cpu {
 	struct event_list events;
 	struct irq_ctrl *irq_ctrl;
 	struct timer_base *timers;
+        struct spimaster *spimaster;
 	struct cache *icache;
 	struct cache *dcache;
 };
@@ -316,6 +318,9 @@ struct cpu *new_cpu(const char *binary, int flags)
 	};
 	c->timers = timers_init(c->mem, TIMER_ADDRESS, &c->events, &timer_data);
 	assert(c->timers);
+
+        c->spimaster = spimaster_init(c->mem, SPIMASTER_ADDRESS, NULL, 0);
+        assert(c->spimaster);
 
 	c->icache = cache_new(c->mem);
 	assert(c->icache);
