@@ -12,8 +12,10 @@ module keynsham_spimaster(input wire		clk,
 			  /* SPI bus. */
 			  input wire		miso,
 			  output wire		mosi,
-			  output wire		sclk);
+			  output wire		sclk,
+                          output wire [num_cs - 1:0] ncs);
 
+parameter       num_cs = 2;
 parameter	bus_address = 32'h0;
 parameter	bus_size = 32'h0;
 
@@ -37,16 +39,22 @@ wire		do_reg_access = bus_access & bus_cs & !xfer_buf_cs;
 
 wire		write_xfer_ctrl_reg = do_reg_access & bus_wr_en & bus_addr[1:0] == 2'b10;
 
+/* Control register. */
 reg [31:0]	ctrl_reg = 32'b0;
 wire [8:0]	divider = ctrl_reg[8:0];
 wire		loopback_enable = ctrl_reg[9];
+wire		miso_internal = loopback_enable ? ~mosi : miso;
 
+/* Transfer control register. */
 reg [31:0]	xfer_ctrl_reg = 32'b0;
 localparam	GO_OFFSET = 16;
 localparam	BUSY_OFFSET = 17;
 wire [12:0]	xfer_length = xfer_ctrl_reg[12:0];
 
-wire		miso_internal = loopback_enable ? ~mosi : miso;
+/* Chip select register. */
+reg [num_cs - 1:0] cs_reg = {num_cs{1'b0}};
+
+assign          ncs = cs_reg;
 
 cs_gen		#(.address(bus_address), .size(bus_size))
 		d_cs_gen(.bus_addr(bus_addr), .cs(bus_cs));
@@ -104,6 +112,7 @@ always @(posedge clk) begin
 	if (do_reg_access && !bus_wr_en) begin
 		case (bus_addr[1:0])
 		2'b00: reg_rd_val <= ctrl_reg;
+                2'b01: reg_rd_val <= {{(32 - num_cs){1'b0}}, cs_reg};
 		2'b10: reg_rd_val <= xfer_ctrl_reg | {14'b0, busy, 17'b0};
 		default: reg_rd_val <= 32'b0;
 		endcase
@@ -112,6 +121,7 @@ always @(posedge clk) begin
 	if (do_reg_access && bus_wr_en) begin
 		case (bus_addr[1:0])
 		2'b00: ctrl_reg <= bus_wr_val;
+                2'b01: cs_reg <= reg_rd_val[num_cs - 1:0];
 		2'b10: xfer_ctrl_reg <= bus_wr_val & 32'hfffeffff;
 		default: ;
 		endcase

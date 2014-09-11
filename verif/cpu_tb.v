@@ -1,5 +1,7 @@
 module cpu_tb();
 
+`define NUM_SPI_CS	2
+
 reg		clk = 1'b0;
 reg		dbg_clk = 1'b1;
 
@@ -34,6 +36,12 @@ wire		dbg_wr_en;
 wire		dbg_req;
 wire		dbg_ack;
 
+/* SPI. */
+reg		miso = 1'b0;
+wire		mosi;
+wire		sclk;
+wire [`NUM_SPI_CS - 1:0] spi_ncs;
+
 mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Addr(s_addr),
 			.Ba(s_banksel),
@@ -45,7 +53,8 @@ mt48lc16m16a2 ram_model(.Dq(s_data),
 			.We_n(s_wr_en),
 			.Dqm(s_bytesel));
 
-keynsham_soc	soc(.clk(clk),
+keynsham_soc	#(.spi_num_cs(`NUM_SPI_CS))
+		soc(.clk(clk),
 		    .uart_rx(rx),
 		    .uart_tx(tx),
 		    .s_ras_n(s_ras_n),
@@ -64,9 +73,10 @@ keynsham_soc	soc(.clk(clk),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack),
-		    .miso(1'b0),
-		    .mosi(),
-		    .sclk());
+		    .miso(miso),
+		    .mosi(mosi),
+		    .sclk(sclk),
+		    .spi_ncs(spi_ncs));
 
 `ifndef USE_DEBUG_UART
 uart		tb_uart(.clk_50m(clk),

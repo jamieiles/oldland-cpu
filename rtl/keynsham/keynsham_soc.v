@@ -33,7 +33,10 @@ module keynsham_soc(input wire		clk,
 		    /* SPI bus. */
 		    input wire		miso,
 		    output wire		mosi,
-		    output wire		sclk);
+		    output wire		sclk,
+                    output wire [spi_num_cs - 1:0] spi_ncs);
+
+parameter       spi_num_cs = 2;
 
 wire		dbg_rst;
 
@@ -235,7 +238,8 @@ keynsham_timer_block	#(.bus_address(`TIMER_ADDRESS),
 			      .irqs(timer_irqs));
 
 keynsham_spimaster	#(.bus_address(`SPIMASTER_ADDRESS),
-			  .bus_size(`SPIMASTER_SIZE))
+			  .bus_size(`SPIMASTER_SIZE),
+                          .num_cs(spi_num_cs))
 			spi(.clk(clk),
 			    .bus_access(d_access),
 			    .bus_cs(spimaster_cs),
@@ -248,7 +252,8 @@ keynsham_spimaster	#(.bus_address(`SPIMASTER_ADDRESS),
 			    .bus_data(spimaster_data),
 			    .miso(miso),
 			    .mosi(mosi),
-			    .sclk(sclk));
+			    .sclk(sclk),
+                            .ncs(spi_ncs));
 
 oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		  .icache_line_size(`ICACHE_LINE_SIZE),
