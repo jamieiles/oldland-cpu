@@ -276,7 +276,8 @@ static void cpu_clear_irq(void *data)
 	c->irq_active = false;
 }
 
-struct cpu *new_cpu(const char *binary, int flags)
+struct cpu *new_cpu(const char *binary, int flags,
+		    const char *bootrom_image)
 {
 	int err;
 	struct cpu *c;
@@ -296,7 +297,7 @@ struct cpu *new_cpu(const char *binary, int flags)
 	err = ram_init(c->mem, RAM_ADDRESS, RAM_SIZE, binary);
 	assert(!err);
 
-	err = rom_init(c->mem, BOOTROM_ADDRESS, BOOTROM_SIZE, ROM_FILE);
+	err = rom_init(c->mem, BOOTROM_ADDRESS, BOOTROM_SIZE, bootrom_image);
 	assert(!err);
 
 	err = ram_init(c->mem, SDRAM_ADDRESS, SDRAM_SIZE, NULL);

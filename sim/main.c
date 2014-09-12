@@ -339,13 +339,19 @@ int main(int argc, char *argv[])
 	struct cpu *cpu;
 	struct debug_data *debug = start_server();
 	int i, cpu_flags = CPU_NOTRACE;
+	const char *bootrom_image = ROM_FILE;
 
-	for (i = 0; i < argc; ++i)
+	for (i = 0; i < argc; ++i) {
 		if (!strcmp(argv[i], "--debug") ||
 		    !strcmp(argv[i], "-d"))
 			cpu_flags &= ~CPU_NOTRACE;
+		if (!strcmp(argv[i], "--bootrom") && i + i < argc) {
+			bootrom_image = argv[i + 1];
+			++i;
+		}
+	}
 
-	cpu = new_cpu(NULL, cpu_flags);
+	cpu = new_cpu(NULL, cpu_flags, bootrom_image);
 
 	notify_runner();
 

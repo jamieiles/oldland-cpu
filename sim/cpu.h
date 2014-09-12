@@ -16,7 +16,8 @@ enum cpu_flags {
 	CPU_NOTRACE = 1 << 0,
 };
 
-struct cpu *new_cpu(const char *binary, int flags);
+struct cpu *new_cpu(const char *binary, int flags,
+		    const char *bootrom_image);
 int cpu_cycle(struct cpu *c, bool *breakpoint_hit);
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v);
 int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v);
