@@ -42,7 +42,7 @@ struct debug_data {
 static enum {
 	SIM_STATE_STOPPED,
 	SIM_STATE_RUNNING,
-} sim_state = SIM_STATE_STOPPED;
+} sim_state = SIM_STATE_RUNNING;
 
 static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		       struct cpu *cpu)
