@@ -8,6 +8,10 @@ set(IVERILOG_FLAGS
     -I${CMAKE_CURRENT_BINARY_DIR}
     -DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\")
 
+set(VPI_FLAGS
+    -lpthread
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels)
+
 if(DEBUG_UART)
 set(IVERILOG_FLAGS ${IVERILOG_FLAGS} -DUSE_DEBUG_UART)
 endif(DEBUG_UART)
@@ -19,7 +23,7 @@ add_custom_target(keynsham ALL
 		  DEPENDS oldland.cf ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(OUTPUT vpi_uart.vpi
-		   COMMAND iverilog-vpi -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/vpi_uart.c
+		   COMMAND iverilog-vpi ${VPI_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/vpi_uart.c ${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels/uart.c
 		   DEPENDS vpi_uart.c)
 add_custom_command(OUTPUT vpi_debug_stub.vpi
 		   COMMAND iverilog-vpi -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/vpi_debug_stub.c

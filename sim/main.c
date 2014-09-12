@@ -160,7 +160,13 @@ static void close_connection(struct debug_data *data)
 	data->client_fd = -1;
 	pthread_mutex_unlock(&data->lock);
 }
+static int sim_interactive = 0;
 
+int sim_is_interactive(void)
+{
+	return sim_interactive;
+}
+ 
 static void *server_thread(void *d)
 {
 	struct debug_data *data = d;
@@ -345,6 +351,8 @@ int main(int argc, char *argv[])
 		if (!strcmp(argv[i], "--debug") ||
 		    !strcmp(argv[i], "-d"))
 			cpu_flags &= ~CPU_NOTRACE;
+		if (!strcmp(argv[i], "--interactive"))
+			sim_interactive = 1;
 		if (!strcmp(argv[i], "--bootrom") && i + i < argc) {
 			bootrom_image = argv[i + 1];
 			++i;

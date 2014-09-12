@@ -19,11 +19,9 @@
 
 #include <vpi_user.h>
 
-struct uart_data {
-	int fd;
-};
+#include "uart.h"
 
-static int sim_interactive(void)
+int sim_is_interactive(void)
 {
 	int i;
 	s_vpi_vlog_info info;
@@ -35,32 +33,6 @@ static int sim_interactive(void)
 			return 1;
 
 	return 0;
-}
-
-static int create_pts(void)
-{
-	int pts = posix_openpt(O_RDWR | O_NONBLOCK);
-	struct termios termios;
-
-	if (pts < 0)
-		err(1, "failed to create pseudo terminal");
-
-	if (grantpt(pts))
-		err(1, "failed to grant psuedo terminal access");
-
-	if (unlockpt(pts))
-		err(1, "failed to unlock pseudo terminal");
-
-	if (tcgetattr(pts, &termios))
-		err(1, "failed to get termios");
-	cfmakeraw(&termios);
-	if (tcsetattr(pts, TCSANOW, &termios))
-		err(1, "failed to set termios");
-
-	if (sim_interactive())
-		printf("pts: %s\n", ptsname(pts));
-
-	return pts;
 }
 
 static int uart_compiletf(char *user_data)
