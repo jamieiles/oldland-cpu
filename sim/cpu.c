@@ -728,7 +728,7 @@ void cpu_reset(struct cpu *c)
 {
 	int r;
 
-	c->pc = c->next_pc = 0;
+	c->pc = c->next_pc = BOOTROM_ADDRESS;
 	for (r = 0; r <= LR; ++r)
 		c->regs[r] = 0;
 	c->flagsw = 0;
