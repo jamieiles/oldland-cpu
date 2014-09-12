@@ -332,6 +332,8 @@ struct cpu *new_cpu(const char *binary, int flags,
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
 
+	cpu_reset(c);
+
 	return c;
 }
 
