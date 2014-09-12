@@ -39,15 +39,7 @@
 #include <vpi_user.h>
 
 #include "../debugger/protocol.h"
-
-struct debug_data {
-	int sock_fd;
-	int epoll_fd;
-	int client_fd;
-	int pending;
-	int more_data;
-	pthread_mutex_t lock;
-};
+#include "../devicemodels/jtag.h"
 
 #define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 
@@ -59,52 +51,6 @@ enum {
 	D_ARR_SZ,
 };
 
-static int get_request(struct debug_data *d, struct dbg_request *req)
-{
-	ssize_t br;
-	int rc = -EAGAIN;
-
-	pthread_mutex_lock(&d->lock);
-
-	if (d->client_fd < 0)
-		goto out;
-
-	if (!d->more_data)
-		goto out;
-
-	br = read(d->client_fd, req, sizeof(*req));
-	if (br < 0 && errno == EAGAIN) {
-		d->more_data = 0;
-	} else if (br != sizeof(*req)) {
-		d->more_data = 0;
-		rc = -EIO;
-	} else {
-		rc = 0;
-	}
-
-out:
-	pthread_mutex_unlock(&d->lock);
-
-	return rc;
-}
-
-static int send_response(struct debug_data *d, const struct dbg_response *resp)
-{
-	ssize_t bs;
-	struct iovec iov = {
-		.iov_base = (void *)resp,
-		.iov_len = sizeof(*resp)
-	};
-
-	bs = writev(d->client_fd, &iov, 1);
-	if (bs < 0 && errno == EAGAIN)
-		return -EAGAIN;
-	else if (bs != sizeof(*resp))
-		return -EIO;
-
-	return 0;
-}
-
 static int dbg_get_calltf(char *user_data)
 {
 	vpiHandle systfref, args_iter;
@@ -112,18 +58,18 @@ static int dbg_get_calltf(char *user_data)
 	struct t_vpi_value argval = {
 		.format = vpiIntVal,
 	};
-	struct debug_data *debug_data = (struct debug_data *)user_data;
+	struct jtag_debug_data *jtag_debug_data = (struct jtag_debug_data *)user_data;
 	struct dbg_request req;
 	struct dbg_response resp;
 
 	systfref = vpi_handle(vpiSysTfCall, NULL);
 	args_iter = vpi_iterate(vpiArgument, systfref);
 
-	if (!debug_data->more_data)
-		if(__sync_val_compare_and_swap(&debug_data->pending, 1, 0) == 0)
-			debug_data->more_data = 1;
+	if (!jtag_debug_data->more_data)
+		if(__sync_val_compare_and_swap(&jtag_debug_data->pending, 1, 0) == 0)
+			jtag_debug_data->more_data = 1;
 
-	data[D_REQ] = get_request(debug_data, &req) == 0;
+	data[D_REQ] = get_request(jtag_debug_data, &req) == 0;
 	data[D_RNW] = req.read_not_write;
 	data[D_ADDR] = req.addr;
 	data[D_VALUE] = req.value;
@@ -136,7 +82,7 @@ static int dbg_get_calltf(char *user_data)
 
 	if (data[D_REQ] && !data[D_RNW]) {
 		resp.status = 0;
-		send_response(debug_data, &resp);
+		send_response(jtag_debug_data, &resp);
 	}
 
 	vpi_free_object(args_iter);
@@ -150,7 +96,7 @@ static int dbg_put_calltf(char *user_data)
 	struct t_vpi_value argval = {
 		.format = vpiIntVal,
 	};
-	struct debug_data *debug_data = (struct debug_data *)user_data;
+	struct jtag_debug_data *jtag_debug_data = (struct jtag_debug_data *)user_data;
 	struct dbg_response resp;
 
 	systfref = vpi_handle(vpiSysTfCall, NULL);
@@ -161,7 +107,7 @@ static int dbg_put_calltf(char *user_data)
 
 	resp.status = 0;
 	resp.data = argval.value.integer;
-	send_response(debug_data, &resp);
+	send_response(jtag_debug_data, &resp);
 
 	vpi_free_object(args_iter);
 
@@ -174,7 +120,7 @@ static int dbg_sim_term_calltf(char *user_data)
 	struct t_vpi_value argval = {
 		.format = vpiIntVal,
 	};
-	struct debug_data *debug_data = (struct debug_data *)user_data;
+	struct jtag_debug_data *jtag_debug_data = (struct jtag_debug_data *)user_data;
 	struct dbg_response resp;
 
 	systfref = vpi_handle(vpiSysTfCall, NULL);
@@ -185,171 +131,21 @@ static int dbg_sim_term_calltf(char *user_data)
 
 	resp.status = 0;
 	resp.data = argval.value.integer;
-	send_response(debug_data, &resp);
+	send_response(jtag_debug_data, &resp);
 
 	vpi_free_object(args_iter);
 
-	shutdown(debug_data->client_fd, SHUT_RDWR);
-	close(debug_data->client_fd);
-	close(debug_data->sock_fd);
-	debug_data->client_fd = debug_data->sock_fd = -1;
+	shutdown(jtag_debug_data->client_fd, SHUT_RDWR);
+	close(jtag_debug_data->client_fd);
+	close(jtag_debug_data->sock_fd);
+	jtag_debug_data->client_fd = jtag_debug_data->sock_fd = -1;
 
 	return 0;
-}
-
-static void enable_reuseaddr(int fd)
-{
-	int val = 1;
-
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)))
-		err(1, "failed to enable SO_REUSEADDR");
-}
-
-static int spawn_server(void)
-{
-	struct addrinfo *result, *rp, hints = {
-		.ai_family	= AF_INET,
-		.ai_socktype	= SOCK_STREAM,
-		.ai_flags	= AI_PASSIVE,
-	};
-	int s, fd;
-
-	s = getaddrinfo(NULL, "36000", &hints, &result);
-	if (s)
-		err(1, "getaddrinfo failed");
-
-	for (rp = result; rp; rp = rp->ai_next) {
-		fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (fd < 0)
-			continue;
-
-		enable_reuseaddr(fd);
-
-		if (!bind(fd, rp->ai_addr, rp->ai_addrlen))
-			break;
-
-		close(fd);
-	}
-
-	if (!rp)
-		err(1, "failed to bind server");
-
-	freeaddrinfo(result);
-
-	if (listen(fd, 1))
-		err(1, "failed to listen on socket");
-
-	return fd;
-}
-
-static int establish_connection(struct debug_data *data)
-{
-	struct epoll_event event = {
-		.events = EPOLLIN | EPOLLRDHUP | EPOLLET,
-		.data.ptr = data,
-	};
-	int client = accept4(data->sock_fd, NULL, NULL, SOCK_NONBLOCK);
-	if (client < 0)
-		return -EAGAIN;
-
-	if (epoll_ctl(data->epoll_fd, EPOLL_CTL_ADD, client, &event)) {
-		warn("failed to add client to epoll (%d)", client);
-		close(client);
-		return -EAGAIN;
-	}
-
-	pthread_mutex_lock(&data->lock);
-	data->client_fd = client;
-	pthread_mutex_unlock(&data->lock);
-
-	return 0;
-}
-
-static void close_connection(struct debug_data *data)
-{
-	epoll_ctl(data->epoll_fd, EPOLL_CTL_DEL, data->client_fd, NULL);
-
-	pthread_mutex_lock(&data->lock);
-	shutdown(data->client_fd, SHUT_RDWR);
-	close(data->client_fd);
-	data->client_fd = -1;
-	pthread_mutex_unlock(&data->lock);
-}
-
-static void *server_thread(void *d)
-{
-	struct debug_data *data = d;
-
-	for (;;) {
-		if (establish_connection(d))
-			continue;
-
-		for (;;) {
-			struct epoll_event revent;
-			int nevents;
-
-			nevents = epoll_wait(data->epoll_fd, &revent, 1, -1);
-			if (nevents < 0)
-				err(1, "epoll_wait() failed");
-
-			if (nevents) {
-				if (revent.events & (EPOLLRDHUP | EPOLLHUP))
-					break;
-
-				if (revent.events & EPOLLIN)
-					__sync_val_compare_and_swap(&data->pending, 0, 1);
-			}
-		}
-
-		close_connection(data);
-	}
-
-	return NULL;
-}
-
-static struct debug_data *start_server(void)
-{
-	pthread_t thread;
-	struct debug_data *data;
-
-	data = calloc(1, sizeof(*data));
-	if (!data)
-		err(1, "failed to allocate data");
-
-	data->sock_fd = spawn_server();
-	data->epoll_fd = epoll_create(1);
-	data->client_fd = -1;
-	if (data->epoll_fd < 0)
-		err(1, "failed to create epoll fd");
-	pthread_mutex_init(&data->lock, NULL);
-
-	if (pthread_create(&thread, NULL, server_thread, data))
-		err(1, "failed to spawn server thread");
-
-	return data;
-}
-
-static void notify_runner(void)
-{
-	int fd;
-	char *fifo_name = getenv("SIM_NOTIFY_FIFO");
-
-	if (!fifo_name)
-		return;
-
-	fd = open(fifo_name, O_WRONLY);
-	if (fd < 0)
-		err(1, "failed to open notifcation fifo");
-
-	if (write(fd, "O", 1) != 1)
-		err(1, "failed to write notification byte");
-
-	close(fd);
 }
 
 static void debug_stub_register(void)
 {
-	struct debug_data *data;
+	struct jtag_debug_data *data;
 	s_vpi_systf_data tasks[] = {
 		{
 			.type		= vpiSysTask,

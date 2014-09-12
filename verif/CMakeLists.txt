@@ -26,7 +26,7 @@ add_custom_command(OUTPUT vpi_uart.vpi
 		   COMMAND iverilog-vpi ${VPI_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/vpi_uart.c ${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels/uart.c
 		   DEPENDS vpi_uart.c)
 add_custom_command(OUTPUT vpi_debug_stub.vpi
-		   COMMAND iverilog-vpi -lpthread ${CMAKE_CURRENT_SOURCE_DIR}/vpi_debug_stub.c
+		   COMMAND iverilog-vpi ${VPI_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/vpi_debug_stub.c ${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels/jtag.c
 		   DEPENDS vpi_debug_stub.c)
 add_custom_command(OUTPUT oldland-rtlsim
 		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
