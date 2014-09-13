@@ -310,6 +310,7 @@ static int lua_read##width(lua_State *L)					\
 	if (dbg_read##width(target, addr, &v))					\
 		warnx("failed to read " #width "-bit address %u",		\
 		      (unsigned)addr);						\
+	v &= (uint32_t)((1LU << width) - 1LU);					\
 	lua_pop(L, 1);								\
 	lua_pushinteger(L, v);							\
 										\
