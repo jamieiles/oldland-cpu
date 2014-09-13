@@ -21,7 +21,8 @@ add_custom_command(OUTPUT config.h
 add_executable(oldland-sim debug_uart.c io.c main.c memory.c trace.c cpu.c
 	       oldland-instructions.c irq_ctrl.c periodic.c timer.c cache.c
 	       oldland-types.h oldland-instructions.c config.h
-	       spimaster.c ../devicemodels/uart.c ../devicemodels/jtag.c)
+	       spimaster.c ../devicemodels/uart.c ../devicemodels/jtag.c
+	       sdcard.c ../devicemodels/spi_sdcard.c)
 
 target_link_libraries(oldland-sim ${CMAKE_THREAD_LIBS_INIT})
 

@@ -14,6 +14,7 @@ def main(args):
     parser.add_argument('--interactive', help = 'start in interactive mode',
                         action = 'store_true')
     parser.add_argument('--ramfile', help = 'file to preload onchip ram with')
+    parser.add_argument('--sdcard', help = 'file to use as SD card image')
     parser.add_argument('--debug', help = 'enable trace debugging',
                         action = 'store_true')
     opts = parser.parse_args(args)
@@ -29,6 +30,8 @@ def main(args):
         cmd += ['+debug']
     if opts.ramfile:
         cmd += ['+ramfile={0}'.format(opts.ramfile)]
+    if opts.sdcard:
+        cmd += ['+sdcard={0}'.format(opts.sdcard)]
     try:
         os.execv('/usr/bin/vvp', cmd)
     except KeyboardInterrupt:

@@ -13,6 +13,35 @@
 
 #include <vpi_user.h>
 
+#include "../devicemodels/spi_sdcard.h"
+
+static struct spi_sdcard *sdcard;
+
+const char *get_sdcard_path(void)
+{
+	int i;
+	s_vpi_vlog_info info;
+
+	vpi_get_vlog_info(&info);
+
+	for (i = 0; i < info.argc; ++i)
+		if (strstr(info.argv[i], "+sdcard=") == info.argv[i])
+			return info.argv[i] + strlen("+sdcard=");
+
+	return NULL;
+}
+
+static void sdcard_init(void)
+{
+	const char *path = get_sdcard_path();
+
+	if (!path)
+		return;
+
+	sdcard = spi_sdcard_new(path);
+	assert(sdcard != NULL);
+}
+
 static int spislave_compiletf(char *user_data)
 {
 	return 0;
@@ -20,15 +49,26 @@ static int spislave_compiletf(char *user_data)
 
 static void spi_master_to_slave(uint8_t cs, uint8_t val)
 {
-	(void)cs;
-	(void)val;
+	switch (cs) {
+	case 0:
+		spi_sdcard_next_byte_to_slave(sdcard, val);
+		break;
+	default:
+		break;
+	}
 }
 
 static void spi_slave_to_master(uint8_t cs, uint8_t *val)
 {
-	(void)cs;
-
 	*val = 0;
+
+	switch (cs) {
+	case 0:
+		*val = spi_sdcard_next_byte_to_master(sdcard);
+		break;
+	default:
+		break;
+	}
 }
 
 static int spislave_master_to_slave_calltf(char *user_data)
@@ -100,6 +140,8 @@ static void spislave_register(void)
 
 	vpi_register_systf(&get);
 	vpi_register_systf(&put);
+
+        sdcard_init();
 }
 
 void (*vlog_startup_routines[])(void) = {

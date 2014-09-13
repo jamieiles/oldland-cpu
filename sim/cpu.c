@@ -18,6 +18,7 @@
 #include "trace.h"
 #include "oldland-types.h"
 #include "periodic.h"
+#include "sdcard.h"
 #include "spimaster.h"
 
 #ifndef ROM_FILE
@@ -277,11 +278,13 @@ static void cpu_clear_irq(void *data)
 }
 
 struct cpu *new_cpu(const char *binary, int flags,
-		    const char *bootrom_image)
+		    const char *bootrom_image,
+		    const char *sdcard_image)
 {
 	int err;
 	struct cpu *c;
 	struct timer_init_data timer_data;
+	struct spislave **spislaves;
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
@@ -320,7 +323,11 @@ struct cpu *new_cpu(const char *binary, int flags,
 	c->timers = timers_init(c->mem, TIMER_ADDRESS, &c->events, &timer_data);
 	assert(c->timers);
 
-        c->spimaster = spimaster_init(c->mem, SPIMASTER_ADDRESS, NULL, 0);
+	spislaves = calloc(1, sizeof(*spislaves));
+	assert(spislaves != NULL);
+	spislaves[0] = sdcard_new(sdcard_image);
+	c->spimaster = spimaster_init(c->mem, SPIMASTER_ADDRESS, spislaves,
+				      ARRAY_SIZE(spislaves));
         assert(c->spimaster);
 
 	c->icache = cache_new(c->mem);

@@ -147,6 +147,7 @@ int main(int argc, char *argv[])
 	struct debug_data debug;
 	int i, cpu_flags = CPU_NOTRACE;
 	const char *bootrom_image = ROM_FILE;
+	const char *sdcard_image = NULL;
 
 	debug.jtag = start_server();
 
@@ -160,9 +161,13 @@ int main(int argc, char *argv[])
 			bootrom_image = argv[i + 1];
 			++i;
 		}
+		if (!strcmp(argv[i], "--sdcard") && i + i < argc) {
+			sdcard_image = argv[i + 1];
+			++i;
+		}
 	}
 
-	cpu = new_cpu(NULL, cpu_flags, bootrom_image);
+	cpu = new_cpu(NULL, cpu_flags, bootrom_image, sdcard_image);
 
 	notify_runner();
 
