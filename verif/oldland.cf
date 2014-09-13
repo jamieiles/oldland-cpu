@@ -35,3 +35,4 @@ cpu_tb.v
 ../rtl/oldland/oldland_cache.v
 ../rtl/oldland/oldland_cpuid.v
 simuart.v
+spislave.v

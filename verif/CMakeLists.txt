@@ -28,6 +28,9 @@ add_custom_command(OUTPUT vpi_uart.vpi
 add_custom_command(OUTPUT vpi_debug_stub.vpi
 		   COMMAND iverilog-vpi ${VPI_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/vpi_debug_stub.c ${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels/jtag.c
 		   DEPENDS vpi_debug_stub.c)
+add_custom_command(OUTPUT vpi_spislave.vpi
+		   COMMAND iverilog-vpi ${VPI_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/vpi_spislave.c ${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels/spi_sdcard.c
+		   DEPENDS vpi_spislave.c)
 add_custom_command(OUTPUT oldland-rtlsim
 		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
 		   DEPENDS oldland-rtlsim)
@@ -41,7 +44,7 @@ add_custom_command(OUTPUT keynsham_defines.v
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/config --verilog > keynsham_defines.v
 		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.yaml
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-add_custom_target(rtl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/decode.hex keynsham_defines.v oldland_defines.v keynsham vpi_uart.vpi vpi_debug_stub.vpi oldland-rtlsim)
+add_custom_target(rtl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/decode.hex keynsham_defines.v oldland_defines.v keynsham vpi_uart.vpi vpi_debug_stub.vpi vpi_spislave.vpi oldland-rtlsim)
 
 set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl
@@ -59,6 +62,7 @@ add_custom_target(lint ALL
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_uart.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_debug_stub.vpi DESTINATION lib)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/vpi_spislave.vpi DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/keynsham.vvp DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/decode.hex DESTINATION lib)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim DESTINATION bin)

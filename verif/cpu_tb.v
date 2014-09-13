@@ -37,7 +37,7 @@ wire		dbg_req;
 wire		dbg_ack;
 
 /* SPI. */
-reg		miso = 1'b0;
+wire		miso;
 wire		mosi;
 wire		sclk;
 wire [`NUM_SPI_CS - 1:0] spi_ncs;
@@ -97,6 +97,12 @@ debug_controller	dbg(.clk(dbg_clk),
 			    .wr_en(dbg_wr_en),
 			    .req(dbg_req),
 			    .ack(dbg_ack));
+
+spislave	#(.csnum(0))
+		dummy_slave(.clk(sclk),
+			    .miso(mosi),
+			    .mosi(miso),
+			    .ncs(spi_ncs[0]));
 
 initial begin
 	if ($test$plusargs("debug")) begin

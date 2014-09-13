@@ -4,7 +4,7 @@ import os
 import sys
 
 MODULE_PATH = '%INSTALL_PATH%/lib'
-MODULES = 'vpi_uart vpi_debug_stub'.split()
+MODULES = 'vpi_uart vpi_debug_stub vpi_spislave'.split()
 ROM_PATH = '%INSTALL_PATH%/lib/'
 DEFAULT_ROM = 'bootrom.hex'
 
