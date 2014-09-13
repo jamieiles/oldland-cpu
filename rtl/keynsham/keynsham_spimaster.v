@@ -54,7 +54,7 @@ wire [12:0]	xfer_length = xfer_ctrl_reg[12:0];
 /* Chip select register. */
 reg [num_cs - 1:0] cs_reg = {num_cs{1'b0}};
 
-assign          ncs = cs_reg;
+assign          ncs = ~cs_reg;
 
 cs_gen		#(.address(bus_address), .size(bus_size))
 		d_cs_gen(.bus_addr(bus_addr), .cs(bus_cs));
@@ -121,7 +121,7 @@ always @(posedge clk) begin
 	if (do_reg_access && bus_wr_en) begin
 		case (bus_addr[1:0])
 		2'b00: ctrl_reg <= bus_wr_val;
-                2'b01: cs_reg <= reg_rd_val[num_cs - 1:0];
+                2'b01: cs_reg <= bus_wr_val[num_cs - 1:0];
 		2'b10: xfer_ctrl_reg <= bus_wr_val & 32'hfffeffff;
 		default: ;
 		endcase
