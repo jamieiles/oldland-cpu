@@ -60,6 +60,30 @@ static int spimaster_write(unsigned int offs, uint32_t val, size_t nr_bits,
 	return 0;
 }
 
+static uint8_t slave_xfer(struct spimaster *master, struct spislave *slave)
+{
+	uint8_t slave_to_master = 0;
+
+	assert(slave->exchange_bytes);
+	slave->exchange_bytes(slave, master->xfer_buf[master->bytes_xfered],
+			      &slave_to_master);
+
+	return slave_to_master;
+}
+
+static void xfer_slaves(struct spimaster *master)
+{
+	unsigned int m;
+	uint8_t v = 0;
+
+	for (m = 0; m < master->nr_slaves; ++m)
+		if (master->regs[SPIMASTER_CS_ENABLE] & (1 << m))
+			/* Slaves share a common bus. */
+			v |= slave_xfer(master, master->slaves[m]);
+
+	master->xfer_buf[master->bytes_xfered] = v;
+}
+
 /*
  * Transfer a byte every time the master is read to exercise polling.
  */
@@ -69,6 +93,8 @@ static void spimaster_xfer_byte(struct spimaster *master)
 		return;
 	if (master->loopback_enabled)
 		master->xfer_buf[master->bytes_xfered] ^= 0xff;
+	else
+		xfer_slaves(master);
 	master->bytes_xfered++;
 }
 
@@ -121,6 +147,7 @@ struct spimaster *spimaster_init(struct mem_map *mem, physaddr_t base,
 
 	master->slaves = slaves;
 	master->nr_slaves = nr_slaves;
+	assert(nr_slaves <= sizeof(unsigned int) * 8);
 
 	r = mem_map_region_add(mem, base, 16384, &spimaster_ops, master, 0);
 	assert(r);

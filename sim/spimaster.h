@@ -7,9 +7,9 @@
 #include "io.h"
 
 struct spislave {
-	unsigned int csnum;
-	void (*exchange_bytes)(struct spislave *slave, uint8_t rxbyte,
-			       uint8_t *txbyte);
+	void (*exchange_bytes)(struct spislave *slave, uint8_t master_to_slave,
+			       uint8_t *slave_to_master);
+	void *privdata;
 };
 
 struct spimaster;
