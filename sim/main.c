@@ -157,11 +157,11 @@ int main(int argc, char *argv[])
 			cpu_flags &= ~CPU_NOTRACE;
 		if (!strcmp(argv[i], "--interactive"))
 			sim_interactive = 1;
-		if (!strcmp(argv[i], "--bootrom") && i + i < argc) {
+		if (!strcmp(argv[i], "--bootrom") && i + 1 < argc) {
 			bootrom_image = argv[i + 1];
 			++i;
 		}
-		if (!strcmp(argv[i], "--sdcard") && i + i < argc) {
+		if (!strcmp(argv[i], "--sdcard") && i + 1 < argc) {
 			sdcard_image = argv[i + 1];
 			++i;
 		}
