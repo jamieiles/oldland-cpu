@@ -14,8 +14,8 @@ static void sdcard_exchange_bytes(struct spislave *slave,
 {
 	struct spi_sdcard *sdcard = slave->privdata;
 
-	spi_sdcard_next_byte_to_slave(sdcard, master_to_slave);
 	*slave_to_master = spi_sdcard_next_byte_to_master(sdcard);
+	spi_sdcard_next_byte_to_slave(sdcard, master_to_slave);
 }
 
 struct spislave *sdcard_new(const char *sdcard_image)
