@@ -17,7 +17,7 @@ always @(posedge clk) begin
 
 		if (bit_idx == 3'h7)
 			$spi_rx_byte_from_master(csnum, {rx_byte[7:1], miso});
-		if (bit_idx == 3'b0)
+		if (bit_idx == 3'h7)
 			$spi_get_next_byte_to_master(csnum, tx_byte);
 
 		bit_idx <= bit_idx + 1'b1;
