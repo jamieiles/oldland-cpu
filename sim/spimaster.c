@@ -77,7 +77,8 @@ static void xfer_slaves(struct spimaster *master)
 	uint8_t v = 0;
 
 	for (m = 0; m < master->nr_slaves; ++m)
-		if (master->regs[SPIMASTER_CS_ENABLE] & (1 << m))
+		if (master->regs[SPIMASTER_CS_ENABLE] & (1 << m) &&
+		    master->slaves[m])
 			/* Slaves share a common bus. */
 			v |= slave_xfer(master, master->slaves[m]);
 
