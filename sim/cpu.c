@@ -325,7 +325,8 @@ struct cpu *new_cpu(const char *binary, int flags,
 
 	spislaves = calloc(1, sizeof(*spislaves));
 	assert(spislaves != NULL);
-	spislaves[0] = sdcard_new(sdcard_image);
+	if (sdcard_image)
+		spislaves[0] = sdcard_new(sdcard_image);
 	c->spimaster = spimaster_init(c->mem, SPIMASTER_ADDRESS, spislaves,
 				      ARRAY_SIZE(spislaves));
         assert(c->spimaster);
