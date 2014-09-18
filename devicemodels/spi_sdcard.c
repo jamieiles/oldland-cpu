@@ -282,7 +282,7 @@ uint8_t spi_sdcard_next_byte_to_master(struct spi_sdcard *sd)
 
 		switch (sd->current_cmd.command & 0x3f) {
 		case SD_SEND_OP_COND:
-			v = 0;
+			v = reset_complete(sd) ? 0 : IN_IDLE_STATE;
 			finish_command(sd);
 			break;
 		default:
