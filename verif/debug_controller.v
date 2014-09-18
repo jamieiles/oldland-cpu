@@ -45,9 +45,7 @@ always @(*) begin
 	STATE_ISSUE_CMD: begin
 		next_state = ack ? STATE_IDLE : STATE_ISSUE_CMD;
 	end
-	STATE_IDLE: begin
-		next_state = STATE_IDLE;
-	end
+	default: ;
 	endcase
 end
 
