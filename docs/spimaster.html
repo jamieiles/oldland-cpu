@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../stylesheets/stylesheet.css">
 
     <title>Oldland-cpu</title>
   </head>
@@ -34,26 +34,65 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
 
-<h1>Keynsham SoC Configuration</h1><h2>CPU</h2><p><strong>Manufacturer:</strong> 19017</p><p><strong>Model:</strong> 1</p><p><strong>Clock Speed:</strong> 50000000</p><h2>Instruction Cache</h2><p><strong>Size:</strong> 8192</p><p><strong>Line size:</strong> 32</p><h2>Memory Map</h2><table>
-<tr><th>Address</th><th>Size</th><th>Name</th></tr>
+<h1 id="oldland_spi_master">Oldland SPI Master</h1>
 
-  <tr><td>0x0000000</td><td>0x0001000</td><td>ram</td></tr>
+<p>Oldland has an SPI master with internal SRAM to reduce wait states when transferring multiple bytes of data. There are multiple chip selects supported and the command is programmed into I/O registers before initiating the transfer.</p>
 
-  <tr><td>0x10000000</td><td>0x0001000</td><td>bootrom</td></tr>
+<p>Only SPI mode 0 transfers are currently supported.</p>
 
-  <tr><td>0x20000000</td><td>0x02000000</td><td>sdram</td></tr>
+<p>The transfer buffer may only be accessed with byte accesses.</p>
 
-  <tr><td>0x80001000</td><td>0x00001000</td><td>sdram_ctrl</td></tr>
+<h2 id="registers">Registers</h2>
 
-  <tr><td>0x80000000</td><td>0x0001000</td><td>uart</td></tr>
+<p>Control:</p>
 
-  <tr><td>0x80002000</td><td>0x00001000</td><td>irq</td></tr>
+<ul>
+<li>[9]: loopback enable (data is inverted).</li>
 
-  <tr><td>0x80003000</td><td>0x00001000</td><td>timer</td></tr>
+<li>[8:0]: clock divider, must be a power of two.</li>
+</ul>
 
-  <tr><td>0x80004000</td><td>0x00004000</td><td>spimaster</td></tr>
+<p>CS enable:</p>
 
-</table>
+<ul>
+<li>[1]: CS1 enable</li>
+
+<li>[0]: CS0 enable</li>
+</ul>
+
+<p>Transfer control:</p>
+
+<ul>
+<li>[17]: bus busy</li>
+
+<li>[16]: transfer go</li>
+
+<li>[15:13]: reserved</li>
+
+<li>[12:0]: transfer octets</li>
+</ul>
+
+<h2 id="programming">Programming</h2>
+
+<p>To perform a transfer:</p>
+
+<ol>
+<li>select the correct divider to give the desired clock rate.</li>
+
+<li>write the bytes to be transmitted into the memory buffer.</li>
+
+<li>write the transfer length into the transfer control register.</li>
+
+<li>set the correct chip select in the chip select control register.</li>
+
+<li>write a 1 to the transfer go bit in the transfer control register.</li>
+
+<li>poll the bus busy bit.</li>
+
+<li>copy the bytes from the buffer into application memory.</li>
+</ol>
+
+<p>The sequencer overwrites the tx bytes in the buffer with the rx bytes on reception.</p>
       </section>
     </div>
 
