@@ -69,7 +69,11 @@ static int dbg_get_calltf(char *user_data)
 		if(__sync_val_compare_and_swap(&jtag_debug_data->pending, 1, 0) == 0)
 			jtag_debug_data->more_data = 1;
 
-	data[D_REQ] = get_request(jtag_debug_data, &req) == 0;
+	if (jtag_debug_data->more_data) {
+		data[D_REQ] = get_request(jtag_debug_data, &req) == 0;
+		jtag_debug_data->more_data = data[D_REQ];
+	}
+
 	data[D_RNW] = req.read_not_write;
 	data[D_ADDR] = req.addr;
 	data[D_VALUE] = req.value;
