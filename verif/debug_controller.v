@@ -54,8 +54,10 @@ always @(posedge clk)
 		$dbg_put(read_data);
 
 always @(posedge clk)
-	if (state == STATE_IDLE)
+	if (state == STATE_IDLE && !ack && !dbg_req)
 		$dbg_get(dbg_req, dbg_rnw, dbg_addr, dbg_val);
+	else
+		dbg_req <= 1'b0;
 
 always @(posedge clk)
 	state <= next_state;
