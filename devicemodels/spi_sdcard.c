@@ -221,8 +221,8 @@ static void do_block_read(struct spi_sdcard *sd)
 	sd->msg_len += br;
 
 	/* CRC16 */
-	sd->data_buf[sd->msg_len++] = 0xaa;
-	sd->data_buf[sd->msg_len++] = 0x55;
+	sd->data_buf[sd->msg_len++] = 0xde;
+	sd->data_buf[sd->msg_len++] = 0xad;
 }
 
 uint8_t spi_sdcard_next_byte_to_master(struct spi_sdcard *sd)
