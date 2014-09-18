@@ -1,3 +1,9 @@
+`ifdef verilator
+`define CONFIG_CONTROLLER verilator_sdram_model
+`else
+`define CONFIG_CONTROLLER sdram_controller
+`endif
+
 module keynsham_sdram(input wire		clk,
 		      /* Data bus. */
 		      output wire		ctrl_cs,
@@ -88,7 +94,7 @@ bridge_32_16		br(.clk(clk),
 			   .b_bytesel(bridge_bytesel),
 			   .b_compl(bridge_compl));
 
-sdram_controller	sdram(.clk(clk),
+`CONFIG_CONTROLLER	sdram(.clk(clk),
 			      .h_addr(bridge_addr),
 			      .h_wr_en(bridge_wr_en),
 			      .h_bytesel(bridge_bytesel),

@@ -56,6 +56,8 @@ set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/../rtl/sdram/rtl
     -I${CMAKE_CURRENT_SOURCE_DIR})
 
+set(VERILATOR_FLAGS -DSIMULATION)
+
 add_custom_target(lint ALL
 		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v
 		  COMMAND verilator --lint-only ${VERILATOR_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)

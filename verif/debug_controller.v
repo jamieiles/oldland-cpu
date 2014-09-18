@@ -1,10 +1,18 @@
 module debug_controller(input wire		clk,
 			output reg [1:0]	addr,
 			output reg [31:0]	write_data,
-			input wire [31:0]	read_data,
+			input wire [31:0]	read_data/*verilator public*/,
 			output reg		wr_en,
 			output reg		req,
 			input wire		ack);
+
+`ifdef verilator
+`systemc_imp_header
+void dbg_sim_term(IData val);
+void dbg_put(IData val);
+void dbg_get(CData *req, CData *rnw, CData *addr, IData *val);
+`verilog
+`endif
 
 localparam STATE_IDLE		= 4'b0001;
 localparam STATE_SETUP		= 4'b0010;
@@ -25,6 +33,26 @@ initial begin
 	wr_en = 1'b0;
 	req = 1'b0;
 end
+
+task put_result;
+begin
+`ifdef verilator
+	$c("{dbg_put(read_data);}");
+`else
+	$dbg_put(read_data);
+`endif
+end
+endtask
+
+task do_term;
+begin
+`ifdef verilator
+	$c("{dbg_sim_term(0);}");
+`else
+	$dbg_sim_term(32'b0);
+`endif
+end
+endtask
 
 always @(*) begin
 	case (state)
@@ -50,14 +78,34 @@ always @(*) begin
 end
 
 always @(posedge clk)
-	if (state == STATE_READ_RESULT)
-		$dbg_put(read_data);
+	if (state == STATE_READ_RESULT) begin
+		put_result();
+	end
 
+`ifdef verilator
+reg cdbg_req /*verilator public*/= 1'b0;
+reg cdbg_rnw /*verilator public*/= 1'b0;
+reg [1:0] cdbg_addr /*verilator public*/= 2'b0;
+reg [31:0] cdbg_val/*verilator public*/ = 32'b0;
+
+always @(posedge clk) begin
+	if (state == STATE_IDLE && !ack && !dbg_req) begin
+		$c("{dbg_get(&cdbg_req, &cdbg_rnw, &cdbg_addr, &cdbg_val);}");
+		dbg_req <= cdbg_req;
+		dbg_rnw <= cdbg_rnw;
+		dbg_addr <= cdbg_addr;
+		dbg_val <= cdbg_val;
+	end else begin
+		dbg_req <= 1'b0;
+	end
+end
+`else
 always @(posedge clk)
 	if (state == STATE_IDLE && !ack && !dbg_req)
 		$dbg_get(dbg_req, dbg_rnw, dbg_addr, dbg_val);
 	else
 		dbg_req <= 1'b0;
+`endif
 
 always @(posedge clk)
 	state <= next_state;
@@ -79,7 +127,7 @@ always @(*) begin
 		 * worrying about system level reset.
 		 */
 		if (dbg_addr == 2'b00 && dbg_val == 32'hffffffff) begin
-			$dbg_sim_term(32'b0);
+			do_term();
 			$finish;
 		end
 	end

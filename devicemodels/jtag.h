@@ -1,6 +1,10 @@
 #ifndef __JTAG_H__
 #define __JTAG_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../debugger/protocol.h"
 
 struct jtag_debug_data {
@@ -16,5 +20,9 @@ struct jtag_debug_data *start_server(void);
 int send_response(struct jtag_debug_data *d, const struct dbg_response *resp);
 int get_request(struct jtag_debug_data *d, struct dbg_request *req);
 void notify_runner(void);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* __JTAG_H__ */

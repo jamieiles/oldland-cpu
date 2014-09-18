@@ -1,4 +1,5 @@
 +timescale+1ns/1ps
++define+SIMULATION=1
 +incdir+../rtl
 +incdir+../rtl/oldland
 $(BUILD_DIR)/oldland_defines.v

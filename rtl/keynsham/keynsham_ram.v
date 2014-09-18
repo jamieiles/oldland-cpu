@@ -29,7 +29,7 @@ cs_gen		#(.address(bus_address), .size(bus_size))
 cs_gen		#(.address(bus_address), .size(bus_size))
 		i_cs_gen(.bus_addr(i_addr), .cs(i_cs));
 
-`ifdef __ICARUS__
+`ifdef SIMULATION
 
 sim_dp_ram	mem(.clk(clk),
 		    .i_access(i_access),
