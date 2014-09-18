@@ -159,6 +159,7 @@ int mem_map_write(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 
 	r = mem_map_lookup(map, addr);
 
+	val &= (uint32_t)((1LU << (unsigned long)nr_bits) - 1LU);
 	return r->write(addr - r->base, val, nr_bits, r->priv);
 }
 
@@ -166,13 +167,17 @@ int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 		 uint32_t *val)
 {
 	const struct region *r;
+	int rc;
 
 	if (addr & ((nr_bits / 8) - 1))
 		return -EIO;
 
 	r = mem_map_lookup(map, addr);
 
-	return r->read(addr - r->base, val, nr_bits, r->priv);
+	rc = r->read(addr - r->base, val, nr_bits, r->priv);
+	*val &= (uint32_t)((1LU << (unsigned long)nr_bits) - 1LU);
+
+	return rc;
 }
 
 int mem_map_addr_cacheable(struct mem_map *map, physaddr_t addr)
