@@ -34,6 +34,18 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
 
+<p>There are three different simulators for the CPU:</p>
+
+<ul>
+<li>oldland-sim: an instruction set simulator in C and is not cycle accurate.</li>
+
+<li>oldland-rtlsim: an Icarus verilog simulation, models events but can be slow.</li>
+
+<li>oldland-verilatorsim: a Verilator based simulation that runs &gt; 1MHz and is cycle accurate.</li>
+</ul>
+
+<p>The Icarus simulation is the most accurate and includes vendor models of the SDRAM whereas the verilator model does not model SDRAM timing or configuration.</p>
+
 <p>For interactive simulation:</p>
 
 <ul>
