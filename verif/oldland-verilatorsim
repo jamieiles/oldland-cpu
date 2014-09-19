@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+import argparse
+import os
+import sys
+
+MODULE_PATH = '%INSTALL_PATH%/lib'
+ROM_PATH = '%INSTALL_PATH%/lib/'
+DEFAULT_ROM = 'bootrom.hex'
+
+def main(args):
+    parser = argparse.ArgumentParser(description = 'Oldland Verilator Simluation wrapper')
+    parser.add_argument('--bootrom', help = 'bootrom file in %INSTALL_PATH%/lib to use')
+    parser.add_argument('--interactive', help = 'start in interactive mode',
+                        action = 'store_true')
+    parser.add_argument('--ramfile', help = 'file to preload onchip ram with')
+    parser.add_argument('--sdcard', help = 'file to use as SD card image')
+    opts = parser.parse_args(args)
+
+    rom_file = '{0}{1}'.format(ROM_PATH,
+                                opts.bootrom if opts.bootrom else DEFAULT_ROM)
+    cmd = ['%INSTALL_PATH%/lib/oldland-verilator', '+romfile={0}'.format(rom_file)]
+    if opts.interactive:
+        cmd += ['+interactive']
+    if opts.ramfile:
+        cmd += ['+ramfile={0}'.format(opts.ramfile)]
+    if opts.sdcard:
+        cmd += ['+sdcard={0}'.format(opts.sdcard)]
+    try:
+        os.execv('%INSTALL_PATH%/lib/oldland-verilator', cmd)
+    except KeyboardInterrupt:
+        pass
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

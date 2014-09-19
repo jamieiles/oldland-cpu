@@ -28,8 +28,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/decode.hex
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
 		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-verilatorsim
+		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-verilatorsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-verilatorsim
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/oldland-verilatorsim)
 add_custom_target(generate
-		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/decode.hex)
+		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/oldland-verilatorsim ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/decode.hex)
 
 add_custom_target(lint ALL
 		  DEPENDS generate
@@ -37,6 +40,7 @@ add_custom_target(lint ALL
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/decode.hex DESTINATION lib)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim DESTINATION bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-verilatorsim DESTINATION bin)
 
 add_subdirectory(icarus)
 add_subdirectory(verilator)
