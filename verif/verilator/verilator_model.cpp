@@ -3,7 +3,7 @@
 
 #include <verilated.h>
 #include "Vverilator_toplevel.h"
-#include "../devicemodels/jtag.h"
+#include "../../devicemodels/jtag.h"
 
 static struct jtag_debug_data *jtag_debug_data;
 

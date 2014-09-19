@@ -26,7 +26,8 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/decode.hex
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/gendecode/gendecode > ${CMAKE_CURRENT_BINARY_DIR}/decode.hex
 		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.yaml)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
-		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim)
+		   COMMAND sed -e "s#%INSTALL_PATH%#${CMAKE_INSTALL_PREFIX}#g" ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim > ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/oldland-rtlsim)
 add_custom_target(generate
 		  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v ${CMAKE_CURRENT_BINARY_DIR}/oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/decode.hex)
 
@@ -38,3 +39,4 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/decode.hex DESTINATION lib)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim DESTINATION bin)
 
 add_subdirectory(icarus)
+add_subdirectory(verilator)
