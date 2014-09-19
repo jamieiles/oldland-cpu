@@ -19,10 +19,11 @@ def find_test_files():
         return filter(is_test, filenames)
 
 TEST_PATH = '%TEST_PATH%'
-SIMULATORS = 'oldland-sim oldland-rtlsim'.split()
+SIMULATORS = 'oldland-sim oldland-verilatorsim oldland-rtlsim'.split()
 TEST_FILES = find_test_files()
 SIM_ARGS = {
-    'oldland-rtlsim': ['--bootrom', 'sim.hex']
+    'oldland-rtlsim': ['--bootrom', 'sim.hex'],
+    'oldland-verilatorsim': ['--bootrom', 'sim.hex']
 }
 FIFO_PATH = '/tmp/oldland-test.{0}'.format(os.getpid())
 
@@ -77,6 +78,9 @@ def terminate_sim():
 
 def main():
     sims = ['manual'] if '--manual' in sys.argv else SIMULATORS
+
+    if 'oldland-rtlsim' in sims and '--quick' in sys.argv:
+        sims.remove('oldland-rtlsim')
     suites = []
     for sim in sims:
         if sim != 'manual':
