@@ -19,6 +19,8 @@ set(VERILATOR_LIBS
 set(GENERATED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/../oldland_defines.v
     ${CMAKE_CURRENT_BINARY_DIR}/../keynsham_defines.v)
+set(CPP_SOURCES
+    debug.cpp)
 set(LINK_FLAGS "-pthread")
 
 if(OPTIMIZE_VERILATOR)
@@ -26,11 +28,11 @@ set(VERILATOR_MAKE_OPTS OPT=-O3)
 endif(OPTIMIZE_VERILATOR)
 
 add_custom_target(genverilator ALL
-		  COMMAND verilator verilator_toplevel.v --exe ${CMAKE_CURRENT_SOURCE_DIR}/verilator_model.cpp ${GENERATED_FILES} ${VERILATOR_FLAGS} ${VERILATOR_INCLUDES} ${VERILATOR_LIBS} -o oldland-verilator --Mdir ${CMAKE_CURRENT_BINARY_DIR}/obj_dir
+		  COMMAND verilator verilator_toplevel.v --exe ${CMAKE_CURRENT_SOURCE_DIR}/verilator_model.cpp ${CPP_SOURCES} ${GENERATED_FILES} ${VERILATOR_FLAGS} ${VERILATOR_INCLUDES} ${VERILATOR_LIBS} -o oldland-verilator --Mdir ${CMAKE_CURRENT_BINARY_DIR}/obj_dir
 		  DEPENDS generate verilator_toplevel.v verilator_model.cpp
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_target(buildverilator ALL
-		  COMMAND USER_LDFLAGS="${LINK_FLAGS}" make -f Vverilator_toplevel.mk ${VERILATOR_MAKE_OPTS}
+		  COMMAND USER_LDFLAGS="${LINK_FLAGS}" $(MAKE) -f Vverilator_toplevel.mk ${VERILATOR_MAKE_OPTS}
 		  DEPENDS genverilator
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/obj_dir)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/obj_dir/oldland-verilator DESTINATION lib)
