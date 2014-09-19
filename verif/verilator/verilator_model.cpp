@@ -4,19 +4,7 @@
 #include <verilated.h>
 #include "Vverilator_toplevel.h"
 #include "debug.h"
-void uart_get(SData *val)
-{
-	*val = 0;
-}
-
-void uart_put(SData val)
-{
-	char c = val & 0xff;
-
-	ssize_t bw = write(STDOUT_FILENO, &c, 1);
-	assert(bw == 1);
-}
-
+#include "uart.h"
 
 void spi_rx_byte_from_master(IData cs, CData val)
 {
@@ -36,6 +24,7 @@ int main(int argc, char **argv)
 
 	Vverilator_toplevel *top = new Vverilator_toplevel;
 
+	init_uart();
 	init_debug();
 
 	top->clk = 0;

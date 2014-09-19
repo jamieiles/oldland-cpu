@@ -21,10 +21,7 @@ void uart_put(SData val);
 `ifdef verilator
 task write_data;
 begin
-	if (~|$test$plusargs("interactive"))
-		$write("%c", bus_wr_val[7:0]);
-	else
-		$c("{uart_put(bus_wr_val);}");
+	$c("{uart_put(bus_wr_val);}");
 end
 endtask
 `else
@@ -41,9 +38,11 @@ endtask
 `endif
 
 `ifdef verilator
+reg [8:0] cuart_buf /*verilator public*/ = 9'b0;
 task read_data;
 begin
-	$c("{uart_get(&uart_buf);}");
+	$c("{uart_get(&cuart_buf);}");
+        uart_buf <= cuart_buf;
 end
 endtask
 `else

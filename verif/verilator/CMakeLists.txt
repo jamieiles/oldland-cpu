@@ -20,7 +20,8 @@ set(GENERATED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/../oldland_defines.v
     ${CMAKE_CURRENT_BINARY_DIR}/../keynsham_defines.v)
 set(CPP_SOURCES
-    debug.cpp)
+    debug.cpp
+    uart.cpp)
 set(LINK_FLAGS "-pthread")
 
 if(OPTIMIZE_VERILATOR)
