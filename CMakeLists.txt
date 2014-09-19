@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(Oldland)
 
+add_subdirectory(devicemodels)
 add_subdirectory(sim)
 add_subdirectory(debugger)
 add_subdirectory(verif)
