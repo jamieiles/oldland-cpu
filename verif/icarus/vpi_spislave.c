@@ -51,7 +51,8 @@ static void spi_master_to_slave(uint8_t cs, uint8_t val)
 {
 	switch (cs) {
 	case 0:
-		spi_sdcard_next_byte_to_slave(sdcard, val);
+		if (sdcard)
+			spi_sdcard_next_byte_to_slave(sdcard, val);
 		break;
 	default:
 		break;
@@ -64,7 +65,8 @@ static void spi_slave_to_master(uint8_t cs, uint8_t *val)
 
 	switch (cs) {
 	case 0:
-		*val = spi_sdcard_next_byte_to_master(sdcard);
+		if (sdcard)
+			*val = spi_sdcard_next_byte_to_master(sdcard);
 		break;
 	default:
 		break;
