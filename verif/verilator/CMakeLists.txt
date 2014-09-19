@@ -21,7 +21,8 @@ set(GENERATED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/../keynsham_defines.v)
 set(CPP_SOURCES
     debug.cpp
-    uart.cpp)
+    uart.cpp
+    spi.cpp)
 set(LINK_FLAGS "-pthread")
 
 if(OPTIMIZE_VERILATOR)

@@ -5,18 +5,7 @@
 #include "Vverilator_toplevel.h"
 #include "debug.h"
 #include "uart.h"
-
-void spi_rx_byte_from_master(IData cs, CData val)
-{
-	(void)cs;
-	(void)val;
-}
-
-void spi_get_next_byte_to_master(IData cs, CData *val)
-{
-	(void)cs;
-	*val = 0;
-}
+#include "spi.h"
 
 int main(int argc, char **argv)
 {
@@ -26,6 +15,7 @@ int main(int argc, char **argv)
 
 	init_uart();
 	init_debug();
+	init_spi();
 
 	top->clk = 0;
 	top->dbg_clk = 0;

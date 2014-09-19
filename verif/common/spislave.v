@@ -34,9 +34,11 @@ endtask
 `endif
 
 `ifdef verilator
+reg [7:0] ctx_byte /*verilator public*/ = 8'b0;
 task next_byte_to_master;
 begin
-	$c("{spi_get_next_byte_to_master(csnum, &tx_byte);}");
+	$c("{spi_get_next_byte_to_master(csnum, &ctx_byte);}");
+	tx_byte <= ctx_byte;
 end
 endtask
 `else
