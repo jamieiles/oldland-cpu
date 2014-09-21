@@ -110,8 +110,7 @@ read_char:
 	 * Send the ack packet.  Clobbers $r0.
 	 */
 send_ack:
-	xor	$r0, $r0, $r0
-	or	$r0, $r0, 0x41 # 'A'
+	mov	$r0, 0x41 # 'A'
 	str32	$r0, [$r3, 0x0000]
 not_empty:
 	ldr32	$r0, [$r3, 0x0004]
