@@ -173,7 +173,7 @@
         asr: {
             class: 0,
             opcode: 14,
-            format: [[ra], [imm13, rb]],
+            format: [[rd], [ra], [imm13, rb]],
             formatsel: 25,
             description: "Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate."
         },
