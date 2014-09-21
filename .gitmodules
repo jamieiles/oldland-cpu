@@ -1,9 +1,9 @@
 [submodule "rtl/uart"]
 	path = rtl/uart
-	url = git@github.com:jamieiles/uart
+	url = https://github.com/jamieiles/uart.git
 [submodule "rtl/sdram"]
 	path = rtl/sdram
-	url = git@github.com:jamieiles/oldland-sdram
+	url = https://github.com/jamieiles/oldland-sdram.git
 [submodule "oldland-jtag/jtag"]
 	path = oldland-jtag/jtag
-	url = git@github.com:jamieiles/jtag.git
+	url = https://github.com/jamieiles/jtag.git
