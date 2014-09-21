@@ -177,6 +177,14 @@
             formatsel: 25,
             description: "Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate."
         },
+        mov: {
+            class: 0,
+            opcode: 15,
+            format: [[rd], [imm13, rb]],
+            formatsel: 25,
+            description: "Rd := OP1, OP1 may be either a register or a 13-bit signed immediate.",
+            alu_opcode: "copyb"
+        },
         call: {
             class: 1,
             opcode: 0,

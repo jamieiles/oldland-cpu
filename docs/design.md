@@ -80,8 +80,8 @@ Encoding:
 	
 	ADD	 0  0  0  0  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 	ADDC	 0  0  0  0  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
-	SUd	 0  0  0  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
-	SUdC	 0  0  0  0  1  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+	SUB	 0  0  0  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+	SUBC	 0  0  0  0  1  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 	LSL	 0  0  0  1  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 	LSR	 0  0  0  1  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 	AND	 0  0  0  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
@@ -91,6 +91,7 @@ Encoding:
 	OR 	 0  0  1  0  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
 	CMP	 0  0  1  1  0  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
 	ASR 	 0  0  1  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb rd rd rd rd
+	MOV 	 0  0  1  1  1  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x rb rb rb rb rd rd rd rd
 	
 	CALL	 0  1  0  0  0  0  R  x  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I IR IR IR IR
 	RET	 0  1  0  0  0  1  1  x  x  x  x  x  x  x  x  x  x  x  x  x  1  1  1  0  x  x  x  x  x  x  x  x
