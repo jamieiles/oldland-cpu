@@ -23,7 +23,6 @@ reg [31:0]	reg_rd_val = 32'b0;
 reg		bus_rd_from_xfer_buf = 1'b0;
 reg		bus_rd_from_regs = 1'b0;
 reg [31:0]	xfer_val_rotated = 32'b0;
-assign		bus_data = bus_rd_from_xfer_buf ? xfer_val_rotated : reg_rd_val;
 assign		bus_data = bus_rd_from_xfer_buf ? xfer_val_rotated :
 			   bus_rd_from_regs ? reg_rd_val : 32'b0;
 
