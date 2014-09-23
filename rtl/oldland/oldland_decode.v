@@ -16,7 +16,7 @@ module oldland_decode(input wire	clk,
 		      output reg	update_rd,
 		      output reg [31:0] imm32,
 		      output reg [4:0]	alu_opc,
-		      output reg [2:0]	branch_condition,
+		      output reg [3:0]	branch_condition,
 		      output reg	alu_op1_ra,
 		      output reg	alu_op1_rb,
 		      output reg	alu_op2_rb,
@@ -46,8 +46,8 @@ wire [6:0]      addr = instr[31:25];
 reg [31:0]      microcode[127:0];
 wire [31:0]     uc_val = microcode[addr];
 
-wire            valid = uc_val[21];
-wire [1:0]      imsel = uc_val[20:19];
+wire            valid = uc_val[22];
+wire [1:0]      imsel = uc_val[21:20];
 wire            rd_is_lr = uc_val[12];
 
 wire [31:0]     imm13 = {{19{instr[24]}}, instr[24:12]};
@@ -68,7 +68,7 @@ initial begin
 	rd_sel = 4'b0;
 	update_rd = 1'b0;
 	alu_opc = 5'b0;
-	branch_condition = 3'b0;
+	branch_condition = 4'b0;
 	alu_op1_ra = 1'b0;
 	alu_op1_rb = 1'b0;
 	alu_op2_rb = 1'b0;
@@ -107,12 +107,12 @@ always @(posedge clk) begin
 		i_valid <= 1'b0;
 		cache_instr <= 1'b0;
 	end else begin
-		cache_instr <= uc_val[26];
-		update_carry <= uc_val[25];
-		is_rfe <= uc_val[24];
-		is_swi <= uc_val[23];
-		write_cr <= uc_val[22];
-		branch_condition <= uc_val[18:16];
+		cache_instr <= uc_val[27];
+		update_carry <= uc_val[26];
+		is_rfe <= uc_val[25];
+		is_swi <= uc_val[24];
+		write_cr <= uc_val[23];
+		branch_condition <= uc_val[19:16];
 		mem_width <= uc_val[15:14];
 		is_call <= uc_val[13];
 		mem_store <= uc_val[11];
@@ -146,6 +146,6 @@ always @(posedge clk)
 	pc_plus_4_out <= rst ? 32'b0 : pc_plus_4;
 
 always @(posedge clk)
-	exception_start_out <= illegal_instr | uc_val[23];
+	exception_start_out <= illegal_instr | uc_val[24];
 
 endmodule

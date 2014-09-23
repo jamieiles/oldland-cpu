@@ -400,6 +400,10 @@ enum branch_condition {
 	BRANCH_CC_GTS	= 0x5,
 	BRANCH_CC_LTS	= 0x6,
 	BRANCH_CC_B	= 0x7,
+	BRANCH_CC_GTE	= 0x8,
+	BRANCH_CC_GTES  = 0x9,
+	BRANCH_CC_LTE   = 0xa,
+	BRANCH_CC_LTES  = 0xb,
 };
 
 static bool branch_condition_met(const struct cpu *c, enum branch_condition cond)
@@ -411,12 +415,20 @@ static bool branch_condition_met(const struct cpu *c, enum branch_condition cond
 		return c->flagsbf.z;
 	case BRANCH_CC_GT:
 		return !c->flagsbf.c && !c->flagsbf.z;
+	case BRANCH_CC_GTE:
+		return !c->flagsbf.c;
 	case BRANCH_CC_GTS:
 		return !c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o);
+	case BRANCH_CC_GTES:
+		return c->flagsbf.n == c->flagsbf.o;
 	case BRANCH_CC_LT:
-		return c->flagsbf.c && !c->flagsbf.z;
+		return c->flagsbf.c;
+	case BRANCH_CC_LTE:
+		return c->flagsbf.c || c->flagsbf.z;
 	case BRANCH_CC_LTS:
 		return c->flagsbf.n != c->flagsbf.o;
+	case BRANCH_CC_LTES:
+		return (c->flagsbf.n != c->flagsbf.o) || c->flagsbf.z;
 	case BRANCH_CC_B:
 		return true;
 	default:

@@ -13,7 +13,7 @@ module oldland_exec(input wire		clk,
 		    input wire		mem_load,
 		    input wire		mem_store,
 		    input wire [1:0]	mem_width,
-		    input wire [2:0]	branch_condition,
+		    input wire [3:0]	branch_condition,
 		    input wire [1:0]	instr_class,
 		    input wire		is_call,
 		    input wire		update_carry,
@@ -152,15 +152,31 @@ always @(*) begin
 	endcase
 end
 
+`define BRANCH_CC_NE	4'b0001
+`define BRANCH_CC_B 	4'b0111
+`define BRANCH_CC_EQ	4'b0010
+`define BRANCH_CC_LT	4'b0100
+`define BRANCH_CC_GTS	4'b0101
+`define BRANCH_CC_LTS	4'b0110
+`define BRANCH_CC_GT	4'b0011
+`define BRANCH_CC_GTE   4'b1000
+`define BRANCH_CC_GTES  4'b1001
+`define BRANCH_CC_LTE   4'b1010
+`define BRANCH_CC_LTES  4'b1011
+
 always @(*) begin
 	case (branch_condition)
-	3'b111: branch_condition_met = 1'b1;
-	3'b001: branch_condition_met = !z_flag;
-	3'b010: branch_condition_met = z_flag;
-	3'b011: branch_condition_met = !c_flag;
-	3'b100: branch_condition_met = c_flag;
-	3'b101: branch_condition_met = !z_flag && (n_flag == o_flag);
-	3'b110: branch_condition_met = n_flag != o_flag;
+	`BRANCH_CC_B:    branch_condition_met = 1'b1;
+	`BRANCH_CC_NE:   branch_condition_met = !z_flag;
+	`BRANCH_CC_EQ:   branch_condition_met = z_flag;
+	`BRANCH_CC_GT:   branch_condition_met = !c_flag && !z_flag;
+	`BRANCH_CC_LT:   branch_condition_met = c_flag;
+	`BRANCH_CC_GTS:  branch_condition_met = !z_flag && (n_flag == o_flag);
+	`BRANCH_CC_LTS:  branch_condition_met = n_flag != o_flag;
+	`BRANCH_CC_GTE:  branch_condition_met = !c_flag;
+	`BRANCH_CC_GTES: branch_condition_met = n_flag == o_flag;
+	`BRANCH_CC_LTE:  branch_condition_met = n_flag != o_flag;
+	`BRANCH_CC_LTES: branch_condition_met = (n_flag != o_flag) || z_flag;
 	default: branch_condition_met = 1'b0;
 	endcase
 end

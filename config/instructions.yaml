@@ -254,6 +254,38 @@
             formatsel: 25,
             branch_cc: 6
         },
+        bgte: {
+            class: 1,
+            opcode: 12,
+            format: [[imm24, rb]],
+            description: "If !C PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 8
+        },
+        bgtes: {
+            class: 1,
+            opcode: 13,
+            format: [[imm24, rb]],
+            description: "If N == O PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 9
+        },
+        blte: {
+            class: 1,
+            opcode: 14,
+            format: [[imm24, rb]],
+            description: "If C || Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 10
+        },
+        bltes: {
+            class: 1,
+            opcode: 11,
+            format: [[imm24, rb]],
+            description: "If (N != O) || Z PC := PC + (i << 2) if immediate, PC := RB if register.",
+            formatsel: 25,
+            branch_cc: 11
+        },
         ldr32: {
             class: 2,
             opcode: 0,

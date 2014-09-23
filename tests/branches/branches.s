@@ -51,6 +51,27 @@ _start:
 	compare_ints	-1, 0
 	compare_ints	-2, -1
 	compare_ints	0x80000000, 0x7fffffff
+
+	/* Unsigned BGTE */
+	mov	$r0, 1
+	mov	$r1, 1
+	cmp	$r1, $r0
+	bgte	1f
+	FAILURE
+1:
+
+	mov	$r0, 1
+	mov	$r1, 2
+	cmp	$r1, $r0
+	bgte	2f
+	FAILURE
+2:
+
+	mov	$r0, 2
+	mov	$r1, 1
+	cmp	$r1, $r0
+	bgte	failure
+
 	SUCCESS
 
 failure:

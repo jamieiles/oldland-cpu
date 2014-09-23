@@ -20,42 +20,42 @@ enum maw {
 
 static inline unsigned ucode_cache(uint32_t ucode)
 {
-	return ucode >> 26 & 0x1;
+	return ucode >> 27 & 0x1;
 }
 
 static inline unsigned ucode_upc(uint32_t ucode)
 {
-	return ucode >> 25 & 0x1;
+	return ucode >> 26 & 0x1;
 }
 
 static inline unsigned ucode_rfe(uint32_t ucode)
 {
-	return ucode >> 24 & 0x1;
+	return ucode >> 25 & 0x1;
 }
 
 static inline unsigned ucode_swi(uint32_t ucode)
 {
-	return ucode >> 23 & 0x1;
+	return ucode >> 24 & 0x1;
 }
 
 static inline unsigned ucode_wcr(uint32_t ucode)
 {
-	return ucode >> 22 & 0x1;
+	return ucode >> 23 & 0x1;
 }
 
 static inline unsigned ucode_valid(uint32_t ucode)
 {
-	return ucode >> 21 & 0x1;
+	return ucode >> 22 & 0x1;
 }
 
 static inline enum imsel ucode_imsel(uint32_t ucode)
 {
-	return ucode >> 19 & 0x3;
+	return ucode >> 20 & 0x3;
 }
 
 static inline unsigned ucode_bcc(uint32_t ucode)
 {
-	return ucode >> 16 & 0x7;
+	return ucode >> 16 & 0xf;
 }
 
 static inline enum maw ucode_maw(uint32_t ucode)
