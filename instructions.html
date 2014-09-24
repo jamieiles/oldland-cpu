@@ -86,6 +86,14 @@
 
 <li><a href='#blts'>blts</a></li>
 
+<li><a href='#bgte'>bgte</a></li>
+
+<li><a href='#bgtes'>bgtes</a></li>
+
+<li><a href='#blte'>blte</a></li>
+
+<li><a href='#bltes'>bltes</a></li>
+
 <li><a href='#ldr32'>ldr32</a></li>
 
 <li><a href='#ldr16'>ldr16</a></li>
@@ -489,6 +497,42 @@
   </ul><p><a href='#top'>top of page</a></p>
 <p><a id='blts'><h2>blts</h2></a></p>
 <p><strong>Class: 1, Opcode: 10</strong></p><h3>Description</h3><p><em>If N != O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bgte'><h2>bgte</h2></a></p>
+<p><strong>Class: 1, Opcode: 12</strong></p><h3>Description</h3><p><em>If !C PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bgtes'><h2>bgtes</h2></a></p>
+<p><strong>Class: 1, Opcode: 13</strong></p><h3>Description</h3><p><em>If N == O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='blte'><h2>blte</h2></a></p>
+<p><strong>Class: 1, Opcode: 14</strong></p><h3>Description</h3><p><em>If C || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  
+  
+    
+      <li>imm24 or rb</li>
+    
+  
+  </ul><p><a href='#top'>top of page</a></p>
+<p><a id='bltes'><h2>bltes</h2></a></p>
+<p><strong>Class: 1, Opcode: 11</strong></p><h3>Description</h3><p><em>If (N != O) || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
   
   
     
