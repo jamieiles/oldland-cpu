@@ -425,7 +425,7 @@ static struct target *target_alloc(const char *hostname,
 	if (t->fd < 0) {
 		warn("failed to connect to server");
 		free(t);
-		t = NULL;
+		return NULL;
 	}
 
 	t->regcache = regcache_new(t);
