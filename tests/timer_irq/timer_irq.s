@@ -1,9 +1,14 @@
-.section .text.sdram
-
 .include "common.s"
 
+.section .text
 .globl _start
 _start:
+	movhi	$r0, %hi(test)
+	orlo	$r0, $r0, %lo(test)
+	b	$r0
+
+.section .text.sdram, "ax"
+test:
 	movhi	$r0, %hi(ex_table)
 	orlo	$r0, $r0, %lo(ex_table)
 	scr	0, $r0
