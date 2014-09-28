@@ -17,7 +17,7 @@ SECTIONS {
 		*.rodata.sdram;
 	} > sdram
 
-	.text	: {
+	.text : {
 		*.text;
 	} > rom
 
