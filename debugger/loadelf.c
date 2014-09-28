@@ -24,6 +24,7 @@ struct elf_info {
 	const void *elf;
 	const Elf32_Ehdr *ehdr;
 	const Elf32_Shdr *shdrs;
+	const Elf32_Phdr *phdrs;
 	const char *secstrings;
 	size_t maplen;
 };
@@ -68,6 +69,7 @@ static int init_elf(const char *path, struct elf_info *info)
 
 	info->ehdr = info->elf;
 	info->shdrs = (const void *)info->ehdr + info->ehdr->e_shoff;
+	info->phdrs = (const void *)info->ehdr + info->ehdr->e_phoff;
 	info->secstrings = (const void *)info->ehdr +
 		info->shdrs[info->ehdr->e_shstrndx].sh_offset;
 
@@ -79,6 +81,11 @@ static int init_elf(const char *path, struct elf_info *info)
 	     (pos) < (elf)->ehdr->e_shnum; \
 	     (pos)++, (shdr) = &(elf)->shdrs[(pos)])
 
+#define for_each_phdr(phdr, elf) \
+	for ((phdr) = (elf)->phdrs; \
+	     (phdr) < (elf)->phdrs + (elf)->ehdr->e_phnum; \
+	     (phdr)++)
+
 static void unmap_elf(const struct elf_info *info)
 {
 	free((void *)info->path);
@@ -86,7 +93,7 @@ static void unmap_elf(const struct elf_info *info)
 	close(info->fd);
 }
 
-static int load_section(struct target *target, uint32_t addr,
+static int load_segment(struct target *target, uint32_t addr,
 			const uint8_t *data, size_t len)
 {
 	int ret;
@@ -185,24 +192,22 @@ int load_elf(struct target *target, const char *path,
 	     struct testpoint **testpoints, size_t *nr_testpoints)
 {
 	struct elf_info elf = {};
-	int i, ret;
-	const Elf32_Shdr *shdr;
+	int ret;
+	const Elf32_Phdr *phdr;
 
 	ret = init_elf(path, &elf);
 	if (ret)
 		return ret;
 
-	for_each_section(shdr, i, &elf) {
-		const char *name = elf.secstrings + shdr->sh_name;
-
-		if (!(shdr->sh_flags & SHF_ALLOC))
+	for_each_phdr(phdr, &elf) {
+		if (phdr->p_type != PT_LOAD)
 			continue;
 
-		ret = load_section(target, (uint32_t)shdr->sh_addr,
-				   elf.elf + shdr->sh_offset, shdr->sh_size);
+		ret = load_segment(target, (uint32_t)phdr->p_vaddr,
+				   elf.elf + phdr->p_offset, phdr->p_memsz);
 		if (ret) {
-			warnx("failed to load section %s to %08x", name,
-			      (uint32_t)shdr->sh_addr);
+			warnx("failed to load segment to %08x",
+			      (uint32_t)phdr->p_vaddr);
 			goto out;
 		}
 	}
