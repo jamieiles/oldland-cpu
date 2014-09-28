@@ -73,6 +73,7 @@ struct spi_sdcard {
 	bool next_cmd_is_acmd;
 	size_t blocklen;
 	size_t msg_len;
+	int ncr_delay;
 };
 
 struct spi_sdcard *spi_sdcard_new(const char *path)
@@ -82,6 +83,7 @@ struct spi_sdcard *spi_sdcard_new(const char *path)
 	card = calloc(1, sizeof(*card));
 	assert(card != NULL);
 	card->state = STATE_READING_COMMAND;
+	card->ncr_delay = 1;
 
 	card->fd = open(path, O_RDONLY);
 	assert(card->fd >= 0);
@@ -98,7 +100,7 @@ static void read_data(struct spi_sdcard *sd, uint8_t v)
 {
 	assert(sd->num_bytes_rx < DATA_BUF_SIZE + sizeof(sd->current_cmd));
 
-	if (sd->num_bytes_rx == 0 && !(v & 0x40))
+	if (sd->num_bytes_rx == 0 && (v & 0x80))
 		return;
 
 	if (sd->num_bytes_rx < sizeof(sd->current_cmd))
@@ -135,6 +137,7 @@ static void finish_command(struct spi_sdcard *sd)
 	sd->state = STATE_READING_COMMAND;
 	sd->num_bytes_tx = 0;
 	sd->num_bytes_rx = 0;
+	sd->ncr_delay = 1;
 }
 
 struct r7 {
@@ -183,6 +186,9 @@ enum sd_cmds {
 	GO_IDLE_STATE = 0,
 	SEND_OP_COND = 1,
 	SEND_IF_COND = 8,
+	SEND_CSD = 9,
+	SEND_CID = 10,
+	SEND_STATUS = 13,
 	SET_BLOCKLEN = 16,
 	READ_SINGLE_BLOCK = 17,
 	APP_CMD = 55,
@@ -225,11 +231,57 @@ static void do_block_read(struct spi_sdcard *sd)
 	sd->data_buf[sd->msg_len++] = 0xad;
 }
 
+static void do_cid_read(struct spi_sdcard *sd)
+{
+	int i;
+
+	debug("+ read CID\n");
+
+	sd->msg_len = 0;
+	sd->data_buf[sd->msg_len++] = 0; /* r1 response. */
+	sd->data_buf[sd->msg_len++] = DATA_START_TOKEN; /* data start token. */
+	for (i = 0; i < 16; ++i)
+		sd->data_buf[sd->msg_len++] = i + 1;
+	sd->data_buf[sd->msg_len++] = 0xde;
+	sd->data_buf[sd->msg_len++] = 0xad;
+}
+
+static void do_csd_read(struct spi_sdcard *sd)
+{
+	debug("+ read CSD\n");
+
+	sd->msg_len = 0;
+	sd->data_buf[sd->msg_len++] = 0; /* r1 response. */
+	sd->data_buf[sd->msg_len++] = DATA_START_TOKEN; /* data start token. */
+
+	sd->data_buf[sd->msg_len++] = 1 << 6; /* CSD structure. */
+	sd->data_buf[sd->msg_len++] = 0; /* TAAC */
+	sd->data_buf[sd->msg_len++] = 0; /* NSAC */
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+	sd->data_buf[sd->msg_len++] = 0;
+
+	sd->data_buf[sd->msg_len++] = 0xde;
+	sd->data_buf[sd->msg_len++] = 0xad;
+}
+
 uint8_t spi_sdcard_next_byte_to_master(struct spi_sdcard *sd)
 {
-	uint8_t v = 0;
+	uint8_t v = 0xff;
 
-	if (sd->state == STATE_RESPONSE && !sd->next_cmd_is_acmd) {
+	if (sd->state == STATE_RESPONSE && sd->ncr_delay != 0) {
+		v = 0xff;
+	} else if (sd->state == STATE_RESPONSE && !sd->next_cmd_is_acmd) {
 		switch (sd->current_cmd.command & 0x3f) {
 		case GO_IDLE_STATE:
 			sd->blocklen = 512;
@@ -246,6 +298,29 @@ uint8_t spi_sdcard_next_byte_to_master(struct spi_sdcard *sd)
 			do_cmd8(sd);
 			v = sd->data_buf[sd->num_bytes_tx];
 			if (sd->num_bytes_tx == sizeof(struct r7) - 1)
+				finish_command(sd);
+			break;
+		case SEND_CSD:
+			if (sd->num_bytes_tx == 0)
+				do_csd_read(sd);
+			v = sd->data_buf[sd->num_bytes_tx];
+			if (sd->num_bytes_tx == sd->msg_len - 1)
+				finish_command(sd);
+			break;
+		case SEND_CID:
+			if (sd->num_bytes_tx == 0)
+				do_cid_read(sd);
+			v = sd->data_buf[sd->num_bytes_tx];
+			if (sd->num_bytes_tx == sd->msg_len - 1)
+				finish_command(sd);
+			break;
+		case SEND_STATUS:
+			if (sd->num_bytes_tx == 0) {
+				sd->msg_len = 2;
+				sd->data_buf[0] = sd->data_buf[1] = 0;
+			}
+			v = sd->data_buf[sd->num_bytes_tx];
+			if (sd->num_bytes_tx == sd->msg_len - 1)
 				finish_command(sd);
 			break;
 		case SET_BLOCKLEN:
@@ -292,8 +367,12 @@ uint8_t spi_sdcard_next_byte_to_master(struct spi_sdcard *sd)
 		}
 	}
 
-	sd->num_bytes_tx = sd->state == STATE_READING_COMMAND ? 0 :
-		sd->num_bytes_tx + 1;
+	if (sd->state == STATE_RESPONSE && sd->ncr_delay != 0) {
+		--sd->ncr_delay;
+	} else {
+		sd->num_bytes_tx = sd->state == STATE_READING_COMMAND ? 0 :
+			sd->num_bytes_tx + 1;
+	}
 
 	return v;
 }
