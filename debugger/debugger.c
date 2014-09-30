@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -26,6 +27,8 @@
 #include "breakpoint.h"
 #include "debugger.h"
 #include "protocol.h"
+
+#define NUM_HISTORY_LINES	1000
 
 #ifndef INSTALL_PATH
 #define INSTALL_PATH "/usr/local"
@@ -761,7 +764,13 @@ static void sigint_handler(int s)
 
 static void run_interactive(lua_State *L)
 {
-	stifle_history(1024);
+	char *history_path = NULL;
+
+	if (asprintf(&history_path, "%s/.oldland-debug_history", getpwuid(getuid())->pw_dir) < 0)
+		abort();
+
+	using_history();
+	read_history(history_path);
 
 	signal(SIGINT, sigint_handler);
 
@@ -776,6 +785,11 @@ static void run_interactive(lua_State *L)
 
 		add_history(line);
 	}
+
+	append_history(NUM_HISTORY_LINES, history_path);
+	history_truncate_file(history_path, NUM_HISTORY_LINES);
+
+	free(history_path);
 }
 
 static void run_command_script(lua_State *L, const char *path)
