@@ -194,7 +194,7 @@ always @(posedge clk) begin
 		saved_psr <= 5'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
 		saved_psr <= dbg_cr_wr_val[4:0];
-	else if (is_swi || exception_start || exception_disable_irqs || irq_start)
+	else if (is_swi || exception_start || exception_disable_irqs || irq_start || data_abort)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
                 saved_psr <= ra[4:0];
