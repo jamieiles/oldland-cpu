@@ -5,7 +5,9 @@ module keynsham_timer(input wire	clk,
 		      input wire [1:0]	reg_sel,
 		      input wire [31:0]	bus_wr_val,
 		      input wire	bus_wr_en,
+		      /* verilator lint_off UNUSED */
 		      input wire [3:0]	bus_bytesel,
+		      /* verilator lint_on UNUSED */
 		      output reg	bus_error,
 		      output reg	bus_ack,
 		      output reg [31:0]	bus_data,

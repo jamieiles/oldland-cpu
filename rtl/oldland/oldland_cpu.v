@@ -137,9 +137,11 @@ oldland_cache		#(.cache_size(icache_size),
 			       .m_data(i_data),
 			       .m_ack(i_ack),
 			       .m_error(i_error),
+			       /* verilator lint_off PINNOCONNECT */
 			       .m_bytesel(),
 			       .m_wr_en(),
 			       .m_wr_val(),
+			       /* verilator lint_on PINNOCONNECT */
 			       .cacheable_addr(1'b1));
 
 oldland_cache		#(.cache_size(dcache_size),

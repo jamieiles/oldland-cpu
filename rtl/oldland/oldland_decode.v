@@ -43,7 +43,7 @@ module oldland_decode(input wire	clk,
 wire [6:0]      addr = instr[31:25];
 
 reg [31:0]      microcode[127:0];
-wire [31:0]     uc_val = microcode[addr];
+wire [27:0]     uc_val = microcode[addr][27:0];
 
 wire            valid = uc_val[22];
 wire [1:0]      imsel = uc_val[21:20];

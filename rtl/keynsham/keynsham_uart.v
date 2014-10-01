@@ -2,9 +2,13 @@ module keynsham_uart(input wire		clk,
 		     input wire		bus_access,
 		     output wire	bus_cs,
 		     input wire [29:0]	bus_addr,
+		     /* verilator lint_off UNUSED */
 		     input wire [31:0]	bus_wr_val,
+		     /* verilator lint_on UNUSED */
 		     input wire		bus_wr_en,
+		     /* verilator lint_off UNUSED */
 		     input wire [3:0]	bus_bytesel,
+		     /* verilator lint_on UNUSED */
 		     output reg		bus_error,
 		     output reg		bus_ack,
 		     output reg [31:0]	bus_data,
