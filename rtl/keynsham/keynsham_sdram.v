@@ -46,8 +46,6 @@ wire		bridge_wr_en;
 wire [1:0]	bridge_bytesel;
 wire		bridge_compl;
 
-wire		sdram_ack;
-
 wire		config_done;
 reg		ctrl_ack = 1'b0;
 reg [31:0]	ctrl_data = 32'b0;

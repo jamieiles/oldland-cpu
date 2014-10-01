@@ -35,7 +35,6 @@ module oldland_exec(input wire		clk,
                     input wire          is_swi,
 		    input wire		is_rfe,
 		    output wire [25:0]	vector_base,
-		    output reg [31:0]	pc_plus_4_out,
 		    input wire		data_abort,
 		    input wire		exception_start,
 		    input wire		i_valid,
@@ -110,7 +109,6 @@ initial begin
 	mar = 32'b0;
 	mdr = 32'b0;
 	mem_wr_en = 1'b0;
-	pc_plus_4_out = 32'b0;
 	i_valid_out = 1'b0;
 	irqs_enabled = 1'b0;
 	cache_instr_out = 1'b0;
@@ -309,7 +307,6 @@ always @(posedge clk) begin
 		end
 
 		mem_wr_en <= mem_store;
-		pc_plus_4_out <= pc_plus_4;
 		i_valid_out <= i_valid;
 	end
 end

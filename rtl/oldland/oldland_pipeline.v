@@ -60,7 +60,6 @@ parameter	dcache_idx_bits = 0;
 /* Fetch -> decode signals. */
 wire [31:0]	fd_pc_plus_4;
 wire [31:0]	fd_instr;
-wire		fd_exception_start;
 wire		fd_i_fetched;
 wire		fe_disable_irqs;
 wire		fe_irq_start;
@@ -113,7 +112,6 @@ wire [1:0]	em_mem_width;
 wire [31:0]	em_mar;
 wire [31:0]	em_mdr;
 wire		em_mem_wr_en;
-wire [31:0]	em_pc_plus_4;
 wire [25:0]	e_vector_base;
 wire		em_i_valid;
 wire		m_busy; /* Memory/writeback busy. */
@@ -130,7 +128,6 @@ wire		m_data_abort;
 
 /* Fetch stalling signals. */
 wire		stall_clear = ef_stall_clear | mf_complete;
-wire		stalling;
 
 assign		running = run;
 
@@ -167,7 +164,6 @@ oldland_fetch	fetch(.clk(clk),
 		      .illegal_instr(df_illegal_instr),
 		      .vector_base(e_vector_base),
 		      .data_abort(m_data_abort),
-		      .exception_start(fd_exception_start),
 		      .i_fetched(fd_i_fetched),
 		      .pipeline_busy(pipeline_busy),
 		      .irqs_enabled(ei_irqs_enabled),
@@ -204,7 +200,6 @@ oldland_decode	decode(.clk(clk),
                        .is_swi(de_is_swi),
 		       .is_rfe(de_is_rfe),
 		       .illegal_instr(df_illegal_instr),
-		       .exception_start_in(fd_exception_start),
 		       .exception_start_out(de_exception_start),
 		       .i_fetched(fd_i_fetched),
 		       .i_valid(de_i_valid),
@@ -248,7 +243,6 @@ oldland_exec	execute(.clk(clk),
                         .is_swi(de_is_swi),
 			.is_rfe(de_is_rfe),
 			.vector_base(e_vector_base),
-			.pc_plus_4_out(em_pc_plus_4),
 			.data_abort(m_data_abort),
 			.exception_start(de_exception_start),
 			.i_valid(de_i_valid),
@@ -301,7 +295,6 @@ oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		    .dbg_rd_val(dbg_mem_rd_val),
 		    .dbg_compl(dbg_mem_compl),
 		    .data_abort(m_data_abort),
-		    .i_valid(em_i_valid),
 		    .busy(m_busy),
 		    .cache_instr(em_cache_instr),
 		    .cache_op(em_cache_op),

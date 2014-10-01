@@ -11,7 +11,6 @@ parameter nr_entries = 32;
 localparam addr_bits = $clog2(nr_entries);
 
 genvar		m;
-integer		i;
 
 wire [7:0] q [3:0];
 

@@ -221,7 +221,6 @@ wire	line_complete = m_ack &&
 
 task mem_write_word;
 	input [29:0]	address;
-	input [31:0]	data;
 begin
 	cm_access = ~line_complete & valid & ~m_ack;
 	cm_addr = address;
@@ -288,7 +287,7 @@ always @(*) begin
 		valid_index = dbg_flush ? c_index : latched_index;
 		if (valid)
 			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
-					words_done + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}}, cm_data);
+					words_done + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}});
 	end
 	STATE_BYPASS, STATE_WRITE_MISS: begin
 		cm_addr = latched_addr;
