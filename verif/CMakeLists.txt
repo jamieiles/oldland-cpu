@@ -13,7 +13,7 @@ set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/verilator
     -I${CMAKE_CURRENT_SOURCE_DIR})
 
-set(VERILATOR_FLAGS -DSIMULATION)
+set(VERILATOR_FLAGS -DSIMULATION -Wall)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/keynsham_defines.v
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/config --verilog > keynsham_defines.v
