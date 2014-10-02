@@ -11,7 +11,7 @@ void dbg_sim_term(IData val)
 
 void dbg_put(IData val)
 {
-	struct dbg_response resp;
+	struct dbg_response resp = {};
 
 	resp.status = 0;
 	resp.data = val;
@@ -20,7 +20,7 @@ void dbg_put(IData val)
 
 void dbg_get(CData *req, CData *rnw, CData *addr, IData *val)
 {
-	struct dbg_request dbg_req;
+	struct dbg_request dbg_req = {};
 
 	if (!jtag_debug_data->more_data)
 		if(__sync_val_compare_and_swap(&jtag_debug_data->pending, 1, 0) == 0)
@@ -36,7 +36,7 @@ void dbg_get(CData *req, CData *rnw, CData *addr, IData *val)
 	*val = dbg_req.value;
 
 	if (*req && !*rnw) {
-		struct dbg_response resp;
+		struct dbg_response resp = {};
 
 		resp.status = 0;
 		send_response(jtag_debug_data, &resp);
