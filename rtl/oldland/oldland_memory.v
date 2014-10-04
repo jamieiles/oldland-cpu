@@ -59,16 +59,19 @@ assign		d_access = dbg_en ? dbg_access : (load | store);
 
 reg [3:0]	rd_sel_out_bypass = 4'b0;
 reg [3:0]	mem_rd = 4'b0;
-reg		mem_update_rd = 1'b0;
 reg [31:0]	rd_mask = 32'b0;
 wire [1:0]	mem_width = dbg_en ? dbg_width : width;
 
-assign		reg_wr_val = complete ? mem_rd_val : wr_val_bypass;
+reg		loading = 1'b0;
+reg		load_complete = 1'b0;
+reg [31:0]	load_val = 32'b0;
+
+assign		reg_wr_val = load_complete ? load_val : wr_val_bypass;
 assign		complete = d_ack | d_error | i_cacheop_complete |
 			d_cacheop_complete;
-assign		update_rd_out = complete && !dbg_en && !d_error ?
-			mem_update_rd : update_rd_bypass;
-assign		rd_sel_out = complete ? mem_rd : rd_sel_out_bypass;
+assign		update_rd_out = load_complete && !dbg_en && !d_error ?
+			1'b1 : update_rd_bypass;
+assign		rd_sel_out = complete | load_complete ? mem_rd : rd_sel_out_bypass;
 
 assign		dbg_rd_val = mem_rd_val;
 assign		dbg_compl = complete;
@@ -89,9 +92,21 @@ initial begin
 end
 
 always @(posedge clk) begin
+	load_complete <= 1'b0;
+	load_val <= 32'b0;
+
+	if (load || store)
+		loading <= load;
+
+	if (complete && loading) begin
+		load_complete <= 1'b1;
+		load_val <= mem_rd_val;
+	end
+end
+
+always @(posedge clk) begin
 	if (rst) begin
 		update_rd_bypass <= 1'b0;
-		mem_update_rd <= 1'b0;
 	end else begin
 		update_rd_bypass <= update_rd;
 		wr_val_bypass <= wr_val;
@@ -99,10 +114,6 @@ always @(posedge clk) begin
 
 		if (load)
 			mem_rd <= rd_sel;
-		if (store || load)
-			mem_update_rd <= load;
-		else if (complete)
-			mem_update_rd <= 1'b0;
 	end
 end
 
