@@ -11,12 +11,20 @@ with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.yaml'),
           'r') as config:
     keynsham_config = yaml.load(config.read())
 
-class VerilogWriter(object):
+class HeaderWriter(object):
+    lines = []
+    prefix = []
+    suffix = []
+
+    def dump(self):
+        return '\n'.join(self.prefix + self.lines + self.suffix)
+
+class VerilogWriter(HeaderWriter):
     def out(self, name, value):
-        print('`define {0} {1}'.format(name, value))
+        self.lines.append(('`define {0} {1}'.format(name, value)))
 
     def out_int(self, name, value, width = 32, base = 16):
-        print('`define {0} {1}'.format(name, self._format_int(value, width, base)))
+        self.lines.append(('`define {0} {1}'.format(name, self._format_int(value, width, base))))
 
     def _format_int(self, v, width = 32, base = 16):
         if isinstance(v, str):
@@ -26,12 +34,15 @@ class VerilogWriter(object):
         assert base == 10
         return "{0}'d{1:d}".format(width, v)
 
-class CWriter(object):
+class CWriter(HeaderWriter):
+    prefix = ['#ifndef __CONFIG_H__', '#define __CONFIG_H__']
+    suffix = ['#endif /* __CONFIG_H__ */']
+
     def out(self, name, value):
-        print('#define {0} {1}'.format(name, value))
+        self.lines.append(('#define {0} {1}'.format(name, value)))
 
     def out_int(self, name, value, width = 32, base = 16):
-        print('#define {0} {1}'.format(name, self._format_int(value, width, base)))
+        self.lines.append(('#define {0} {1}'.format(name, self._format_int(value, width, base))))
 
     def _format_int(self, v, width = 32, base = 16):
         if isinstance(v, str):
@@ -41,7 +52,7 @@ class CWriter(object):
         assert base == 10
         return "{0:d}".format(v)
 
-def write_output(writer):
+def generate_config(writer):
     cpu = keynsham_config['cpu']
     writer.out('ICACHE_SIZE', cpu['icache']['size'])
     writer.out('ICACHE_LINE_SIZE', cpu['icache']['line_size'])
@@ -69,11 +80,10 @@ def write_output(writer):
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:
-        write_output(VerilogWriter())
+        writer = VerilogWriter()
     elif '--c' in sys.argv:
-        print('#ifndef __CONFIG_H__')
-        print('#define __CONFIG_H__')
-        write_output(CWriter())
-        print('#endif /* __CONFIG_H__ */')
+        writer = CWriter()
     else:
         raise NotImplementedError
+    generate_config(writer)
+    print writer.dump()
