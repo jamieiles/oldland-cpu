@@ -1,0 +1,19 @@
+language: c
+compiler: gcc
+
+before_install:
+- sudo add-apt-repository -y ppa:jamie-7/oldlandcpu
+- sudo apt-get update
+
+install:
+- sudo apt-get install -y iverilog verilator python-pip python-yaml cmake cmake-curses-gui git build-essential texinfo flex libusb-1.0-0-dev liblua5.2-dev binutils-gdb-oldland
+
+before_script:
+- mkdir -p BUILD/{install,oldland}
+- cd BUILD/oldland
+- cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ../../
+
+script:
+- make
+- make install
+- PATH=$(pwd)/BUILD/install/bin oldland-test
