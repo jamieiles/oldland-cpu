@@ -8,6 +8,8 @@ before_install:
 
 install:
 - sudo apt-get install -y iverilog verilator python-pip python-yaml cmake cmake-curses-gui git build-essential texinfo flex libusb-1.0-0-dev liblua5.2-dev binutils-gdb-oldland
+- sudo pip install junit_xml
+- sudo pip install termcolor
 
 before_script:
 - mkdir -p BUILD/{install,oldland}
