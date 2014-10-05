@@ -1,5 +1,6 @@
 language: c
 compiler: gcc
+python: 2.7
 
 before_install:
 - sudo add-apt-repository -y ppa:jamie-7/oldlandcpu
