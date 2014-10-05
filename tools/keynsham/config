@@ -11,62 +11,69 @@ with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.yaml'),
           'r') as config:
     keynsham_config = yaml.load(config.read())
 
-def verilog_writer(name, value):
-    print('`define {0} {1}'.format(name, value))
+class VerilogWriter(object):
+    def out(self, name, value):
+        print('`define {0} {1}'.format(name, value))
 
-def c_writer(name, value):
-    print('#define {0} {1}'.format(name, value))
+    def out_int(self, name, value, width = 32, base = 16):
+        print('`define {0} {1}'.format(name, self._format_int(value, width, base)))
 
-def verilog_int_format(v, width = 32, base = 16):
-    if isinstance(v, str):
-        v = int(v, 16)
-    if base == 16:
-        return "{0}'h{1:x}".format(width, v)
-    assert base == 10
-    return "{0}'d{1:d}".format(width, v)
+    def _format_int(self, v, width = 32, base = 16):
+        if isinstance(v, str):
+            v = int(v, 16)
+        if base == 16:
+            return "{0}'h{1:x}".format(width, v)
+        assert base == 10
+        return "{0}'d{1:d}".format(width, v)
 
-def c_int_format(v, width = 32, base = 16):
-    if isinstance(v, str):
-        v = int(v, 16)
-    if base == 16:
-        return "0x{0:x}".format(v)
-    assert base == 10
-    return "{0:d}".format(v)
+class CWriter(object):
+    def out(self, name, value):
+        print('#define {0} {1}'.format(name, value))
 
-def write_output(writer, int_formatter):
+    def out_int(self, name, value, width = 32, base = 16):
+        print('#define {0} {1}'.format(name, self._format_int(value, width, base)))
+
+    def _format_int(self, v, width = 32, base = 16):
+        if isinstance(v, str):
+            v = int(v, 16)
+        if base == 16:
+            return "0x{0:x}".format(v)
+        assert base == 10
+        return "{0:d}".format(v)
+
+def write_output(writer):
     cpu = keynsham_config['cpu']
-    writer('ICACHE_SIZE', cpu['icache']['size'])
-    writer('ICACHE_LINE_SIZE', cpu['icache']['line_size'])
-    writer('DCACHE_SIZE', cpu['dcache']['size'])
-    writer('DCACHE_LINE_SIZE', cpu['dcache']['line_size'])
-    writer('CPUID_MANUFACTURER',
-           int_formatter(cpu['manufacturer'], width = 16))
-    writer('CPUID_MODEL', int_formatter(cpu['model'], width = 16))
-    writer('CPU_CLOCK_SPEED', 50000000)
+    writer.out('ICACHE_SIZE', cpu['icache']['size'])
+    writer.out('ICACHE_LINE_SIZE', cpu['icache']['line_size'])
+    writer.out('DCACHE_SIZE', cpu['dcache']['size'])
+    writer.out('DCACHE_LINE_SIZE', cpu['dcache']['line_size'])
+    writer.out_int('CPUID_MANUFACTURER', cpu['manufacturer'], width = 16)
+    writer.out_int('CPUID_MODEL', cpu['model'], width = 16)
+    writer.out('CPU_CLOCK_SPEED', 50000000)
 
     for p in keynsham_config['peripherals']:
         name = p['name'].upper()
-        writer('{0}_ADDRESS'.format(name), int_formatter(p['address']))
-        writer('{0}_SIZE'.format(name), int_formatter(p['size']))
+        writer.out_int('{0}_ADDRESS'.format(name), p['address'])
+        writer.out_int('{0}_SIZE'.format(name), p['size'])
 
-    if writer == c_writer:
+    if isinstance(writer, CWriter):
         # Special cases for C to avoid log2() in preprocessor
-        writer('ICACHE_OFFSET_BITS',
-               int(math.log(cpu['icache']['line_size'], 2)))
-        writer('ICACHE_INDEX_BITS',
-               int(math.log(cpu['icache']['size'] / cpu['icache']['line_size'], 2)))
-        writer('DCACHE_OFFSET_BITS',
-               int(math.log(cpu['dcache']['line_size'], 2)))
-        writer('DCACHE_INDEX_BITS',
-               int(math.log(cpu['dcache']['size'] / cpu['dcache']['line_size'], 2)))
+        writer.out('ICACHE_OFFSET_BITS',
+                   int(math.log(cpu['icache']['line_size'], 2)))
+        writer.out('ICACHE_INDEX_BITS',
+                   int(math.log(cpu['icache']['size'] / cpu['icache']['line_size'], 2)))
+        writer.out('DCACHE_OFFSET_BITS',
+                   int(math.log(cpu['dcache']['line_size'], 2)))
+        writer.out('DCACHE_INDEX_BITS',
+                   int(math.log(cpu['dcache']['size'] / cpu['dcache']['line_size'], 2)))
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:
-        write_output(verilog_writer, verilog_int_format)
+        write_output(VerilogWriter())
     elif '--c' in sys.argv:
         print('#ifndef __CONFIG_H__')
         print('#define __CONFIG_H__')
-        write_output(c_writer, c_int_format)
+        write_output(CWriter())
         print('#endif /* __CONFIG_H__ */')
     else:
         raise NotImplementedError
