@@ -16,4 +16,4 @@ before_script:
 script:
 - make
 - make install
-- PATH=$(pwd)/BUILD/install/bin oldland-test
+- PATH=$(pwd)/../install/bin oldland-test
