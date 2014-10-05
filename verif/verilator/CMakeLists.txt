@@ -13,7 +13,8 @@ set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/../../rtl/oldland
     -I${CMAKE_CURRENT_SOURCE_DIR}/../../rtl/common
     -I${CMAKE_CURRENT_SOURCE_DIR}/../../rtl/spimaster
-    -I${CMAKE_CURRENT_SOURCE_DIR}/../../rtl/sdram/rtl)
+    -I${CMAKE_CURRENT_SOURCE_DIR}/../../rtl/sdram/rtl
+    -I${CMAKE_CURRENT_BINARY_DIR}/../../config)
 set(VERILATOR_LIBS
     ${CMAKE_CURRENT_BINARY_DIR}/../../devicemodels/libdevicemodels.a)
 set(GENERATED_FILES

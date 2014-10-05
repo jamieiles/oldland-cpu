@@ -12,11 +12,11 @@ with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.yaml'),
     keynsham_config = yaml.load(config.read())
 
 class HeaderWriter(object):
-    lines = []
     prefix = []
     suffix = []
 
     def __init__(self, filename):
+        self.lines = []
         self.filename = filename
 
     def dump(self):
@@ -24,11 +24,17 @@ class HeaderWriter(object):
             outfile.write('\n'.join(self.prefix + self.lines + self.suffix))
 
 class VerilogWriter(HeaderWriter):
+    def __init__(self, filename):
+        super(VerilogWriter, self).__init__(filename + '.v')
+
     def out(self, name, value):
         self.lines.append(('`define {0} {1}'.format(name, value)))
 
     def out_int(self, name, value, width = 32, base = 16):
         self.lines.append(('`define {0} {1}'.format(name, self._format_int(value, width, base))))
+
+    def out_include(self, name):
+        self.lines.append('`include "{0}"'.format(name + '.v'))
 
     def _format_int(self, v, width = 32, base = 16):
         if isinstance(v, str):
@@ -41,17 +47,20 @@ class VerilogWriter(HeaderWriter):
 class CWriter(HeaderWriter):
     def __init__(self, filename):
         guardname = filename.upper().replace('.', '_')
-        self.prefix = ['#ifndef __{0}__'.format(guardname),
-                       '#define __{0}__'.format(guardname)]
-        self.suffix = ['#endif /* __{0}__ */'.format(guardname)]
+        self.prefix = ['#ifndef __{0}_H__'.format(guardname),
+                       '#define __{0}_H__'.format(guardname)]
+        self.suffix = ['#endif /* __{0}_H__ */'.format(guardname)]
 
-        super(CWriter, self).__init__(filename)
+        super(CWriter, self).__init__(filename + '.h')
 
     def out(self, name, value):
         self.lines.append(('#define {0} {1}'.format(name, value)))
 
     def out_int(self, name, value, width = 32, base = 16):
         self.lines.append(('#define {0} {1}'.format(name, self._format_int(value, width, base))))
+
+    def out_include(self, name):
+        self.lines.append('#include "{0}"'.format(name + '.h'))
 
     def _format_int(self, v, width = 32, base = 16):
         if isinstance(v, str):
@@ -72,9 +81,12 @@ def generate_config(writer):
     writer.out('CPU_CLOCK_SPEED', 50000000)
 
     for p in keynsham_config['peripherals']:
+        periph_writer = type(writer)(p['name'] + "_defines")
         name = p['name'].upper()
-        writer.out_int('{0}_ADDRESS'.format(name), p['address'])
-        writer.out_int('{0}_SIZE'.format(name), p['size'])
+        periph_writer.out_int('{0}_ADDRESS'.format(name), p['address'])
+        periph_writer.out_int('{0}_SIZE'.format(name), p['size'])
+        periph_writer.dump()
+        writer.out_include(p['name'] + "_defines")
 
     if isinstance(writer, CWriter):
         # Special cases for C to avoid log2() in preprocessor
@@ -89,9 +101,9 @@ def generate_config(writer):
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:
-        writer = VerilogWriter('keynsham_defines.v')
+        writer = VerilogWriter('keynsham_defines')
     elif '--c' in sys.argv:
-        writer = CWriter('config.h')
+        writer = CWriter('config')
     else:
         raise NotImplementedError
     generate_config(writer)

@@ -6,6 +6,7 @@ option(DEBUG_UART "Enable fast, debug uart." OFF)
 set(IVERILOG_FLAGS
     -Wall
     -I${CMAKE_CURRENT_BINARY_DIR}
+    -I${CMAKE_CURRENT_BINARY_DIR}/../../config
     -DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\")
 
 set(VPI_FLAGS
