@@ -3,7 +3,7 @@
 +incdir+../../rtl
 +incdir+../../rtl/oldland
 $(BUILD_DIR)/../oldland_defines.v
-$(BUILD_DIR)/../keynsham_defines.v
+$(BUILD_DIR)/../../config/keynsham_defines.v
 -y .
 -y ../../rtl
 -y ../../rtl/oldland

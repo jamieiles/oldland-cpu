@@ -21,7 +21,7 @@ oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x200
 $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
 $TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
 $TOOL_DIR/gendecode/gendecode > $SCRIPT_PATH/decode.hex
-$TOOL_DIR/keynsham/config --verilog > $SCRIPT_PATH/keynsham_defines.v
 popd >/dev/null
+$TOOL_DIR/keynsham/config --verilog
 
 rm $BUILD_DIR -rf

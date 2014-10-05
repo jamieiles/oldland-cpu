@@ -16,8 +16,12 @@ class HeaderWriter(object):
     prefix = []
     suffix = []
 
+    def __init__(self, filename):
+        self.filename = filename
+
     def dump(self):
-        return '\n'.join(self.prefix + self.lines + self.suffix)
+        with open(self.filename, 'w') as outfile:
+            outfile.write('\n'.join(self.prefix + self.lines + self.suffix))
 
 class VerilogWriter(HeaderWriter):
     def out(self, name, value):
@@ -35,8 +39,13 @@ class VerilogWriter(HeaderWriter):
         return "{0}'d{1:d}".format(width, v)
 
 class CWriter(HeaderWriter):
-    prefix = ['#ifndef __CONFIG_H__', '#define __CONFIG_H__']
-    suffix = ['#endif /* __CONFIG_H__ */']
+    def __init__(self, filename):
+        guardname = filename.upper().replace('.', '_')
+        self.prefix = ['#ifndef __{0}__'.format(guardname),
+                       '#define __{0}__'.format(guardname)]
+        self.suffix = ['#endif /* __{0}__ */'.format(guardname)]
+
+        super(CWriter, self).__init__(filename)
 
     def out(self, name, value):
         self.lines.append(('#define {0} {1}'.format(name, value)))
@@ -80,10 +89,10 @@ def generate_config(writer):
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:
-        writer = VerilogWriter()
+        writer = VerilogWriter('keynsham_defines.v')
     elif '--c' in sys.argv:
-        writer = CWriter()
+        writer = CWriter('config.h')
     else:
         raise NotImplementedError
     generate_config(writer)
-    print writer.dump()
+    writer.dump()

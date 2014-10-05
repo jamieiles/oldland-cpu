@@ -18,7 +18,7 @@ set(VERILATOR_LIBS
     ${CMAKE_CURRENT_BINARY_DIR}/../../devicemodels/libdevicemodels.a)
 set(GENERATED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/../oldland_defines.v
-    ${CMAKE_CURRENT_BINARY_DIR}/../keynsham_defines.v)
+    ${CMAKE_CURRENT_BINARY_DIR}/../../config/keynsham_defines.v)
 set(CPP_SOURCES
     debug.cpp
     uart.cpp
@@ -31,7 +31,7 @@ endif(OPTIMIZE_VERILATOR)
 
 add_custom_target(genverilator ALL
 		  COMMAND verilator verilator_toplevel.v --exe ${CMAKE_CURRENT_SOURCE_DIR}/verilator_model.cpp ${CPP_SOURCES} ${GENERATED_FILES} ${VERILATOR_FLAGS} ${VERILATOR_INCLUDES} ${VERILATOR_LIBS} -o oldland-verilator --Mdir ${CMAKE_CURRENT_BINARY_DIR}/obj_dir
-		  DEPENDS generate verilator_toplevel.v verilator_model.cpp
+		  DEPENDS generate gendefines verilator_toplevel.v verilator_model.cpp
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_target(buildverilator ALL
 		  COMMAND USER_LDFLAGS="${LINK_FLAGS}" $(MAKE) -f Vverilator_toplevel.mk ${VERILATOR_MAKE_OPTS}
