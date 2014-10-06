@@ -53,6 +53,161 @@
 
   <tr><td>0x80004000</td><td>0x00004000</td><td>spimaster</td></tr>
 
+</table><h2>Peripheral Register Maps</h2><h3>sdram_ctrl</h3><table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>status</td>
+	  <td>
+		<ul>
+		
+		<li>[0:0] config_done </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+</table><h3>uart</h3><table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>uart_data</td>
+	  <td>
+		<ul>
+		
+		<li>[7:0] data </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>4</td><td>uart_status</td>
+	  <td>
+		<ul>
+		
+		<li>[0:0] tx_empty </li>
+		
+		<li>[1:1] rx_ready </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+</table><h3>irq</h3><table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>irq_ctrl_status</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>4</td><td>irq_ctrl_enable</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>8</td><td>irq_ctrl_disable</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>12</td><td>irq_ctrl_test</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+</table><h3>timer</h3><table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>timer_count</td>
+	  <td>
+		<ul>
+		
+		<li>[31:0] current_value </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>4</td><td>timer_reload</td>
+	  <td>
+		<ul>
+		
+		<li>[31:0] reload_value </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>8</td><td>timer_control</td>
+	  <td>
+		<ul>
+		
+		<li>[0:0] timer_periodic </li>
+		
+		<li>[1:1] timer_enabled </li>
+		
+		<li>[2:2] timer_irq_enable </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>12</td><td>timer_eoi</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+</table><h3>spimaster</h3><table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>spi_control</td>
+	  <td>
+		<ul>
+		
+		<li>[8:0] spi_divider </li>
+		
+		<li>[9:9] spi_loopback_enable </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>4</td><td>spi_cs_enable</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>8</td><td>spi_xfer_control</td>
+	  <td>
+		<ul>
+		
+		<li>[12:0] xfer_length </li>
+		
+		<li>[16:16] xfer_go </li>
+		
+		<li>[17:17] xfer_busy </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
 </table>
       </section>
     </div>
