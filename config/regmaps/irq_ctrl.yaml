@@ -1,0 +1,14 @@
+{
+    irq_ctrl_status: {
+        offset: 0
+    },
+    irq_ctrl_enable: {
+        offset: 4
+    },
+    irq_ctrl_disable: {
+        offset: 8
+    },
+    irq_ctrl_test: {
+        offset: 12
+    },
+}

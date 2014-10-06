@@ -1,0 +1,35 @@
+{
+    spi_control: {
+        offset: 0,
+        fields: {
+            spi_divider: {
+                offset: 0,
+                width: 9
+            },
+            spi_loopback_enable: {
+                offset: 9,
+                width: 1
+            }
+        }
+    },
+    spi_cs_enable: {
+        offset: 4,
+    },
+    spi_xfer_control: {
+        offset: 8,
+        fields: {
+            xfer_length: {
+                offset: 0,
+                width: 13
+            },
+            xfer_go: {
+                offset: 16,
+                width: 1
+            },
+            xfer_busy: {
+                offset: 17,
+                width: 1
+            }
+        }
+    }
+}

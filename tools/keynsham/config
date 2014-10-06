@@ -6,8 +6,9 @@ import os
 import sys
 
 HERE = os.path.dirname(__file__)
+CONFIG_PATH = os.path.join(HERE, '..', '..', 'config')
 
-with open(os.path.join(HERE, '..', '..', 'config', 'keynsham.yaml'),
+with open(os.path.join(CONFIG_PATH, 'keynsham.yaml'),
           'r') as config:
     keynsham_config = yaml.load(config.read())
 
@@ -83,7 +84,10 @@ def periph_write_regmap(writer, peripheral):
     if not 'regmap' in peripheral:
         return
 
-    for reg, info in peripheral['regmap'].items():
+    with open(os.path.join(CONFIG_PATH, 'regmaps', peripheral['regmap'] + '.yaml'), 'r') as regmapfile:
+        regmap = yaml.load(regmapfile.read())
+
+    for reg, info in regmap.items():
         regname = reg.upper()
         writer.out_int('{0}_REG_OFFS'.format(regname), info['offset'])
 

@@ -1,0 +1,24 @@
+{
+    uart_data: {
+        offset: 0,
+        fields: {
+            data: {
+                offset: 0,
+                width: 8
+            }
+        }
+    },
+    uart_status: {
+        offset: 4,
+        fields: {
+            tx_empty: {
+                offset: 0,
+                width: 1
+            },
+            rx_ready: {
+                offset: 1,
+                width: 1
+            }
+        }
+    }
+}

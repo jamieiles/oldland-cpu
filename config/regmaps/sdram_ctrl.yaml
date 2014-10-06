@@ -1,0 +1,11 @@
+{
+    status: {
+        offset: 0,
+        fields: {
+            config_done: {
+                offset: 0,
+                width: 1
+            }
+        }
+    }
+}

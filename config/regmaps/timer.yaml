@@ -1,0 +1,40 @@
+{
+    timer_count: {
+        offset: 0,
+        fields: {
+            current_value: {
+                offset: 0,
+                width: 32
+            }
+        }
+    },
+    timer_reload: {
+        offset: 4,
+        fields: {
+            reload_value: {
+                offset: 0,
+                width: 32
+            }
+        }
+    },
+    timer_control: {
+        offset: 8,
+        fields: {
+            timer_periodic: {
+                offset: 0,
+                width: 1
+            },
+            timer_enabled: {
+                offset: 1,
+                width: 1
+            },
+            timer_irq_enable: {
+                offset: 2,
+                width: 1
+            }
+        }
+    },
+    timer_eoi: {
+        offset: 12,
+    },
+}
