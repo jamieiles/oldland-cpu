@@ -10,16 +10,6 @@
 #include "io.h"
 #include "uart.h"
 
-enum reg_map {
-	UART_DATA_REG		= 0x0,
-	UART_STATUS_REG		= 0x4,
-};
-
-enum {
-	UART_STATUS_TX_EMPTY	= (1 << 0),
-	UART_STATUS_RX_RDY	= (1 << 1),
-};
-
 static int uart_write(unsigned int offs, uint32_t val, size_t nr_bits,
 		      void *priv)
 {
@@ -30,7 +20,7 @@ static int uart_write(unsigned int offs, uint32_t val, size_t nr_bits,
 	if (nr_bits != 32)
 		return -EFAULT;
 
-	if (offs == UART_DATA_REG) {
+	if (offs == UART_DATA_REG_OFFS) {
 		bw = write(u->fd, &c, 1);
 		(void)bw;
 	}
@@ -47,7 +37,7 @@ static int uart_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 	if (nr_bits != 32)
 		return -EFAULT;
 
-	if (offs == UART_STATUS_REG) {
+	if (offs == UART_STATUS_REG_OFFS) {
 		struct pollfd pfd = {
 			.fd = u->fd,
 			.events = POLLIN | POLLOUT,
@@ -55,11 +45,11 @@ static int uart_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 
 		if (poll(&pfd, 1, 0)) {
 			if (pfd.revents & POLLIN)
-				regval |= UART_STATUS_RX_RDY;
+				regval |= RX_READY_MASK;
 			if (pfd.revents & POLLOUT)
-				regval |= UART_STATUS_TX_EMPTY;
+				regval |= TX_EMPTY_MASK;
 		}
-	} else if (offs == UART_DATA_REG) {
+	} else if (offs == UART_DATA_REG_OFFS) {
 		char c = 0;
 
 		if (read(u->fd, &c, 1) == 1)

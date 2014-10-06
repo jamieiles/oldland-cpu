@@ -70,6 +70,26 @@ class CWriter(HeaderWriter):
         assert base == 10
         return "{0:d}".format(v)
 
+def reg_write_fields(writer, fields):
+    for fieldname, info in fields.items():
+        offset = int(info['offset'])
+        mask = ((1 << int(info['width'])) - 1) << offset
+
+        writer.out_int('{0}_OFFSET'.format(fieldname.upper()), offset, base = 16)
+        writer.out_int('{0}_MASK'.format(fieldname.upper()), mask, base = 16)
+        writer.out_int('{0}_BITS'.format(fieldname.upper()), info['width'])
+
+def periph_write_regmap(writer, peripheral):
+    if not 'regmap' in peripheral:
+        return
+
+    for reg, info in peripheral['regmap'].items():
+        regname = reg.upper()
+        writer.out_int('{0}_REG_OFFS'.format(regname), info['offset'])
+
+        if 'fields' in info:
+            reg_write_fields(writer, info['fields'])
+
 def generate_config(writer):
     cpu = keynsham_config['cpu']
     writer.out('ICACHE_SIZE', cpu['icache']['size'])
@@ -85,6 +105,7 @@ def generate_config(writer):
         name = p['name'].upper()
         periph_writer.out_int('{0}_ADDRESS'.format(name), p['address'])
         periph_writer.out_int('{0}_SIZE'.format(name), p['size'])
+        periph_write_regmap(periph_writer, p)
         periph_writer.dump()
         writer.out_include(p['name'] + "_defines")
 

@@ -32,26 +32,28 @@ wire [7:0]	buf_rd_val;
 wire		xfer_buf_cs = bus_addr[11];
 wire		buf_wr_en = bus_access & bus_cs & bus_wr_en & xfer_buf_cs; /* 8192 byte offset. */
 
-wire		xfer_start = write_xfer_ctrl_reg & bus_wr_val[GO_OFFSET] &
-			!xfer_ctrl_reg[GO_OFFSET];
+wire		xfer_start = write_xfer_ctrl_reg & bus_wr_val[`XFER_GO_OFFSET] &
+			!xfer_ctrl_reg[`XFER_GO_OFFSET];
 wire		xfer_complete;
 reg		busy = 1'b0;
 
 wire		do_reg_access = bus_access & bus_cs & !xfer_buf_cs;
 
-wire		write_xfer_ctrl_reg = do_reg_access & bus_wr_en & bus_addr[1:0] == 2'b10;
+wire            access_control = do_reg_access & {28'b0, bus_addr[1:0], 2'b0} == `SPI_CONTROL_REG_OFFS;
+wire            access_cs_enable = do_reg_access & {28'b0, bus_addr[1:0], 2'b0} == `SPI_CS_ENABLE_REG_OFFS;
+wire            access_xfer_control = do_reg_access & {28'b0, bus_addr[1:0], 2'b0} == `SPI_XFER_CONTROL_REG_OFFS;
+
+wire		write_xfer_ctrl_reg = bus_wr_en & access_xfer_control;
 
 /* Control register. */
 reg [31:0]	ctrl_reg = 32'b0;
-wire [8:0]	divider = ctrl_reg[8:0];
-wire		loopback_enable = ctrl_reg[9];
+wire [8:0]	divider = ctrl_reg[`SPI_DIVIDER_OFFSET + `SPI_DIVIDER_BITS - 1:`SPI_DIVIDER_OFFSET];
+wire		loopback_enable = ctrl_reg[`SPI_LOOPBACK_ENABLE_OFFSET];
 wire		miso_internal = loopback_enable ? ~mosi : miso;
 
 /* Transfer control register. */
 reg [31:0]	xfer_ctrl_reg = 32'b0;
-localparam	GO_OFFSET = 16;
-localparam	BUSY_OFFSET = 17;
-wire [12:0]	xfer_length = xfer_ctrl_reg[12:0];
+wire [12:0]	xfer_length = xfer_ctrl_reg[`XFER_LENGTH_OFFSET + `XFER_LENGTH_BITS - 1:`XFER_LENGTH_OFFSET];
 
 /* Chip select register. */
 reg [num_cs - 1:0] cs_reg = {num_cs{1'b0}};
@@ -112,21 +114,23 @@ always @(posedge clk) begin
 	reg_rd_val <= 32'b0;
 
 	if (do_reg_access && !bus_wr_en) begin
-		case (bus_addr[1:0])
-		2'b00: reg_rd_val <= ctrl_reg;
-                2'b01: reg_rd_val <= {{(32 - num_cs){1'b0}}, cs_reg};
-		2'b10: reg_rd_val <= xfer_ctrl_reg | {14'b0, busy, 17'b0};
-		default: reg_rd_val <= 32'b0;
-		endcase
+                if (access_control)
+			reg_rd_val <= ctrl_reg;
+                else if (access_cs_enable)
+			reg_rd_val <= {{(32 - num_cs){1'b0}}, cs_reg};
+		else if (access_xfer_control)
+			reg_rd_val <= xfer_ctrl_reg | {14'b0, busy, 17'b0};
+		else
+			reg_rd_val <= 32'b0;
 	end
 
 	if (do_reg_access && bus_wr_en) begin
-		case (bus_addr[1:0])
-		2'b00: ctrl_reg <= bus_wr_val;
-                2'b01: cs_reg <= bus_wr_val[num_cs - 1:0];
-		2'b10: xfer_ctrl_reg <= bus_wr_val & 32'hfffeffff;
-		default: ;
-		endcase
+		if (access_control)
+			ctrl_reg <= bus_wr_val;
+		else if (access_cs_enable)
+			cs_reg <= bus_wr_val[num_cs - 1:0];
+		else if (access_xfer_control)
+			xfer_ctrl_reg <= bus_wr_val & ~`XFER_GO_MASK;
 	end
 
 	if (bus_access && xfer_buf_cs && !bus_wr_en)

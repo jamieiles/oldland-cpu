@@ -7,13 +7,6 @@
 #include "internal.h"
 #include "io.h"
 
-enum irq_ctrl_regs {
-	IRQ_CTRL_STATUS		= 0x0,
-	IRQ_CTRL_ENABLE		= 0x4,
-	IRQ_CTRL_DISABLE	= 0x8,
-	IRQ_CTRL_TEST		= 0xc,
-};
-
 struct irq_ctrl {
 	uint32_t	status;
 	uint32_t	raw_status;
@@ -46,19 +39,19 @@ static int irq_ctrl_write(unsigned int offs, uint32_t val, size_t nr_bits,
 		return -EFAULT;
 
 	switch (offs) {
-	case IRQ_CTRL_ENABLE:
+	case IRQ_CTRL_ENABLE_REG_OFFS:
 		ctrl->enable_mask |= val;
 		irq_ctrl_update(ctrl);
 		break;
-	case IRQ_CTRL_DISABLE:
+	case IRQ_CTRL_DISABLE_REG_OFFS:
 		ctrl->enable_mask &= ~val;
 		irq_ctrl_update(ctrl);
 		break;
-	case IRQ_CTRL_TEST:
+	case IRQ_CTRL_TEST_REG_OFFS:
 		ctrl->raw_status = val;
 		irq_ctrl_update(ctrl);
 		break;
-	case IRQ_CTRL_STATUS:
+	case IRQ_CTRL_STATUS_REG_OFFS:
 		/* Fallthrough. */
 	default:
 		break;
@@ -76,16 +69,16 @@ static int irq_ctrl_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 		return -EFAULT;
 
 	switch (offs) {
-	case IRQ_CTRL_ENABLE:
+	case IRQ_CTRL_ENABLE_REG_OFFS:
 		*val = ctrl->enable_mask;
 		break;
-	case IRQ_CTRL_DISABLE:
+	case IRQ_CTRL_DISABLE_REG_OFFS:
 		*val = ~ctrl->enable_mask;
 		break;
-	case IRQ_CTRL_STATUS:
+	case IRQ_CTRL_STATUS_REG_OFFS:
 		*val = ctrl->status;
 		break;
-	case IRQ_CTRL_TEST:
+	case IRQ_CTRL_TEST_REG_OFFS:
 		/* Fallthrough. */
 	default:
 		*val = 0;

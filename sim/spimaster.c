@@ -9,16 +9,7 @@
 #include "io.h"
 #include "spimaster.h"
 
-enum spimaster_regs {
-	SPIMASTER_CONTROL	= 0x0,
-	SPIMASTER_CS_ENABLE	= 0x1,
-	SPIMASTER_XFER_CONTROL	= 0x2,
-	SPIMASTER_NUM_REGS
-};
-
-#define CONTROL_LOOPBACK_ENABLE_OFFS	9
-#define XFER_CONTROL_BUSY_OFFS		17
-#define XFER_CONTROL_GO_OFFS		16
+#define SPIMASTER_NUM_REGS ((SPI_XFER_CONTROL_REG_OFFS + 4) / 4)
 
 struct spimaster {
 	struct spislave **slaves;
@@ -34,9 +25,9 @@ struct spimaster {
 
 static void spimaster_start_xfer(struct spimaster *master)
 {
-	master->loopback_enabled = master->regs[SPIMASTER_CONTROL] &
-		(1 << CONTROL_LOOPBACK_ENABLE_OFFS);
-	master->xfer_length = master->regs[SPIMASTER_XFER_CONTROL] & 0xffff;
+	master->loopback_enabled = master->regs[SPI_CONTROL_REG_OFFS / 4] &
+                SPI_LOOPBACK_ENABLE_MASK;
+	master->xfer_length = master->regs[SPI_XFER_CONTROL_REG_OFFS / 4] & 0xffff;
 	master->bytes_xfered = 0;
 }
 
@@ -51,7 +42,7 @@ static int spimaster_write(unsigned int offs, uint32_t val, size_t nr_bits,
 			return -EFAULT;
 		master->regs[regnum] = val;
 
-		if (regnum == SPIMASTER_XFER_CONTROL)
+		if (regnum == SPI_XFER_CONTROL_REG_OFFS / 4)
 			spimaster_start_xfer(master);
 	} else if (offs >= 8192) {
 		memcpy(master->xfer_buf + offs - 8192, &val, nr_bits / 8);
@@ -77,7 +68,7 @@ static void xfer_slaves(struct spimaster *master)
 	uint8_t v = 0;
 
 	for (m = 0; m < master->nr_slaves; ++m)
-		if (master->regs[SPIMASTER_CS_ENABLE] & (1 << m) &&
+		if (master->regs[SPI_CS_ENABLE_REG_OFFS / 4] & (1 << m) &&
 		    master->slaves[m])
 			/* Slaves share a common bus. */
 			v |= slave_xfer(master, master->slaves[m]);
@@ -101,9 +92,9 @@ static void spimaster_xfer_byte(struct spimaster *master)
 
 static void spimaster_compute_busy(struct spimaster *master)
 {
-	master->regs[SPIMASTER_XFER_CONTROL] &= ~(1 << XFER_CONTROL_BUSY_OFFS);
+	master->regs[SPI_XFER_CONTROL_REG_OFFS / 4] &= ~XFER_BUSY_MASK;
 	if (master->bytes_xfered != master->xfer_length)
-		master->regs[SPIMASTER_XFER_CONTROL] |= (1 << XFER_CONTROL_BUSY_OFFS);
+		master->regs[SPI_XFER_CONTROL_REG_OFFS / 4] |= XFER_BUSY_MASK;
 }
 
 static void spimaster_update_regs(struct spimaster *master)

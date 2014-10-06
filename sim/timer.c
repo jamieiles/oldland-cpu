@@ -26,17 +26,6 @@
 #include "irq_ctrl.h"
 #include "io.h"
 
-enum timer_regs {
-	REG_COUNT	= 0x0,
-	REG_RELOAD	= 0x4,
-	REG_CONTROL	= 0x8,
-	REG_EOI		= 0xc,
-};
-
-#define CONTROL_PERIODIC	(1 << 0)
-#define CONTROL_ENABLED		(1 << 1)
-#define CONTROL_IRQ_ENABLE	(1 << 2)
-
 #define NR_TIMERS		4
 
 struct timer {
@@ -77,20 +66,20 @@ static int timer_write(unsigned int offs, uint32_t val, size_t nr_bits,
 
 	timer = &base->timers[offs / 16];
 	switch (offs % 16) {
-	case REG_COUNT:
+	case TIMER_COUNT_REG_OFFS:
 		break;
-	case REG_RELOAD:
+	case TIMER_RELOAD_REG_OFFS:
 		event_mod(timer->event, val);
 		break;
-	case REG_CONTROL:
-		timer->periodic = !!(val & CONTROL_PERIODIC);
-		timer->irq_enabled = !!(val & CONTROL_IRQ_ENABLE);
-		if (val & CONTROL_ENABLED)
+	case TIMER_CONTROL_REG_OFFS:
+		timer->periodic = !!(val & TIMER_PERIODIC_MASK);
+		timer->irq_enabled = !!(val & TIMER_IRQ_ENABLE_MASK);
+		if (val & TIMER_ENABLED_MASK)
 			event_enable(timer->event);
 		else
 			event_disable(timer->event);
 		break;
-	case REG_EOI:
+	case TIMER_EOI_REG_OFFS:
 		irq_ctrl_clear_irq(timer->irq_ctrl, timer->irq);
 		break;
 	}
@@ -113,18 +102,18 @@ static int timer_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 
 	timer = &base->timers[offs / 16];
 	switch (offs % 16) {
-	case REG_COUNT:
+	case TIMER_COUNT_REG_OFFS:
 		*val = timer->event->current;
 		break;
-	case REG_RELOAD:
+	case TIMER_RELOAD_REG_OFFS:
 		*val = timer->event->reload_val;
 		break;
-	case REG_CONTROL:
-		*val = (timer->event->enabled ? CONTROL_ENABLED : 0) |
-		       (timer->periodic ? CONTROL_PERIODIC : 0) |
-		       (timer->irq_enabled ? CONTROL_IRQ_ENABLE : 0);
+	case TIMER_CONTROL_REG_OFFS:
+		*val = (timer->event->enabled ? TIMER_ENABLED_MASK : 0) |
+		       (timer->periodic ? TIMER_PERIODIC_MASK : 0) |
+		       (timer->irq_enabled ? TIMER_IRQ_ENABLE_MASK : 0);
 		break;
-	case REG_EOI:
+	case TIMER_EOI_REG_OFFS:
 		*val = 0;
 		break;
 	}

@@ -31,27 +31,151 @@
         {
             name: sdram_ctrl,
             address: "0x80001000",
-            size: "0x00001000"
+            size: "0x00001000",
+            regmap: {
+                status: {
+                    offset: 0,
+                    fields: {
+                        config_done: {
+                            offset: 0,
+                            width: 1
+                        }
+                    }
+                }
+            }
         },
         {
             name: uart,
             address: "0x80000000",
-            size: "0x0001000"
+            size: "0x0001000",
+            regmap: {
+                uart_data: {
+                    offset: 0,
+                    fields: {
+                        data: {
+                            offset: 0,
+                            width: 8
+                        }
+                    }
+                },
+                uart_status: {
+                    offset: 4,
+                    fields: {
+                        tx_empty: {
+                            offset: 0,
+                            width: 1
+                        },
+                        rx_ready: {
+                            offset: 1,
+                            width: 1
+                        }
+                    }
+                }
+            }
         },
         {
             name: irq,
             address: "0x80002000",
-            size: "0x00001000"
+            size: "0x00001000",
+            regmap: {
+                irq_ctrl_status: {
+                    offset: 0
+                },
+                irq_ctrl_enable: {
+                    offset: 4
+                },
+                irq_ctrl_disable: {
+                    offset: 8
+                },
+                irq_ctrl_test: {
+                    offset: 12
+                },
+            }
         },
         {
             name: timer,
             address: "0x80003000",
-            size: "0x00001000"
+            size: "0x00001000",
+            regmap: {
+                timer_count: {
+                    offset: 0,
+                    fields: {
+                        current_value: {
+                            offset: 0,
+                            width: 32
+                        }
+                    }
+                },
+                timer_reload: {
+                    offset: 4,
+                    fields: {
+                        reload_value: {
+                            offset: 0,
+                            width: 32
+                        }
+                    }
+                },
+                timer_control: {
+                    offset: 8,
+                    fields: {
+                        timer_periodic: {
+                            offset: 0,
+                            width: 1
+                        },
+                        timer_enabled: {
+                            offset: 1,
+                            width: 1
+                        },
+                        timer_irq_enable: {
+                            offset: 2,
+                            width: 1
+                        }
+                    }
+                },
+                timer_eoi: {
+                    offset: 12,
+                },
+            }
         },
         {
             name: spimaster,
             address: "0x80004000",
-            size: "0x00004000"
+            size: "0x00004000",
+            regmap: {
+                spi_control: {
+                    offset: 0,
+                    fields: {
+                        spi_divider: {
+                            offset: 0,
+                            width: 9
+                        },
+                        spi_loopback_enable: {
+                            offset: 9,
+                            width: 1
+                        }
+                    }
+                },
+                spi_cs_enable: {
+                    offset: 4,
+                },
+                spi_xfer_control: {
+                    offset: 8,
+                    fields: {
+                        xfer_length: {
+                            offset: 0,
+                            width: 13
+                        },
+                        xfer_go: {
+                            offset: 16,
+                            width: 1
+                        },
+                        xfer_busy: {
+                            offset: 17,
+                            width: 1
+                        }
+                    }
+                }
+            }
         }
     ]
 }

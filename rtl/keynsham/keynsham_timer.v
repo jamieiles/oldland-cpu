@@ -13,11 +13,6 @@ module keynsham_timer(input wire	clk,
 		      output reg [31:0]	bus_data,
 		      output wire	irq_out);
 
-localparam REG_COUNT			= 2'd0;
-localparam REG_RELOAD			= 2'd1;
-localparam REG_CONTROL			= 2'd2;
-localparam REG_EOI			= 2'd3;
-
 reg [31:0]	reload_val = 32'hffffffff;
 reg [31:0]	count = 32'hffffffff;
 
@@ -34,6 +29,11 @@ wire [31:0]	reg_control = {29'b0, irq_enable, enabled, periodic};
 wire		timer_access = bus_access && timer_cs;
 assign		irq_out = irq_active & irq_enable;
 
+wire            access_count = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_COUNT_REG_OFFS;
+wire            access_reload = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_RELOAD_REG_OFFS;
+wire            access_control = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_CONTROL_REG_OFFS;
+wire            access_eoi = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_EOI_REG_OFFS;
+
 initial begin
 	bus_error = 1'b0;
 	bus_ack = 1'b0;
@@ -41,12 +41,14 @@ initial begin
 end
 
 always @(*) begin
-	case (reg_sel)
-	REG_COUNT: bus_data = reg_count;
-	REG_RELOAD: bus_data = reg_reload;
-	REG_CONTROL: bus_data = reg_control;
-	REG_EOI: bus_data = 32'b0;
-	endcase
+        if (access_count)
+	        bus_data = reg_count;
+        else if (access_reload)
+	        bus_data = reg_reload;
+        else if (access_control)
+	        bus_data = reg_control;
+        else
+                bus_data = 32'b0;
 end
 
 always @(posedge clk) begin
@@ -68,19 +70,17 @@ always @(posedge clk) begin
 		irq_active <= 1'b0;
 		irq_cleared <= 1'b0;
 	end else if (timer_access && bus_wr_en) begin
-		case (reg_sel)
-		REG_COUNT: /* Read-only. */;
-		REG_RELOAD: begin
+                if (access_reload) begin
 			reload_val <= bus_wr_val;
 			count <= bus_wr_val;
 			irq_cleared <= 1'b0;
 		end
-		REG_CONTROL: {irq_enable, enabled, periodic} <= bus_wr_val[2:0];
-		REG_EOI: begin
+                if (access_control)
+		        {irq_enable, enabled, periodic} <= bus_wr_val[2:0];
+		if (access_eoi) begin
 			irq_active <= 1'b0;
 			irq_cleared <= 1'b1;
 		end
-		endcase
 	end
 end
 
