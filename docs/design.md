@@ -51,27 +51,33 @@ Load/Store instructions:
 
 Example assembly:
 
-      add		$r0, r0, #1
-      ldr		$r1, dataval
-      movhi		$r2, $hi(vtable)
-      add		$r2, r2, $lo(vtable)
-      call		0x100
-      call		myfunc
+{% highlight asm %}
+entry:
+	add		$r0, r0, #1
+	ldr		$r1, dataval
+	movhi		$r2, $hi(vtable)
+	add		$r2, r2, $lo(vtable)
+	call		0x100
+	call		myfunc
     
-    dataval:
-      .word		0xdeadbeef
+dataval:
+	.word		0xdeadbeef
     
-    myfunc:
-      str8		$r2, [$r0, 0x0]
-      str		$r1, [$r0, 0x4]
-      ret
+myfunc:
+	str8		$r2, [$r0, 0x0]
+	str		$r1, [$r0, 0x4]
+	ret
+{% endhighlight %}
 
 ENCODING
 --------
 
 For ALU operations, if R is set then rd := ra OP Rb else rd := ra OP I
+
 For branch operations, if R is set then PC := Ra else PC += I
+
 For load, if R, Rd := M[Ra + I] else Rd := M[PC + I]
+
 For store, if R, M[Ra + I] := rb, else M[PC + I] := rb
 
 Encoding:
@@ -215,16 +221,17 @@ RFE implementation:
 Control registers:
 
 - cr0:	exception table base address
-	- [31:6]: exception table base address[31:6]
-	- [5:0]:  reserved, SBZ
+	- \[31:6\]: exception table base address[31:6]
+	- \[5:0\]:  reserved, SBZ
+
 - cr1:	PSR
-	- [31:4]: reserved, SBZ
-	- [5:5]:  user mode
-	- [4:4]:  irqs enabled
-	- [3:3]:  negative flag
-	- [2:2]:  overflow flag
-	- [1:1]:  carry flag
-	- [0:0]:  zero flag
+	- \[31:4\]: reserved, SBZ
+	- \[5:5\]:  user mode
+	- \[4:4\]:  irqs enabled
+	- \[3:3\]:  negative flag
+	- \[2:2\]:  overflow flag
+	- \[1:1\]:  carry flag
+	- \[0:0\]:  zero flag
 - cr2:	saved PSR
 - cr3:	fault address register
 - cr4:	data fault address
@@ -236,17 +243,17 @@ The CPUID registers provide a mechanism for software to discover hardware
 features:
 
 - 0: CPU version
-     - [31:16]:	Vendor
-     - [15:0]:	Model
+     - \[31:16\]:	Vendor
+     - \[15:0\]:	Model
 - 1: CPU core speed
-     - [31:0]	core speed (Hz)
+     - \[31:0\]	core speed (Hz)
 - 2: Instruction set features
-     - [31:0]:	SBZ
+     - \[31:0\]:	SBZ
 - 3: Instruction cache feature register
-     - [31:24]:	SBZ
-     - [23:8]:	number of cache lines
-     - [7:0]:	words per cache line
+     - \[31:24\]:	SBZ
+     - \[23:8\]:	number of cache lines
+     - \[7:0\]:	words per cache line
 - 4: Data cache feature register
-     - [31:24]:	SBZ
-     - [23:8]:	number of cache lines
-     - [7:0]:	words per cache line
+     - \[31:24\]:	SBZ
+     - \[23:8\]:	number of cache lines
+     - \[7:0\]:	words per cache line
