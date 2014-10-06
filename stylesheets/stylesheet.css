@@ -262,6 +262,13 @@ img {
 Full-Width Styles
 *******************************************************************************/
 
+.instrdef {
+  margin: 0;
+  padding: 0;
+  display: inline;
+  list-style: none;
+}
+
 .outer {
   width: 100%;
 }

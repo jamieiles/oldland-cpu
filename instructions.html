@@ -35,100 +35,475 @@
       <section id="main_content" class="inner">
 
 <h1>Oldland Instruction Set</h1>
-<p><a id='top' /></p>
+
+<p><a id="top"></a></p>
+<p>Arithmetic/Bitwise instructions</p>
 <ul>
 
-<li><a href='#add'>add</a></li>
 
-<li><a href='#addc'>addc</a></li>
+<li class="instrdef"><a href="#add">add</a></li>
 
-<li><a href='#sub'>sub</a></li>
 
-<li><a href='#subc'>subc</a></li>
 
-<li><a href='#lsl'>lsl</a></li>
+<li class="instrdef"><a href="#addc">addc</a></li>
 
-<li><a href='#lsr'>lsr</a></li>
 
-<li><a href='#and'>and</a></li>
 
-<li><a href='#xor'>xor</a></li>
+<li class="instrdef"><a href="#sub">sub</a></li>
 
-<li><a href='#bic'>bic</a></li>
 
-<li><a href='#bst'>bst</a></li>
 
-<li><a href='#or'>or</a></li>
+<li class="instrdef"><a href="#subc">subc</a></li>
 
-<li><a href='#mul'>mul</a></li>
 
-<li><a href='#cmp'>cmp</a></li>
 
-<li><a href='#asr'>asr</a></li>
+<li class="instrdef"><a href="#lsl">lsl</a></li>
 
-<li><a href='#mov'>mov</a></li>
 
-<li><a href='#call'>call</a></li>
 
-<li><a href='#ret'>ret</a></li>
+<li class="instrdef"><a href="#lsr">lsr</a></li>
 
-<li><a href='#b'>b</a></li>
 
-<li><a href='#bne'>bne</a></li>
 
-<li><a href='#beq'>beq</a></li>
+<li class="instrdef"><a href="#and">and</a></li>
 
-<li><a href='#bgt'>bgt</a></li>
 
-<li><a href='#blt'>blt</a></li>
 
-<li><a href='#bgts'>bgts</a></li>
+<li class="instrdef"><a href="#xor">xor</a></li>
 
-<li><a href='#blts'>blts</a></li>
 
-<li><a href='#bgte'>bgte</a></li>
 
-<li><a href='#bgtes'>bgtes</a></li>
+<li class="instrdef"><a href="#bic">bic</a></li>
 
-<li><a href='#blte'>blte</a></li>
 
-<li><a href='#bltes'>bltes</a></li>
 
-<li><a href='#ldr32'>ldr32</a></li>
+<li class="instrdef"><a href="#bst">bst</a></li>
 
-<li><a href='#ldr16'>ldr16</a></li>
 
-<li><a href='#ldr8'>ldr8</a></li>
 
-<li><a href='#str32'>str32</a></li>
+<li class="instrdef"><a href="#or">or</a></li>
 
-<li><a href='#str16'>str16</a></li>
 
-<li><a href='#str8'>str8</a></li>
 
-<li><a href='#bkp'>bkp</a></li>
+<li class="instrdef"><a href="#mul">mul</a></li>
 
-<li><a href='#nop'>nop</a></li>
 
-<li><a href='#movhi'>movhi</a></li>
 
-<li><a href='#orlo'>orlo</a></li>
+<li class="instrdef"><a href="#cmp">cmp</a></li>
 
-<li><a href='#cpuid'>cpuid</a></li>
 
-<li><a href='#gcr'>gcr</a></li>
 
-<li><a href='#scr'>scr</a></li>
+<li class="instrdef"><a href="#asr">asr</a></li>
 
-<li><a href='#swi'>swi</a></li>
 
-<li><a href='#rfe'>rfe</a></li>
 
-<li><a href='#cache'>cache</a></li>
+<li class="instrdef"><a href="#mov">mov</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </ul>
-<p><a id='add'><h2>add</h2></a></p>
-<p><strong>Class: 0, Opcode: 0</strong></p><h3>Description</h3><p><em>Rd := Ra + OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+
+<p>Call/Branch/Exception instructions</p>
+<ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="instrdef"><a href="#call">call</a></li>
+
+
+
+<li class="instrdef"><a href="#ret">ret</a></li>
+
+
+
+<li class="instrdef"><a href="#b">b</a></li>
+
+
+
+<li class="instrdef"><a href="#bne">bne</a></li>
+
+
+
+<li class="instrdef"><a href="#beq">beq</a></li>
+
+
+
+<li class="instrdef"><a href="#bgt">bgt</a></li>
+
+
+
+<li class="instrdef"><a href="#blt">blt</a></li>
+
+
+
+<li class="instrdef"><a href="#bgts">bgts</a></li>
+
+
+
+<li class="instrdef"><a href="#blts">blts</a></li>
+
+
+
+<li class="instrdef"><a href="#bgte">bgte</a></li>
+
+
+
+<li class="instrdef"><a href="#bgtes">bgtes</a></li>
+
+
+
+<li class="instrdef"><a href="#blte">blte</a></li>
+
+
+
+<li class="instrdef"><a href="#bltes">bltes</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="instrdef"><a href="#swi">swi</a></li>
+
+
+
+<li class="instrdef"><a href="#rfe">rfe</a></li>
+
+
+
+
+</ul>
+
+<p>Load/Store instructions</p>
+<ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="instrdef"><a href="#ldr32">ldr32</a></li>
+
+
+
+<li class="instrdef"><a href="#ldr16">ldr16</a></li>
+
+
+
+<li class="instrdef"><a href="#ldr8">ldr8</a></li>
+
+
+
+<li class="instrdef"><a href="#str32">str32</a></li>
+
+
+
+<li class="instrdef"><a href="#str16">str16</a></li>
+
+
+
+<li class="instrdef"><a href="#str8">str8</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="instrdef"><a href="#cache">cache</a></li>
+
+
+</ul>
+
+<p>Miscellaneous instructions</p>
+<ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="instrdef"><a href="#bkp">bkp</a></li>
+
+
+
+<li class="instrdef"><a href="#nop">nop</a></li>
+
+
+
+<li class="instrdef"><a href="#movhi">movhi</a></li>
+
+
+
+<li class="instrdef"><a href="#orlo">orlo</a></li>
+
+
+
+<li class="instrdef"><a href="#cpuid">cpuid</a></li>
+
+
+
+<li class="instrdef"><a href="#gcr">gcr</a></li>
+
+
+
+<li class="instrdef"><a href="#scr">scr</a></li>
+
+
+
+
+
+
+
+
+</ul>
+
+<h2><a id="add">add</a></h2>
+<p><strong>Class: 0, Opcode: 0</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra + OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -147,9 +522,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='addc'><h2>addc</h2></a></p>
-<p><strong>Class: 0, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := Ra + OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="addc">addc</a></h2>
+<p><strong>Class: 0, Opcode: 1</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra + OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -168,9 +550,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='sub'><h2>sub</h2></a></p>
-<p><strong>Class: 0, Opcode: 2</strong></p><h3>Description</h3><p><em>Rd := Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="sub">sub</a></h2>
+<p><strong>Class: 0, Opcode: 2</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -189,9 +578,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='subc'><h2>subc</h2></a></p>
-<p><strong>Class: 0, Opcode: 3</strong></p><h3>Description</h3><p><em>Rd := Ra - OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="subc">subc</a></h2>
+<p><strong>Class: 0, Opcode: 3</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra - OP2 + C, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -210,9 +606,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='lsl'><h2>lsl</h2></a></p>
-<p><strong>Class: 0, Opcode: 4</strong></p><h3>Description</h3><p><em>Rd := Ra &lt;&lt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="lsl">lsl</a></h2>
+<p><strong>Class: 0, Opcode: 4</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra &lt;&lt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -231,9 +634,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='lsr'><h2>lsr</h2></a></p>
-<p><strong>Class: 0, Opcode: 5</strong></p><h3>Description</h3><p><em>Rd := Ra &gt;&gt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="lsr">lsr</a></h2>
+<p><strong>Class: 0, Opcode: 5</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra &gt;&gt; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -252,9 +662,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='and'><h2>and</h2></a></p>
-<p><strong>Class: 0, Opcode: 6</strong></p><h3>Description</h3><p><em>Rd := Ra &amp; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="and">and</a></h2>
+<p><strong>Class: 0, Opcode: 6</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra &amp; OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -273,9 +690,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='xor'><h2>xor</h2></a></p>
-<p><strong>Class: 0, Opcode: 7</strong></p><h3>Description</h3><p><em>Rd := Ra ^ OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="xor">xor</a></h2>
+<p><strong>Class: 0, Opcode: 7</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra ^ OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -294,9 +718,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bic'><h2>bic</h2></a></p>
-<p><strong>Class: 0, Opcode: 8</strong></p><h3>Description</h3><p><em>Rd := Ra &amp;= ~(1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bic">bic</a></h2>
+<p><strong>Class: 0, Opcode: 8</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra &amp;= ~(1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -315,9 +746,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bst'><h2>bst</h2></a></p>
-<p><strong>Class: 0, Opcode: 9</strong></p><h3>Description</h3><p><em>Rd := Ra |= (1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bst">bst</a></h2>
+<p><strong>Class: 0, Opcode: 9</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra |= (1 &lt;&lt; OP2), OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -336,9 +774,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='or'><h2>or</h2></a></p>
-<p><strong>Class: 0, Opcode: 10</strong></p><h3>Description</h3><p><em>Rd := Ra | OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="or">or</a></h2>
+<p><strong>Class: 0, Opcode: 10</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra | OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -357,9 +802,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='mul'><h2>mul</h2></a></p>
-<p><strong>Class: 0, Opcode: 11</strong></p><h3>Description</h3><p><em>Rd := Ra * OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="mul">mul</a></h2>
+<p><strong>Class: 0, Opcode: 11</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra * OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -378,9 +830,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='cmp'><h2>cmp</h2></a></p>
-<p><strong>Class: 0, Opcode: 12</strong></p><h3>Description</h3><p><em>Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.  The result is discarded.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="cmp">cmp</a></h2>
+<p><strong>Class: 0, Opcode: 12</strong></p>
+<h3>Description</h3>
+<p><em>Ra - OP2, OP2 may either be a register or a 13-bit signed immediate.  The result is discarded.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -393,9 +852,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='asr'><h2>asr</h2></a></p>
-<p><strong>Class: 0, Opcode: 14</strong></p><h3>Description</h3><p><em>Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="asr">asr</a></h2>
+<p><strong>Class: 0, Opcode: 14</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Ra ASR OP2, OP2 may either be a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -414,9 +880,16 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='mov'><h2>mov</h2></a></p>
-<p><strong>Class: 0, Opcode: 15</strong></p><h3>Description</h3><p><em>Rd := OP1, OP1 may be either a register or a 13-bit signed immediate.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="mov">mov</a></h2>
+<p><strong>Class: 0, Opcode: 15</strong></p>
+<h3>Description</h3>
+<p><em>Rd := OP1, OP1 may be either a register or a 13-bit signed immediate.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -429,119 +902,213 @@
       <li>imm13 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='call'><h2>call</h2></a></p>
-<p><strong>Class: 1, Opcode: 0</strong></p><h3>Description</h3><p><em>PC := PC + (I &lt;&lt; 2) if immediate, PC := Rb if register. LR := PC + 4.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="call">call</a></h2>
+<p><strong>Class: 1, Opcode: 0</strong></p>
+<h3>Description</h3>
+<p><em>PC := PC + (I &lt;&lt; 2) if immediate, PC := Rb if register. LR := PC + 4.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='ret'><h2>ret</h2></a></p>
-<p><strong>Class: 1, Opcode: 1</strong></p><h3>Description</h3><p><em>PC := LR</em></p>
-<p><a id='b'><h2>b</h2></a></p>
-<p><strong>Class: 1, Opcode: 4</strong></p><h3>Description</h3><p><em>PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="ret">ret</a></h2>
+<p><strong>Class: 1, Opcode: 1</strong></p>
+<h3>Description</h3>
+<p><em>PC := LR</em></p>
+
+<h2><a id="b">b</a></h2>
+<p><strong>Class: 1, Opcode: 4</strong></p>
+<h3>Description</h3>
+<p><em>PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bne'><h2>bne</h2></a></p>
-<p><strong>Class: 1, Opcode: 5</strong></p><h3>Description</h3><p><em>If !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bne">bne</a></h2>
+<p><strong>Class: 1, Opcode: 5</strong></p>
+<h3>Description</h3>
+<p><em>If !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='beq'><h2>beq</h2></a></p>
-<p><strong>Class: 1, Opcode: 6</strong></p><h3>Description</h3><p><em>If Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="beq">beq</a></h2>
+<p><strong>Class: 1, Opcode: 6</strong></p>
+<h3>Description</h3>
+<p><em>If Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bgt'><h2>bgt</h2></a></p>
-<p><strong>Class: 1, Opcode: 7</strong></p><h3>Description</h3><p><em>If !C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bgt">bgt</a></h2>
+<p><strong>Class: 1, Opcode: 7</strong></p>
+<h3>Description</h3>
+<p><em>If !C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='blt'><h2>blt</h2></a></p>
-<p><strong>Class: 1, Opcode: 8</strong></p><h3>Description</h3><p><em>If C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="blt">blt</a></h2>
+<p><strong>Class: 1, Opcode: 8</strong></p>
+<h3>Description</h3>
+<p><em>If C &amp;&amp; !Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bgts'><h2>bgts</h2></a></p>
-<p><strong>Class: 1, Opcode: 9</strong></p><h3>Description</h3><p><em>If !Z &amp;&amp; (N == O) PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bgts">bgts</a></h2>
+<p><strong>Class: 1, Opcode: 9</strong></p>
+<h3>Description</h3>
+<p><em>If !Z &amp;&amp; (N == O) PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='blts'><h2>blts</h2></a></p>
-<p><strong>Class: 1, Opcode: 10</strong></p><h3>Description</h3><p><em>If N != O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="blts">blts</a></h2>
+<p><strong>Class: 1, Opcode: 10</strong></p>
+<h3>Description</h3>
+<p><em>If N != O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bgte'><h2>bgte</h2></a></p>
-<p><strong>Class: 1, Opcode: 12</strong></p><h3>Description</h3><p><em>If !C PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bgte">bgte</a></h2>
+<p><strong>Class: 1, Opcode: 12</strong></p>
+<h3>Description</h3>
+<p><em>If !C PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bgtes'><h2>bgtes</h2></a></p>
-<p><strong>Class: 1, Opcode: 13</strong></p><h3>Description</h3><p><em>If N == O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bgtes">bgtes</a></h2>
+<p><strong>Class: 1, Opcode: 13</strong></p>
+<h3>Description</h3>
+<p><em>If N == O PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='blte'><h2>blte</h2></a></p>
-<p><strong>Class: 1, Opcode: 14</strong></p><h3>Description</h3><p><em>If C || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="blte">blte</a></h2>
+<p><strong>Class: 1, Opcode: 14</strong></p>
+<h3>Description</h3>
+<p><em>If C || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bltes'><h2>bltes</h2></a></p>
-<p><strong>Class: 1, Opcode: 11</strong></p><h3>Description</h3><p><em>If (N != O) || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bltes">bltes</a></h2>
+<p><strong>Class: 1, Opcode: 11</strong></p>
+<h3>Description</h3>
+<p><em>If (N != O) || Z PC := PC + (i &lt;&lt; 2) if immediate, PC := RB if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
       <li>imm24 or rb</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='ldr32'><h2>ldr32</h2></a></p>
-<p><strong>Class: 2, Opcode: 0</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (32-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="ldr32">ldr32</a></h2>
+<p><strong>Class: 2, Opcode: 0</strong></p>
+<h3>Description</h3>
+<p><em>Rd := M[PC + I] (32-bits) if immediate, M[Ra + I] if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -554,9 +1121,16 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='ldr16'><h2>ldr16</h2></a></p>
-<p><strong>Class: 2, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (16-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="ldr16">ldr16</a></h2>
+<p><strong>Class: 2, Opcode: 1</strong></p>
+<h3>Description</h3>
+<p><em>Rd := M[PC + I] (16-bits) if immediate, M[Ra + I] if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -569,9 +1143,16 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='ldr8'><h2>ldr8</h2></a></p>
-<p><strong>Class: 2, Opcode: 2</strong></p><h3>Description</h3><p><em>Rd := M[PC + I] (8-bits) if immediate, M[Ra + I] if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="ldr8">ldr8</a></h2>
+<p><strong>Class: 2, Opcode: 2</strong></p>
+<h3>Description</h3>
+<p><em>Rd := M[PC + I] (8-bits) if immediate, M[Ra + I] if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -584,9 +1165,16 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='str32'><h2>str32</h2></a></p>
-<p><strong>Class: 2, Opcode: 4</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (32-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="str32">str32</a></h2>
+<p><strong>Class: 2, Opcode: 4</strong></p>
+<h3>Description</h3>
+<p><em>M[PC + I] := Rb (32-bits) if immediate, M[Ra + I] := Rb if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -599,9 +1187,16 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='str16'><h2>str16</h2></a></p>
-<p><strong>Class: 2, Opcode: 5</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (16-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="str16">str16</a></h2>
+<p><strong>Class: 2, Opcode: 5</strong></p>
+<h3>Description</h3>
+<p><em>M[PC + I] := Rb (16-bits) if immediate, M[Ra + I] := Rb if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -614,9 +1209,16 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='str8'><h2>str8</h2></a></p>
-<p><strong>Class: 2, Opcode: 6</strong></p><h3>Description</h3><p><em>M[PC + I] := Rb (8-bits) if immediate, M[Ra + I] := Rb if register.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="str8">str8</a></h2>
+<p><strong>Class: 2, Opcode: 6</strong></p>
+<h3>Description</h3>
+<p><em>M[PC + I] := Rb (8-bits) if immediate, M[Ra + I] := Rb if register.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -629,13 +1231,26 @@
       <li>imm13pc or index</li>
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='bkp'><h2>bkp</h2></a></p>
-<p><strong>Class: 3, Opcode: 0</strong></p><h3>Description</h3><p><em>Hardware breakpoint.</em></p>
-<p><a id='nop'><h2>nop</h2></a></p>
-<p><strong>Class: 3, Opcode: 15</strong></p><h3>Description</h3><p><em>No operation.</em></p>
-<p><a id='movhi'><h2>movhi</h2></a></p>
-<p><strong>Class: 3, Opcode: 11</strong></p><h3>Description</h3><p><em>Rd := imm16 &lt;&lt; 16.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="bkp">bkp</a></h2>
+<p><strong>Class: 3, Opcode: 0</strong></p>
+<h3>Description</h3>
+<p><em>Hardware breakpoint.</em></p>
+
+<h2><a id="nop">nop</a></h2>
+<p><strong>Class: 3, Opcode: 15</strong></p>
+<h3>Description</h3>
+<p><em>No operation.</em></p>
+
+<h2><a id="movhi">movhi</a></h2>
+<p><strong>Class: 3, Opcode: 11</strong></p>
+<h3>Description</h3>
+<p><em>Rd := imm16 &lt;&lt; 16.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -649,9 +1264,16 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='orlo'><h2>orlo</h2></a></p>
-<p><strong>Class: 3, Opcode: 13</strong></p><h3>Description</h3><p><em>Rd := Rb | imm16.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="orlo">orlo</a></h2>
+<p><strong>Class: 3, Opcode: 13</strong></p>
+<h3>Description</h3>
+<p><em>Rd := Rb | imm16.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -671,9 +1293,16 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='cpuid'><h2>cpuid</h2></a></p>
-<p><strong>Class: 3, Opcode: 7</strong></p><h3>Description</h3><p><em>Rd := cpuid[imm16].</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="cpuid">cpuid</a></h2>
+<p><strong>Class: 3, Opcode: 7</strong></p>
+<h3>Description</h3>
+<p><em>Rd := cpuid[imm16].</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -687,9 +1316,16 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='gcr'><h2>gcr</h2></a></p>
-<p><strong>Class: 3, Opcode: 1</strong></p><h3>Description</h3><p><em>Rd := control register N.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="gcr">gcr</a></h2>
+<p><strong>Class: 3, Opcode: 1</strong></p>
+<h3>Description</h3>
+<p><em>Rd := control register N.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -703,9 +1339,16 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='scr'><h2>scr</h2></a></p>
-<p><strong>Class: 3, Opcode: 2</strong></p><h3>Description</h3><p><em>Control register N := ra.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="scr">scr</a></h2>
+<p><strong>Class: 3, Opcode: 2</strong></p>
+<h3>Description</h3>
+<p><em>Control register N := ra.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -719,9 +1362,16 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='swi'><h2>swi</h2></a></p>
-<p><strong>Class: 1, Opcode: 15</strong></p><h3>Description</h3><p><em>Raise SWI imm13.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="swi">swi</a></h2>
+<p><strong>Class: 1, Opcode: 15</strong></p>
+<h3>Description</h3>
+<p><em>Raise SWI imm13.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -729,11 +1379,21 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
-<p><a id='rfe'><h2>rfe</h2></a></p>
-<p><strong>Class: 1, Opcode: 2</strong></p><h3>Description</h3><p><em>Return from exception.</em></p>
-<p><a id='cache'><h2>cache</h2></a></p>
-<p><strong>Class: 2, Opcode: 15</strong></p><h3>Description</h3><p><em>Cache operation imm13, with index Ra if index valid.</em></p><h3>Instruction Operands</h3><ul>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+<h2><a id="rfe">rfe</a></h2>
+<p><strong>Class: 1, Opcode: 2</strong></p>
+<h3>Description</h3>
+<p><em>Return from exception.</em></p>
+
+<h2><a id="cache">cache</a></h2>
+<p><strong>Class: 2, Opcode: 15</strong></p>
+<h3>Description</h3>
+<p><em>Cache operation imm13, with index Ra if index valid.</em></p>
+
+<h3>Instruction Operands</h3>
+<ul>
   
   
     
@@ -747,7 +1407,10 @@
       
     
   
-  </ul><p><a href='#top'>top of page</a></p>
+  </ul>
+<p><a href="#top">top of page</a></p>
+
+
       </section>
     </div>
 

@@ -37,50 +37,52 @@
 <p>There are three different simulators for the CPU:</p>
 
 <ul>
-<li>oldland-sim: an instruction set simulator in C and is not cycle accurate.</li>
-
-<li>oldland-rtlsim: an Icarus verilog simulation, models events but can be slow.</li>
-
-<li>oldland-verilatorsim: a Verilator based simulation that runs &gt; 1MHz and is cycle accurate.</li>
+  <li>oldland-sim: an instruction set simulator in C and is not cycle accurate.</li>
+  <li>oldland-rtlsim: an Icarus verilog simulation, models events but can be slow.</li>
+  <li>oldland-verilatorsim: a Verilator based simulation that runs &gt; 1MHz and is
+cycle accurate.</li>
 </ul>
 
-<p>The Icarus simulation is the most accurate and includes vendor models of the SDRAM whereas the verilator model does not model SDRAM timing or configuration.</p>
+<p>The Icarus simulation is the most accurate and includes vendor models of the
+SDRAM whereas the verilator model does not model SDRAM timing or
+configuration.</p>
 
 <p>For interactive simulation:</p>
 
 <ul>
-<li>
-<p>Run the simulation:<br /> <code>oldland-rtlsim --interactive</code></p>
-</li>
-
-<li>
-<p>Observe the PTS number.</p>
-</li>
-
-<li>
-<p>Load the application binary through the onchip bootrom<br /> <code>./tools/bootterm/bootterm /dev/pts/PTS_NUM binary_file</code></p>
-</li>
-
-<li>
-<p>Attach minicom to the uart:<br /> <code>minicom -p /dev/pts/PTS_NUM</code></p>
-</li>
+  <li>
+    <p>Run the simulation:<br />
+  <code>oldland-rtlsim --interactive</code></p>
+  </li>
+  <li>
+    <p>Observe the PTS number.</p>
+  </li>
+  <li>
+    <p>Load the application binary through the onchip bootrom<br />
+  <code>./tools/bootterm/bootterm /dev/pts/PTS_NUM binary_file</code></p>
+  </li>
+  <li>
+    <p>Attach minicom to the uart:<br />
+  <code>minicom -p /dev/pts/PTS_NUM</code></p>
+  </li>
 </ul>
 
 <p>To bypass the onchip bootrom for quicker loads:</p>
 
 <ul>
-<li>
-<p>Run the simulation:<br /> <code>oldland-rtlsim --interactive --ramfile=path_to_ram_file --bootrom=sim.hex</code></p>
-</li>
-
-<li>
-<p>Observe the PTS number.</p>
-</li>
-
-<li>
-<p>Attach minicom to the uart:<br /> <code>minicom -p /dev/pts/PTS_NUM</code></p>
-</li>
+  <li>
+    <p>Run the simulation:<br />
+  <code>oldland-rtlsim --interactive --ramfile=path_to_ram_file --bootrom=sim.hex</code></p>
+  </li>
+  <li>
+    <p>Observe the PTS number.</p>
+  </li>
+  <li>
+    <p>Attach minicom to the uart:<br />
+  <code>minicom -p /dev/pts/PTS_NUM</code></p>
+  </li>
 </ul>
+
       </section>
     </div>
 
