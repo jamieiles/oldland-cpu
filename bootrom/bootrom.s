@@ -4,6 +4,7 @@ _start:
 	/* Offsets from here to the version strings, not executable code. */
 	.long	cpu_version
 	.long	date
+	.long	fdt
 
 init:
 	movhi	$r0, %hi(ex_table)

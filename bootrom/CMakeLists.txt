@@ -15,9 +15,15 @@ add_custom_target(buildinfo ALL
 		  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_build >
 		  ${CMAKE_CURRENT_BINARY_DIR}/build.s
 		  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(OUTPUT keynsham.dts
+		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/gendts > ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.yaml)
+add_custom_command(OUTPUT keynsham.dtb
+		   COMMAND dtc -I dts -O dtb -o ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dtb ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts
+		   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts)
 add_custom_command(OUTPUT build.o
 		   COMMAND oldland-elf-as ${CMAKE_CURRENT_BINARY_DIR}/build.s -o build.o
-		   DEPENDS buildinfo ${CMAKE_CURRENT_BINARY_DIR}/build.s)
+		   DEPENDS buildinfo ${CMAKE_CURRENT_BINARY_DIR}/build.s ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dtb)
 
 foreach(bootloader ${BOOTLOADERS})
 add_custom_command(OUTPUT ${bootloader}
@@ -31,7 +37,7 @@ add_custom_command(OUTPUT ${bootloader}.bin
 		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.bin -O binary --pad-to=0x200
 		   DEPENDS ${bootloader})
 add_custom_command(OUTPUT ${bootloader}.hex
-		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.hex -O verilog --pad-to=0x200
+		   COMMAND oldland-elf-objcopy ${bootloader} ${bootloader}.hex -O verilog --pad-to=0x1000
 		   DEPENDS ${bootloader})
 add_custom_command(OUTPUT ${bootloader}.ihex
 		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeramfile/makeramfile ${bootloader}.bin ${bootloader}.ihex

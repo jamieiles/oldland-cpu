@@ -11,13 +11,15 @@ BUILD_DIR=$(mktemp -d /tmp/oldland-bootrom.XXXXXX)
 
 pushd $SCRIPT_PATH >/dev/null
 $BOOTROM_DIR/gen_build > $BUILD_DIR/build.s
+$BOOTROM_DIR/../tools/keynsham/gendts > $BUILD_DIR/keynsham.dts
+dtc -I dts -O dtb -o $BUILD_DIR/keynsham.dtb $BUILD_DIR/keynsham.dts
 popd >/dev/null
 
 pushd $BUILD_DIR >/dev/null
 oldland-elf-as -c build.s -o build.o
 oldland-elf-as -c $BOOTROM_DIR/bootrom.s -o bootrom.o
 oldland-elf-ld bootrom.o build.o -o bootrom -T $BOOTROM_DIR/bootrom.x
-oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x200
+oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x1000
 $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
 $TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
 $TOOL_DIR/gendecode/gendecode > $SCRIPT_PATH/decode.hex

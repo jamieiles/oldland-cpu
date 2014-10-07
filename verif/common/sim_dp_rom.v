@@ -2,18 +2,18 @@ module sim_dp_rom(input wire		clk,
 		  /* Instruction bus. */
 		  input wire		i_access,
 		  input wire		i_cs,
-		  input wire [6:0]	i_addr,
+		  input wire [9:0]	i_addr,
 		  output reg [31:0]	i_data,
 		  output reg		i_ack,
 		  /* Data bus. */
 		  input wire		d_access,
 		  input wire		d_cs,
-		  input wire [6:0]	d_addr,
+		  input wire [9:0]	d_addr,
 		  input wire [3:0]	d_bytesel,
 		  output reg [31:0]	d_data,
 		  output reg		d_ack);
 
-localparam BOOTROM_BYTES = 512;
+localparam BOOTROM_BYTES = 4096;
 
 reg [7:0]	rom [BOOTROM_BYTES - 1:0];
 reg [8 * 128:0] rom_filename;

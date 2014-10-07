@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+
+import yaml
+import math
+import os
+import sys
+
+HERE = os.path.dirname(__file__)
+CONFIG_PATH = os.path.join(HERE, '..', '..', 'config')
+
+with open(os.path.join(CONFIG_PATH, 'keynsham.yaml'),
+          'r') as config:
+    keynsham_config = yaml.load(config.read())
+
+DTS_TEMPLATE = """\
+/dts-v1/;
+/ {{
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {{ }};
+	aliases {{ }};
+
+	memory {{
+		device_type = "memory";
+		reg = <{membase:08x} {memsize:08x}>;
+        }};
+
+	cpus {{
+		#address-cells = <0>;
+		#size-cells = <0>;
+
+		cpu {{
+			compatible = "oldland,oldland";
+			device_type = "cpu";
+			clock-frequency = <{clockf}>;
+			d-cache-line-size = <{dcache_line_size}>;
+			d-cache-size = <{dcache_size}>;
+			i-cache-line-size = <{icache_line_size}>;
+			i-cache-size = <{icache_size}>;
+                }};
+        }};
+
+	membus {{
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;{peripherals}
+	}};
+}};"""
+
+PERIPH_NODE_TEMPLATE = """\
+\n
+                {name}: {type}@{address:08x} {{
+                        compatible = "keynsham,{type}";
+                        reg = <{address:08x} {size:08x}>;{interrupts}
+                }};"""
+
+def get_mem_range():
+    for p in keynsham_config['peripherals']:
+        if p['name'] == 'sdram':
+            base = int(p['address'], 16)
+            size = int(p['size'], 16)
+            return base, size
+    raise Exception('No SDRAM in configuration')
+
+def get_cache_sizes(cachename):
+    return (keynsham_config['cpu'][cachename]['line_size'],
+            keynsham_config['cpu'][cachename]['size'])
+
+def gen_peripherals():
+    nodes = ''
+
+    for p in keynsham_config['peripherals']:
+        name = p['name']
+        ptype = p['name']
+        address = int(p['address'], 16)
+        size = int(p['size'], 16)
+
+        interrupts = ''
+        if 'interrupts' in p:
+            interrupts += '\n\t\t\tinterrupt-parent = <&irq>;'
+            irqlist = ' '.join(str(i) for i in p['interrupts'])
+            interrupts += '\n\t\t\tinterrupts = <{0}>;'.format(irqlist)
+
+        nodes += PERIPH_NODE_TEMPLATE.format(name = name,
+                                             type = ptype,
+                                             address = address,
+                                             size = size,
+                                             interrupts = interrupts)
+
+    return nodes
+
+mem_start, mem_size = get_mem_range()
+dcache_line_size, dcache_size = get_cache_sizes('dcache')
+icache_line_size, icache_size = get_cache_sizes('icache')
+
+print DTS_TEMPLATE.format(membase = mem_start,
+                          memsize = mem_size,
+                          clockf = int(keynsham_config['cpu']['clock_speed']),
+                          dcache_line_size = dcache_line_size,
+                          dcache_size = dcache_size,
+                          icache_line_size = icache_line_size,
+                          icache_size = icache_size,
+                          peripherals = gen_peripherals())

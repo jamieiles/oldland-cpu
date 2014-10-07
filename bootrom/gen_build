@@ -17,4 +17,8 @@ cpu_version:
 date:
 	.asciz	"${DATE}"
 	.balign	4
+.globl fdt
+fdt:
+	.incbin "keynsham.dtb"
+        .balign 4
 EOF

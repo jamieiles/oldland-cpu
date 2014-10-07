@@ -44,13 +44,14 @@
             name: irq,
             address: "0x80002000",
             size: "0x00001000",
-            regmap: irq_ctrl
+            regmap: irq_ctrl,
         },
         {
             name: timer,
             address: "0x80003000",
             size: "0x00001000",
-            regmap: timer
+            regmap: timer,
+            interrupts: [0, 1, 2, 3]
         },
         {
             name: spimaster,
