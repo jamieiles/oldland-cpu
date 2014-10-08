@@ -126,6 +126,12 @@ reg [CACHE_INDEX_BITS - 1:0]	valid_index = {CACHE_INDEX_BITS{1'b0}};
 reg				data_ram_wr_en = 1'b0;
 reg				tag_wr_en = 1'b0;
 
+wire [CACHE_INDEX_BITS - 1:0]	dirty_read_index = dbg_flush ? c_index : index;
+wire [CACHE_INDEX_BITS - 1:0]	dirty_write_index = latched_index;
+wire				dirty;
+reg				dirty_wr_val = 1'b0;
+reg				dirty_wr_en = 1'b0;
+
 reg [6:0]			state = STATE_IDLE;
 reg [6:0]			next_state = STATE_IDLE;
 reg [3:0]			data_bytesel = 4'b0000;
@@ -147,6 +153,15 @@ block_ram		#(.data_bits(1),
 				  .wr_en(valid_mem_wr_en | dbg_inval | rst),
 				  .write_addr(dbg_inval ? c_index : valid_index),
 				  .write_data(valid_mem_wr_data));
+
+block_ram		#(.data_bits(1),
+			  .nr_entries(NR_CACHE_LINES))
+			dirty_ram(.clk(clk),
+				  .read_addr(dirty_read_index),
+				  .read_data(dirty),
+				  .wr_en(dirty_wr_en),
+				  .write_addr(dirty_write_index),
+				  .write_data(dirty_wr_val));
 
 wire [CACHE_OFFSET_BITS - 1:0]	data_write_offset = latched_wr_en ?
 					latched_offset : words_done;
@@ -199,13 +214,13 @@ always @(*) begin
 			next_state = STATE_FILL;
 	end
 	STATE_FLUSH: begin
-		if (m_error || line_complete || !valid)
+		if (m_error || line_complete || !valid || ~dirty)
 			next_state = STATE_IDLE;
 		else
 			next_state = STATE_FLUSH;
 	end
 	STATE_EVICT: begin
-		if (m_error || line_complete)
+		if (m_error || line_complete || ~dirty)
 			next_state = STATE_FILL;
 		else
 			next_state = STATE_EVICT;
@@ -229,6 +244,14 @@ begin
 end
 endtask
 
+task set_dirty;
+	input val;
+begin
+	dirty_wr_val = val;
+	dirty_wr_en = 1'b1;
+end
+endtask
+
 always @(*) begin
 	tag_wr_en = 1'b0;
 	valid_mem_wr_en = 1'b0;
@@ -240,6 +263,8 @@ always @(*) begin
 	cm_access = 1'b0;
 	cm_wr_val = 32'b0;
 	valid_index = {CACHE_INDEX_BITS{1'b0}};
+	dirty_wr_en = 1'b0;
+	dirty_wr_val = 1'b0;
 
 	data_bytesel = 4'b1111;
 	data_ram_read_addr = {30 - CACHE_TAG_BITS{1'b0}};
@@ -262,10 +287,15 @@ always @(*) begin
 		else
 			/* Pipelined access. */
 			data_ram_read_addr = {index, offset};
+
+		if (latched_wr_en && hit)
+			set_dirty(1'b1);
+
+		valid_index = c_inval | dbg_inval | dbg_flush | rst ? c_index : index;
+
 		data_ram_wr_en = latched_access && latched_wr_en && hit;
 		data_bytesel = c_bytesel;
 		cm_addr = latched_addr;
-
 	end
 	STATE_FILL: begin
 		data_ram_read_addr = {latched_index, latched_offset};
@@ -280,14 +310,19 @@ always @(*) begin
 		tag_wr_en = 1'b1;
 		valid_mem_wr_en = line_complete;
 		valid_index = latched_index;
+
+		if (line_complete)
+			set_dirty(1'b0);
 	end
 	STATE_FLUSH, STATE_EVICT: begin
 		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
 				      words_done + 1'b1};
 		valid_index = dbg_flush ? c_index : latched_index;
-		if (valid)
+		if (valid && dirty)
 			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
 					words_done + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}});
+		if (line_complete)
+			set_dirty(1'b0);
 	end
 	STATE_BYPASS, STATE_WRITE_MISS: begin
 		cm_addr = latched_addr;
