@@ -162,7 +162,8 @@ keynsham_bootrom #(.bus_address(`BOOTROM_ADDRESS),
 keynsham_sdram	#(.bus_address(`SDRAM_ADDRESS),
 		  .bus_size(`SDRAM_SIZE),
 		  .ctrl_bus_address(`SDRAM_CTRL_ADDRESS),
-		  .ctrl_bus_size(`SDRAM_CTRL_SIZE))
+		  .ctrl_bus_size(`SDRAM_CTRL_SIZE),
+		  .clkf(`CPU_CLOCK_SPEED))
 		sdram(.clk(clk),
 		      .ctrl_cs(d_sdram_ctrl_cs),
 		      .d_access(d_access),

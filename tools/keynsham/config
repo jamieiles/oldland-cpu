@@ -102,7 +102,7 @@ def generate_config(writer):
     writer.out('DCACHE_LINE_SIZE', cpu['dcache']['line_size'])
     writer.out_int('CPUID_MANUFACTURER', cpu['manufacturer'], width = 16)
     writer.out_int('CPUID_MODEL', cpu['model'], width = 16)
-    writer.out('CPU_CLOCK_SPEED', 50000000)
+    writer.out('CPU_CLOCK_SPEED', cpu['clock_speed'])
 
     for p in keynsham_config['peripherals']:
         periph_writer = type(writer)(p['name'] + "_defines")

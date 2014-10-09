@@ -34,6 +34,7 @@ module keynsham_sdram(input wire		clk,
 		      inout [15:0]		s_data,
 		      output wire [1:0]		s_banksel);
 
+parameter	clkf = 50000000;
 parameter	bus_address = 32'h0;
 parameter	bus_size = 32'h0;
 parameter	ctrl_bus_address = 32'h0;
@@ -92,7 +93,8 @@ bridge_32_16		br(.clk(clk),
 			   .b_bytesel(bridge_bytesel),
 			   .b_compl(bridge_compl));
 
-`CONFIG_CONTROLLER	sdram(.clk(clk),
+`CONFIG_CONTROLLER	#(.clkf(clkf))
+			sdram(.clk(clk),
 			      .h_addr(bridge_addr),
 			      .h_wr_en(bridge_wr_en),
 			      .h_bytesel(bridge_bytesel),
