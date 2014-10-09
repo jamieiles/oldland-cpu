@@ -1,6 +1,8 @@
 module toplevel(input wire clk,
+		/* UART */
 		input wire uart_rx,
 		output wire uart_tx,
+		/* SDRAM */
 		output wire s_ras_n,
 		output wire s_cas_n,
 		output wire s_wr_en,
@@ -11,7 +13,13 @@ module toplevel(input wire clk,
 		inout [15:0] s_data,
 		output wire [1:0] s_banksel,
 		output wire sdr_clk,
-		output reg running);
+		/* GPIO */
+		output reg running,
+		/* SPI */
+		output wire [0:0] spi_ncs,
+		output wire spi_clk,
+		output wire spi_mosi,
+		input wire spi_miso);
 
 wire		sys_clk;
 wire		dbg_clk;
@@ -40,7 +48,8 @@ vjtag_debug	debug(.dbg_clk(dbg_clk),
 		      .dbg_req(dbg_req),
 		      .dbg_ack(dbg_ack));
 
-keynsham_soc	soc(.clk(sys_clk),
+keynsham_soc	#(.spi_num_cs(1))
+		soc(.clk(sys_clk),
 		    .running(cpu_running),
 		    .uart_rx(uart_rx),
 		    .uart_tx(uart_tx),
@@ -60,10 +69,10 @@ keynsham_soc	soc(.clk(sys_clk),
 		    .dbg_wr_en(dbg_wr_en),
 		    .dbg_req(dbg_req),
 		    .dbg_ack(dbg_ack),
-		    .miso(1'b0),
-		    .mosi(),
-		    .sclk(),
-                    .spi_ncs());
+		    .miso(spi_miso),
+		    .mosi(spi_mosi),
+		    .sclk(spi_clk),
+                    .spi_ncs(spi_ncs));
 
 /*
  * Make the effects of running a little more visible - if we run for at least

@@ -40,3 +40,5 @@
 { "" "" "" "Synthesized away the following node(s):" {  } {  } 0 14284 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "1 hierarchies have connectivity warnings - see the Connectivity Checks report folder" {  } {  } 0 12241 "" 0 0 "Quartus II" 0 -1 0 ""}
 { "" "" "" "Output pins are stuck at VCC or GND" {  } {  } 0 13024 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin spi_miso uses I/O standard 3.3-V LVCMOS at B12" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "19 pins must meet Altera requirements for 3.3-, 3.0-, and 2.5-V interfaces. For more information, refer to AN 447: Interfacing Cyclone IV E Devices with 3.3/3.0/2.5-V LVTTL/LVCMOS I/O Systems." {  } {  } 0 169177 "" 0 0 "Quartus II" 0 -1 0 ""}

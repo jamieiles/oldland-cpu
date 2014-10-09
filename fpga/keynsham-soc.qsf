@@ -192,4 +192,13 @@ set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_bytesel
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_addr
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_data
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_banksel
+set_location_assignment PIN_D12 -to spi_mosi
+set_location_assignment PIN_B12 -to spi_miso
+set_location_assignment PIN_A12 -to spi_ncs[0]
+set_location_assignment PIN_D11 -to spi_clk
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_mosi
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_ncs*
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_clk
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to spi_miso
+set_global_assignment -name CDF_FILE de0nano.cdf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
