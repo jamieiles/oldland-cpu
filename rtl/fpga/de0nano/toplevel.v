@@ -70,7 +70,7 @@ keynsham_soc	soc(.clk(sys_clk),
  * on cycle in 2^20 cycles then trigger the LED for 2^20 cycles.  This means
  * that there is some visible feedback for a single step and short run periods.
  */
-always @(posedge clk) begin
+always @(posedge sys_clk) begin
 	if (cpu_running)
 		have_run <= 1'b1;
 
