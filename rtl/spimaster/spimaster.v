@@ -103,6 +103,7 @@ always @(posedge clk) begin
 	case (state)
 	STATE_IDLE: begin
 		sclk <= 1'b0;
+		clk_counter <= divider;
 	end
 	STATE_XFER: begin
 		clk_counter <= clk_counter - 1'b1;
