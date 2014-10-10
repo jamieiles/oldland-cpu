@@ -53,7 +53,7 @@ reg [2:0]	next_state = STATE_IDLE;
 initial begin
 	sclk = 1'b0;
 	rx_data = 8'b0;
-	mosi = 1'b0;
+	mosi = 1'b1;
 	xfer_complete = 1'b0;
 end
 
@@ -80,7 +80,7 @@ always @(posedge clk) begin
 
 	case (state)
 	STATE_IDLE: begin
-		mosi <= xfer_start ? tx_data[7] : 1'b0;
+		mosi <= xfer_start ? tx_data[7] : 1'b1;
 		xfer_bit <= 4'b0;
 	end
 	STATE_XFER: begin
@@ -93,7 +93,7 @@ always @(posedge clk) begin
 	end
 	STATE_COMPLETE: begin
 		xfer_complete <= 1'b1;
-		mosi <= 1'b0;
+		mosi <= 1'b1;
 	end
 	default: ;
 	endcase
