@@ -4,7 +4,7 @@ project(OldlandSimulator)
 find_package(Threads)
 
 set(CMAKE_C_FLAGS "-ggdb3 -Wall -Werror -O2")
-set(CMAKE_C_FLAGS "-DROM_FILE=\\\"${CMAKE_INSTALL_PREFIX}/lib/sim.bin\\\" ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS "-DROM_FILE=\\\"${CMAKE_INSTALL_PREFIX}/lib/bootrom.bin\\\" ${CMAKE_C_FLAGS}")
 set(CMAKE_C_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/../devicemodels ${CMAKE_C_FLAGS}")
 set(CMAKE_C_FLAGS "-include ${CMAKE_CURRENT_BINARY_DIR}/../config/config.h ${CMAKE_C_FLAGS}")
 set(CMAKE_C_FLAGS "-I${CMAKE_CURRENT_BINARY_DIR}/ ${CMAKE_C_FLAGS}")
