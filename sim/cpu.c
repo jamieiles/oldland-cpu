@@ -415,22 +415,22 @@ static bool branch_condition_met(const struct cpu *c, enum branch_condition cond
 		return c->flagsbf.z;
 	case BRANCH_CC_GT:
 		return !c->flagsbf.c && !c->flagsbf.z;
-	case BRANCH_CC_GTE:
-		return !c->flagsbf.c;
-	case BRANCH_CC_GTS:
-		return !c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o);
-	case BRANCH_CC_GTES:
-		return c->flagsbf.n == c->flagsbf.o;
 	case BRANCH_CC_LT:
 		return c->flagsbf.c;
-	case BRANCH_CC_LTE:
-		return c->flagsbf.c || c->flagsbf.z;
+	case BRANCH_CC_GTS:
+		return !c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o);
 	case BRANCH_CC_LTS:
 		return c->flagsbf.n != c->flagsbf.o;
-	case BRANCH_CC_LTES:
-		return (c->flagsbf.n != c->flagsbf.o) || c->flagsbf.z;
 	case BRANCH_CC_B:
 		return true;
+	case BRANCH_CC_GTE:
+		return !c->flagsbf.c;
+	case BRANCH_CC_GTES:
+		return c->flagsbf.n == c->flagsbf.o;
+	case BRANCH_CC_LTE:
+		return c->flagsbf.c || c->flagsbf.z;
+	case BRANCH_CC_LTES:
+		return (c->flagsbf.n != c->flagsbf.o) || c->flagsbf.z;
 	default:
 		return false;
 	}
