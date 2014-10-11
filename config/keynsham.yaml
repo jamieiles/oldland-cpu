@@ -21,7 +21,7 @@
         {
             name: bootrom,
             address: "0x10000000",
-            size: "0x0001000"
+            size: "0x0004000"
         },
         {
             name: sdram,

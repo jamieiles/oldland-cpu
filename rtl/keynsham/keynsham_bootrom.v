@@ -32,12 +32,12 @@ cs_gen		#(.address(bus_address), .size(bus_size))
 sim_dp_rom	mem(.clk(clk),
 		    .i_access(i_access),
 		    .i_cs(i_cs),
-		    .i_addr(i_addr[9:0]),
+		    .i_addr(i_addr[11:0]),
 		    .i_data(_i_data),
 		    .i_ack(i_ack),
 		    .d_access(d_access),
 		    .d_cs(d_cs),
-		    .d_addr(d_addr[9:0]),
+		    .d_addr(d_addr[11:0]),
 		    .d_data(_d_data),
 		    .d_bytesel(d_bytesel),
 		    .d_ack(d_ack));
@@ -50,9 +50,9 @@ reg		rom_i_ack = 1'b0;
 assign		i_ack = rom_i_ack;
 
 bootrom		mem(.clock(clk),
-		    .address_a(i_addr[9:0]),
+		    .address_a(i_addr[11:0]),
 		    .q_a(_i_data),
-		    .address_b(d_addr[9:0]),
+		    .address_b(d_addr[11:0]),
 		    .q_b(_d_data));
 
 always @(posedge clk)
