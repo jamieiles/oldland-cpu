@@ -204,7 +204,7 @@ int load_elf(struct target *target, const char *path,
 			continue;
 
 		ret = load_segment(target, (uint32_t)phdr->p_vaddr,
-				   elf.elf + phdr->p_offset, phdr->p_memsz);
+				   elf.elf + phdr->p_offset, phdr->p_filesz);
 		if (ret) {
 			warnx("failed to load segment to %08x",
 			      (uint32_t)phdr->p_vaddr);
