@@ -173,7 +173,7 @@ always @(*) begin
 	`BRANCH_CC_LTS:  branch_condition_met = n_flag != o_flag;
 	`BRANCH_CC_GTE:  branch_condition_met = !c_flag;
 	`BRANCH_CC_GTES: branch_condition_met = n_flag == o_flag;
-	`BRANCH_CC_LTE:  branch_condition_met = n_flag != o_flag;
+	`BRANCH_CC_LTE:  branch_condition_met = c_flag || z_flag;
 	`BRANCH_CC_LTES: branch_condition_met = (n_flag != o_flag) || z_flag;
 	default: branch_condition_met = 1'b0;
 	endcase
