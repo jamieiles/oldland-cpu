@@ -21,10 +21,6 @@ def find_test_files():
 TEST_PATH = '%TEST_PATH%'
 SIMULATORS = 'oldland-sim oldland-verilatorsim oldland-rtlsim'.split()
 TEST_FILES = find_test_files()
-SIM_ARGS = {
-    'oldland-rtlsim': ['--bootrom', 'sim.hex'],
-    'oldland-verilatorsim': ['--bootrom', 'sim.hex']
-}
 FIFO_PATH = '/tmp/oldland-test.{0}'.format(os.getpid())
 
 def sim_runner(kargs):
@@ -46,8 +42,6 @@ def launch_sim(simulator):
     os.mkfifo(FIFO_PATH)
 
     simargs = [simulator]
-    if simulator in SIM_ARGS:
-        simargs += SIM_ARGS[simulator]
     runner = Process(target = sim_runner, args = (simargs,))
     runner.start()
 
