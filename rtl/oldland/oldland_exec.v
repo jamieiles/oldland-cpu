@@ -136,6 +136,7 @@ always @(*) begin
 	`ALU_OPC_COPYB: alu_q = op2;
 	`ALU_OPC_CMP: begin
 		{alu_c, alu_q} = op1 - op2;
+		alu_c = ~alu_c;
 		alu_o = op1[31] ^ op2[31] && alu_q[31] == op2[31];
 		alu_n = alu_q[31];
 	end
@@ -166,14 +167,14 @@ always @(*) begin
 	case (branch_condition)
 	`BRANCH_CC_NE:   branch_condition_met = !z_flag;
 	`BRANCH_CC_EQ:   branch_condition_met = z_flag;
-	`BRANCH_CC_GT:   branch_condition_met = !c_flag && !z_flag;
-	`BRANCH_CC_LT:   branch_condition_met = c_flag;
+	`BRANCH_CC_GT:   branch_condition_met = c_flag && !z_flag;
+	`BRANCH_CC_LT:   branch_condition_met = !c_flag;
 	`BRANCH_CC_GTS:  branch_condition_met = !z_flag && (n_flag == o_flag);
 	`BRANCH_CC_LTS:  branch_condition_met = n_flag != o_flag;
 	`BRANCH_CC_B:    branch_condition_met = 1'b1;
-	`BRANCH_CC_GTE:  branch_condition_met = !c_flag;
+	`BRANCH_CC_GTE:  branch_condition_met = c_flag;
 	`BRANCH_CC_GTES: branch_condition_met = n_flag == o_flag;
-	`BRANCH_CC_LTE:  branch_condition_met = c_flag || z_flag;
+	`BRANCH_CC_LTE:  branch_condition_met = !c_flag || z_flag;
 	`BRANCH_CC_LTES: branch_condition_met = (n_flag != o_flag) || z_flag;
 	default: branch_condition_met = 1'b0;
 	endcase

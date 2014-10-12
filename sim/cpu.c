@@ -414,9 +414,9 @@ static bool branch_condition_met(const struct cpu *c, enum branch_condition cond
 	case BRANCH_CC_EQ:
 		return c->flagsbf.z;
 	case BRANCH_CC_GT:
-		return !c->flagsbf.c && !c->flagsbf.z;
+		return c->flagsbf.c && !c->flagsbf.z;
 	case BRANCH_CC_LT:
-		return c->flagsbf.c;
+		return !c->flagsbf.c;
 	case BRANCH_CC_GTS:
 		return !c->flagsbf.z && (c->flagsbf.n == c->flagsbf.o);
 	case BRANCH_CC_LTS:
@@ -424,11 +424,11 @@ static bool branch_condition_met(const struct cpu *c, enum branch_condition cond
 	case BRANCH_CC_B:
 		return true;
 	case BRANCH_CC_GTE:
-		return !c->flagsbf.c;
+		return c->flagsbf.c;
 	case BRANCH_CC_GTES:
 		return c->flagsbf.n == c->flagsbf.o;
 	case BRANCH_CC_LTE:
-		return c->flagsbf.c || c->flagsbf.z;
+		return !c->flagsbf.c || c->flagsbf.z;
 	case BRANCH_CC_LTES:
 		return (c->flagsbf.n != c->flagsbf.o) || c->flagsbf.z;
 	default:
@@ -509,7 +509,7 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 	case ALU_OPCODE_CMP:
 		v = op1 - op2;
 		alu->alu_q = v;
-		alu->alu_c = (v >> 32) & 0x1;
+		alu->alu_c = !((v >> 32) & 0x1);
 		alu->alu_o = (op1 & (1 << 31)) ^ (op2 & (1 << 31)) &&
 			(alu->alu_q & (1 << 31)) == (op2 & (1 << 31));
 		alu->alu_n = !!(alu->alu_q & (1 << 31));
