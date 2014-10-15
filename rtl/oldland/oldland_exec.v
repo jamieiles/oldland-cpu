@@ -141,7 +141,7 @@ always @(*) begin
 		alu_n = alu_q[31];
 	end
 	`ALU_OPC_MOVHI: alu_q = op1 | {16'b0, op2[15:0]};
-	`ALU_OPC_ASR:   alu_q = op1 >>> op2;
+	`ALU_OPC_ASR:   alu_q = $signed(op1) >>> op2[4:0];
 	`ALU_OPC_COPYA: alu_q = op1;
 	`ALU_OPC_GCR:	alu_q = read_cr_val;
         `ALU_OPC_SWI:   alu_q = {vector_addr, 6'h8};

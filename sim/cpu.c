@@ -519,7 +519,7 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 		break;
 	case ALU_OPCODE_ASR:
 		alu->alu_q = ((int64_t)op1 << 32) >> 32;
-		alu->alu_q >>= op2;
+		alu->alu_q = (int32_t)alu->alu_q >> op2;
 		break;
 	case ALU_OPCODE_GCR:
 		c->control_regs[CR_PSR] = (

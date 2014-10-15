@@ -18,6 +18,12 @@ _start:
 	cmp	$r2, 1
 	bne	failure
 
+	mov	$r0, 1
+	lsl	$r0, $r0, 31
+	asr	$r0, $r0, 31
+	cmp	$r0, -1
+	bne	failure
+
 	SUCCESS
 
 failure:
