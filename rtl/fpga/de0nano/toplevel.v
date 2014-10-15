@@ -15,6 +15,7 @@ module toplevel(input wire clk,
 		output wire sdr_clk,
 		/* GPIO */
 		output reg running,
+		output wire spi_cs0_active,
 		/* SPI */
 		output wire [0:0] spi_ncs,
 		output wire spi_clk,
@@ -33,6 +34,8 @@ wire		dbg_ack;
 wire		cpu_running;
 reg		have_run = 1'b0;
 reg [19:0]	run_counter = 20'hfffff;
+
+assign		spi_cs0_active = ~spi_ncs[0];
 
 initial		running = 1'b1;
 
