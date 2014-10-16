@@ -97,7 +97,7 @@ reg [3:0]	debug_cmd = 4'b0;
 reg [31:0]	debug_addr = 32'b0;
 reg [31:0]	debug_data = 32'b0;
 
-reg [7:0]	reset_count = 8'hff;
+reg [11:0]	reset_count = 12'hfff;
 
 wire		req_sync;	/*
 				 * Synchronized from debug to CPU clock.
@@ -357,7 +357,7 @@ always @(posedge clk) begin
 		debug_data <= ctl_dout;
 	end
 	STATE_EXECUTE: begin
-		reset_count <= 8'hff;
+		reset_count <= 12'hfff;
 
 		case (debug_cmd)
 		CMD_HALT: do_run <= 1'b0;
@@ -370,7 +370,7 @@ always @(posedge clk) begin
 	end
 	STATE_RESET: begin
 		if (|reset_count) begin
-			reset_count <= reset_count - 8'b1;
+			reset_count <= reset_count - 12'b1;
 			dbg_icache_idx <= dbg_icache_idx + 1'b1;
 			dbg_dcache_idx <= dbg_dcache_idx + 1'b1;
 		end else begin
