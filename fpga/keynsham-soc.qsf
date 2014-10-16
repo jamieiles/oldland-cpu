@@ -138,10 +138,17 @@ set_location_assignment PIN_M6 -to s_banksel[1]
 set_location_assignment PIN_R4 -to sdr_clk
 set_location_assignment PIN_L3 -to running
 set_location_assignment PIN_A15 -to spi_cs0_active
-set_location_assignment PIN_D12 -to spi_mosi
-set_location_assignment PIN_B12 -to spi_miso
+set_location_assignment PIN_A13 -to spi_cs1_active
+set_location_assignment PIN_D12 -to spi_mosi1
+set_location_assignment PIN_B12 -to spi_miso1
 set_location_assignment PIN_A12 -to spi_ncs[0]
-set_location_assignment PIN_D11 -to spi_clk
+set_location_assignment PIN_D11 -to spi_clk1
+set_location_assignment PIN_J13 -to spi_ncs[1]
+set_location_assignment PIN_J14 -to ethernet_reset_n
+set_location_assignment PIN_J16 -to spi_miso2
+set_location_assignment PIN_K15 -to spi_clk2
+set_location_assignment PIN_M10 -to spi_mosi2
+
 
 # Classic Timing Assignments
 # ==========================
@@ -207,8 +214,8 @@ set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -
 
 	# EDA Netlist Writer Assignments
 	# ==============================
-	set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
-	set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 
 # end EDA_TOOL_SETTINGS(eda_simulation)
 # -------------------------------------
@@ -218,41 +225,48 @@ set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -
 
 	# Pin & Location Assignments
 	# ==========================
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_ras_n
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_cas_n
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_wr_en
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_bytesel
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_addr
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_data
-	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_banksel
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_ras_n
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_cas_n
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_wr_en
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_bytesel
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_addr
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_data
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to s_banksel
 
 	# Fitter Assignments
 	# ==================
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to uart_tx
-	set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to uart_rx
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to s_*
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to sdr_clk
-	set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[0]"
-	set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[1]"
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to running
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_cs0_active
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_mosi
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_ncs*
-	set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_clk
-	set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to spi_miso
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to uart_tx
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to uart_rx
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to s_*
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to sdr_clk
+set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[0]"
+set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to "sys_pll:pll|altpll:altpll_component|sys_pll_altpll:auto_generated|wire_pll1_clk[1]"
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to running
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_cs0_active
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_mosi1
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_ncs*
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_clk1
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_cs1_active
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_mosi2
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to spi_clk2
+set_instance_assignment -name CURRENT_STRENGTH_NEW 2MA -to ethernet_reset_n
 
 	# start DESIGN_PARTITION(Top)
 	# ---------------------------
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-		set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-		set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 	# end DESIGN_PARTITION(Top)
 	# -------------------------
 
 # end ENTITY(toplevel)
 # --------------------
+
+
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name CDF_FILE Chain1.cdf

@@ -25,22 +25,30 @@ set_output_delay -clock [get_clocks {pll|altpll_component|auto_generated|pll1|cl
 set_false_path -from [get_ports uart_rx]
 set_false_path -to [get_ports uart_tx]
 
-# running status LED
+# Status LEDs
 set_false_path -to [get_ports running]
+set_false_path -to [get_ports spi_cs0_active]
+set_false_path -to [get_ports spi_cs1_active]
 
 # SPI bus
 
 set spi_delay_max 1
 set spi_delay_min 1
 # MOSI
-set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_mosi}]
-set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_mosi}]
+set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_mosi1}]
+set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_mosi1}]
+set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_mosi2}]
+set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_mosi2}]
 # MISO
-set_input_delay -add_delay -clock_fall -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_miso}]
-set_input_delay -add_delay -clock_fall -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_miso}]
+set_input_delay -add_delay -clock_fall -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_miso1}]
+set_input_delay -add_delay -clock_fall -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_miso1}]
+set_input_delay -add_delay -clock_fall -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_miso2}]
+set_input_delay -add_delay -clock_fall -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_miso2}]
 # CLK
-set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_clk}]
-set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_clk}]
+set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_clk1}]
+set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_clk1}]
+set_output_delay -add_delay -clock {spi_clk} -max [expr $spi_delay_max] [get_ports {spi_clk2}]
+set_output_delay -add_delay -clock {spi_clk} -min [expr $spi_delay_min] [get_ports {spi_clk2}]
 
 set_multicycle_path -setup -start -from [get_clocks {pll|altpll_component|auto_generated|pll1|clk[0]}] -to [get_clocks {spi_clk}] 1
 set_multicycle_path -hold -start -from [get_clocks {pll|altpll_component|auto_generated|pll1|clk[0]}] -to [get_clocks {spi_clk}] 1
@@ -48,3 +56,5 @@ set_multicycle_path -setup -end -from [get_clocks {spi_clk}] -to [get_clocks {pl
 set_multicycle_path -hold -end -from [get_clocks {spi_clk}] -to [get_clocks {pll|altpll_component|auto_generated|pll1|clk[0]}] 1
 
 set_false_path -to [get_ports {spi_ncs*}]
+
+set_false_path -to [get_ports {ethernet_reset_n}]

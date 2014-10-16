@@ -16,11 +16,19 @@ module toplevel(input wire clk,
 		/* GPIO */
 		output reg running,
 		output wire spi_cs0_active,
+		output wire spi_cs1_active,
 		/* SPI */
-		output wire [0:0] spi_ncs,
-		output wire spi_clk,
-		output wire spi_mosi,
-		input wire spi_miso);
+		output wire [1:0] spi_ncs,
+		/* SPI port 1. */
+		output wire spi_clk1,
+		output wire spi_mosi1,
+		input wire spi_miso1,
+		/* SPI port 2. */
+		output wire spi_clk2,
+		output wire spi_mosi2,
+		input wire spi_miso2,
+		/* Ethernet control */
+		output reg ethernet_reset_n);
 
 wire		sys_clk;
 wire		dbg_clk;
@@ -35,9 +43,22 @@ wire		cpu_running;
 reg		have_run = 1'b0;
 reg [19:0]	run_counter = 20'hfffff;
 
-assign		spi_cs0_active = ~spi_ncs[0];
+wire		spi_clk;
+wire		spi_mosi;
+wire		spi_miso = spi_miso1 | spi_miso2;
 
-initial		running = 1'b1;
+assign		spi_mosi1 = spi_mosi;
+assign		spi_clk1 = spi_clk;
+assign		spi_mosi2 = spi_mosi;
+assign		spi_clk2 = spi_mosi;
+
+assign		spi_cs0_active = ~spi_ncs[0];
+assign		spi_cs1_active = ~spi_ncs[1];
+
+initial		begin
+	running = 1'b1;
+	ethernet_reset_n = 1'b1;
+end
 
 sys_pll		pll(.inclk0(clk),
 		    .c0(sys_clk),
@@ -51,7 +72,7 @@ vjtag_debug	debug(.dbg_clk(dbg_clk),
 		      .dbg_req(dbg_req),
 		      .dbg_ack(dbg_ack));
 
-keynsham_soc	#(.spi_num_cs(1))
+keynsham_soc	#(.spi_num_cs(2))
 		soc(.clk(sys_clk),
 		    .running(cpu_running),
 		    .uart_rx(uart_rx),
