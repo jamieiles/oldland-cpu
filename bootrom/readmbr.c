@@ -3,9 +3,11 @@
 #include "string.h"
 
 #define SD_CLK_DIVIDER	0x1ff
-#define SD_FAST_DIVIDER	0x0f0
+#define SD_FAST_DIVIDER	0x002
 #define SD_NCR		8
 #define SD_CS		1
+/* Maximum number of high bytes to read before a data start token. */
+#define MAX_DATA_START_OFFS 512
 
 #define SPI_CTRL_REG		0x0
 #define SPI_CS_ENABLE_REG	0x1
@@ -340,7 +342,7 @@ static int read_sector(unsigned long address, unsigned char *dst)
 			 (address >> 0)  & 0xff
 		},
 		/* r1, start token, data, CRC16 */
-		.rx_datalen = 1 + 1 + BLOCK_SIZE + 2,
+		.rx_datalen = 1 + 1 + BLOCK_SIZE + 2 + MAX_DATA_START_OFFS,
 	};
 	struct r1_response r1;
 	const volatile unsigned char *r1ptr, *data_start;
