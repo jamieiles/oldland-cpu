@@ -171,7 +171,8 @@ static int send_reset(void)
 	struct r1_response r1;
 
 	spi_do_command(&cmd);
-	find_r1_response(&r1);
+	if (!find_r1_response(&r1))
+		return -1;
 
 	return r1.v & R1_ERROR_MASK;
 }
@@ -187,7 +188,8 @@ static int send_if_cond(void)
 	struct r1_response r1;
 
 	spi_do_command(&cmd);
-	find_r1_response(&r1);
+	if (!find_r1_response(&r1))
+		return -1;
 
 	return r1.v & R1_ERROR_MASK;
 }
@@ -201,7 +203,8 @@ static int send_read_ocr(void)
 	struct r1_response r1;
 
 	spi_do_command(&cmd);
-	find_r1_response(&r1);
+	if (!find_r1_response(&r1))
+		return -1;
 
 	return r1.v & R1_ERROR_MASK;
 }
@@ -216,14 +219,15 @@ static int send_acmd(void)
 	struct r1_response r1;
 
 	spi_do_command(&cmd);
-	find_r1_response(&r1);
+	if (!find_r1_response(&r1))
+		return -1;
 
 	return r1.v & R1_ERROR_MASK;
 }
 
 static int sd_wait_ready(void)
 {
-	struct r1_response r1;
+	struct r1_response r1 = {};
 
 	do {
 		struct spi_cmd cmd = {
@@ -237,7 +241,8 @@ static int sd_wait_ready(void)
 			return rc;
 
 		spi_do_command(&cmd);
-		find_r1_response(&r1);
+		if (!find_r1_response(&r1))
+			return -1;
 
 		if (r1.v & R1_ERROR_MASK)
 			return r1.v & R1_ERROR_MASK;
@@ -257,7 +262,8 @@ static int sd_set_blocklen(void)
 	struct r1_response r1;
 
 	spi_do_command(&cmd);
-	find_r1_response(&r1);
+	if (!find_r1_response(&r1))
+		return -1;
 
 	return r1.v & R1_ERROR_MASK;
 }
@@ -353,10 +359,14 @@ static int read_sector(unsigned long address, unsigned char *dst)
 
 	spi_do_command(&cmd);
 	r1ptr = find_r1_response(&r1);
-	if (!r1ptr)
+	if (!r1ptr) {
 		putstr("failed to find r1 response\n");
-	if (r1.v & R1_ERROR_MASK)
+		return -1;
+	}
+	if (r1.v & R1_ERROR_MASK) {
 		putstr("read sector failed\n");
+		return -1;
+	}
 
 	data_start = find_data_start(r1ptr);
 	copy_block(dst, data_start);
@@ -395,6 +405,7 @@ static int get_boot_partition_address(unsigned long *start,
 	rc = sd_wait_ready();
 	if (rc)
 		putstr("readmbr: warning: failed to wait for SD to become ready\n");
+
 	rc = sd_set_blocklen();
 	if (rc) {
 		putstr("readmbr: failed to set blocklen\n");
@@ -795,11 +806,28 @@ static void dump_root_dir(const struct fat_superblock *sb)
 	}
 }
 
+#define TIMER_RELOAD_100MS ((50000000 / 1000) * 100)
+
+static void wait_100ms(void)
+{
+	volatile unsigned long *timer_base = (volatile unsigned long *)0x80003000;
+	unsigned long count;
+
+	timer_base[1] = TIMER_RELOAD_100MS;
+	timer_base[2] = 0x02;
+
+	do {
+		count = timer_base[0];
+	} while (count != 0);
+}
+
 void boot_from_sd(void)
 {
 	unsigned long start = 0, size = 0;
 	static unsigned char sector_buf[512];
 	struct fat_superblock sb;
+
+	wait_100ms();
 
 	get_boot_partition_address(&start, &size);
 	if (!start || !size) {
