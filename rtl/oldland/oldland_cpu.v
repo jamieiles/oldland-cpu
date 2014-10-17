@@ -1,6 +1,7 @@
 module oldland_cpu(input wire		clk,
 		   output wire		running,
 		   input wire		irq_req,
+		   input wire		rst_req,
 		   /* Instruction bus. */
 		   output wire		i_access,
 		   output wire [29:0]	i_addr,
@@ -185,6 +186,8 @@ oldland_debug		#(.icache_nr_lines(icache_nr_lines),
 		              .req(dbg_req),
 		              .ack(dbg_ack),
 			      .dbg_en(dbg_en),
+			      /* External reset. */
+			      .rst_req_in(rst_req),
 		              /* Execution control. */
 		              .run(cpu_run),
 		              .stopped(cpu_stopped),

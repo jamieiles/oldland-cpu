@@ -9,6 +9,7 @@
 
 module keynsham_soc(input wire		clk,
 		    output wire		running,
+		    input wire		rst_req,
 		    /* UART I/O signals. */
 		    input wire		uart_rx,
 		    output wire		uart_tx,
@@ -264,6 +265,7 @@ oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		cpu(.clk(clk),
 		    .running(running),
 		    .irq_req(irq_req),
+		    .rst_req(rst_req),
 		    .i_access(i_access),
 		    .i_addr(i_addr),
 		    .i_data(i_data),

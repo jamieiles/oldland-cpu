@@ -1,4 +1,5 @@
 module toplevel(input wire clk,
+		input wire rst_in_n,
 		/* UART */
 		input wire uart_rx,
 		output wire uart_tx,
@@ -47,6 +48,8 @@ wire		spi_clk;
 wire		spi_mosi;
 wire		spi_miso = spi_miso1 | spi_miso2;
 
+reg		rst_req = 1'b0;
+
 assign		spi_mosi1 = spi_mosi;
 assign		spi_clk1 = spi_clk;
 assign		spi_mosi2 = spi_mosi;
@@ -75,6 +78,7 @@ vjtag_debug	debug(.dbg_clk(dbg_clk),
 keynsham_soc	#(.spi_num_cs(2))
 		soc(.clk(sys_clk),
 		    .running(cpu_running),
+		    .rst_req(rst_req),
 		    .uart_rx(uart_rx),
 		    .uart_tx(uart_tx),
 		    .s_ras_n(s_ras_n),
@@ -112,6 +116,13 @@ always @(posedge sys_clk) begin
 		running <= have_run;
 		have_run <= 1'b0;
 	end
+end
+
+always @(posedge sys_clk) begin
+	rst_req <= 1'b0;
+
+	if (!rst_in_n)
+		rst_req <= 1'b1;
 end
 
 endmodule

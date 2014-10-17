@@ -33,6 +33,7 @@ wire		running;
 
 keynsham_soc	#(.spi_num_cs(`NUM_SPI_CS))
 		soc(.clk(clk),
+		    .rst_req(1'b0),
 		    .uart_rx(rx),
 		    .uart_tx(tx),
 		    .s_ras_n(s_ras_n),

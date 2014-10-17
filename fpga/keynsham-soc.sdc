@@ -58,3 +58,6 @@ set_multicycle_path -hold -end -from [get_clocks {spi_clk}] -to [get_clocks {pll
 set_false_path -to [get_ports {spi_ncs*}]
 
 set_false_path -to [get_ports {ethernet_reset_n}]
+
+# Reset request
+set_false_path -from [get_ports {rst_in_n}]

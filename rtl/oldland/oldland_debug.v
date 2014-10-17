@@ -7,6 +7,8 @@ module oldland_debug(input wire		clk,
 		     input wire		req,
 		     output wire	ack,
 		     output reg		dbg_en,
+		     /* External reset request. */
+		     input wire		rst_req_in,
 		     /* Execution control signals. */
 		     output wire	run,
 		     input wire		stopped,
@@ -53,21 +55,24 @@ parameter dcache_nr_lines	= 0;
 localparam icache_idx_bits	= $clog2(icache_nr_lines);
 localparam dcache_idx_bits	= $clog2(dcache_nr_lines);
 
-localparam STATE_IDLE		= 4'b0000;
-localparam STATE_LOAD_CMD	= 4'b0001;
-localparam STATE_LOAD_ADDR	= 4'b0010;
-localparam STATE_LOAD_DATA	= 4'b0011;
-localparam STATE_WAIT_STOPPED	= 4'b0100;
-localparam STATE_STEP		= 4'b0101;
-localparam STATE_COMPL		= 4'b0110;
-localparam STATE_STORE_REG_RVAL	= 4'b0111;
-localparam STATE_WRITE_REG	= 4'b1111;
-localparam STATE_WAIT_RMEM	= 4'b1110;
-localparam STATE_WAIT_WMEM	= 4'b1100;
-localparam STATE_EXECUTE	= 4'b1000;
-localparam STATE_RESET		= 4'b1001;
-localparam STATE_CACHE_FLUSH	= 4'b1011;
-localparam STATE_CACHE_INVAL	= 4'b1101;
+localparam STATE_IDLE		= 18'b000000000000000001;
+localparam STATE_LOAD_CMD	= 18'b000000000000000010;
+localparam STATE_LOAD_ADDR	= 18'b000000000000000100;
+localparam STATE_LOAD_DATA	= 18'b000000000000001000;
+localparam STATE_WAIT_STOPPED	= 18'b000000000000010000;
+localparam STATE_STEP		= 18'b000000000000100000;
+localparam STATE_COMPL		= 18'b000000000001000000;
+localparam STATE_STORE_REG_RVAL	= 18'b000000000010000000;
+localparam STATE_WRITE_REG	= 18'b000000000100000000;
+localparam STATE_WAIT_RMEM	= 18'b000000001000000000;
+localparam STATE_WAIT_WMEM	= 18'b000000010000000000;
+localparam STATE_EXECUTE	= 18'b000000100000000000;
+localparam STATE_RESET		= 18'b000001000000000000;
+localparam STATE_CACHE_FLUSH	= 18'b000010000000000000;
+localparam STATE_CACHE_INVAL	= 18'b000100000000000000;
+localparam STATE_EXT_RESET_STOP = 18'b001000000000000000;
+localparam STATE_EXT_RESET_RESET= 18'b010000000000000000;
+localparam STATE_EXT_RESET_START= 18'b100000000000000000;
 
 localparam CMD_HALT		= 4'h0;
 localparam CMD_RUN		= 4'h1;
@@ -90,8 +95,8 @@ reg [31:0]	ctl_din = 32'b0;
 wire [31:0]	ctl_dout;
 reg		ctl_wr_en = 1'b0;
 
-reg [3:0]	state = STATE_IDLE;
-reg [3:0]	next_state = STATE_IDLE;
+reg [17:0]	state = STATE_IDLE;
+reg [17:0]	next_state = STATE_IDLE;
 
 reg [3:0]	debug_cmd = 4'b0;
 reg [31:0]	debug_addr = 32'b0;
@@ -115,7 +120,7 @@ assign		dbg_pc_wr_val = debug_data;
 assign		dbg_reg_wr_val = debug_data;
 assign		mem_addr = debug_addr;
 assign		mem_wr_val = debug_data;
-assign		dbg_rst = state == STATE_RESET;
+assign		dbg_rst = state == STATE_RESET || state == STATE_EXT_RESET_RESET;
 assign		dbg_cr_sel = debug_addr[2:0];
 assign		dbg_cr_wr_val = debug_data;
 assign		dbg_icache_inval = state == STATE_CACHE_INVAL & ~dbg_icache_complete | dbg_rst;
@@ -193,7 +198,10 @@ always @(*) begin
 
 	case (state)
 	STATE_IDLE: begin
-		next_state = req_sync ? STATE_LOAD_CMD : STATE_IDLE;
+		if (rst_req_in)
+			next_state = STATE_EXT_RESET_STOP;
+		else
+			next_state = req_sync ? STATE_LOAD_CMD : STATE_IDLE;
 		ctl_addr = 2'b00;
 	end
 	STATE_LOAD_CMD: begin
@@ -266,6 +274,13 @@ always @(*) begin
 	STATE_RESET: begin
 		next_state = |reset_count ? STATE_RESET : STATE_COMPL;
 	end
+	STATE_EXT_RESET_RESET: begin
+		next_state = |reset_count ?
+			STATE_EXT_RESET_RESET : STATE_EXT_RESET_START;
+	end
+	STATE_EXT_RESET_START: begin
+		next_state = STATE_IDLE;
+	end
 	STATE_CACHE_FLUSH: begin
 		next_state = dbg_dcache_idx == {dcache_idx_bits{1'b1}} ?
 			STATE_CACHE_INVAL : STATE_CACHE_FLUSH;
@@ -306,6 +321,10 @@ always @(*) begin
 			ctl_wr_en = 1'b1;
 			ctl_din = dbg_pc;
 		end
+	end
+	STATE_EXT_RESET_STOP: begin
+		next_state = stopped ? STATE_EXT_RESET_RESET :
+			STATE_EXT_RESET_STOP;
 	end
 	STATE_STORE_REG_RVAL: begin
 		ctl_addr = 2'b11;
@@ -368,7 +387,11 @@ always @(posedge clk) begin
 		end
 		endcase
 	end
-	STATE_RESET: begin
+	STATE_EXT_RESET_STOP: begin
+		reset_count <= 12'hfff;
+		do_run <= 1'b0;
+	end
+	STATE_RESET, STATE_EXT_RESET_RESET: begin
 		if (|reset_count) begin
 			reset_count <= reset_count - 12'b1;
 			dbg_icache_idx <= dbg_icache_idx + 1'b1;
@@ -380,6 +403,9 @@ always @(posedge clk) begin
 	end
 	STATE_STEP: begin
 		do_run <= 1'b0;
+	end
+	STATE_EXT_RESET_START: begin
+		do_run <= 1'b1;
 	end
 	STATE_CACHE_FLUSH: begin
 		dbg_dcache_idx <= dbg_dcache_complete ? dbg_dcache_idx + 1'b1 :
