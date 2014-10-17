@@ -701,10 +701,6 @@ static unsigned long fat_read_from_cluster(const struct fat_superblock *sb,
 	unsigned long cluster_addr = 0;
 	unsigned long data_sector_base;
 
-#if 0
-	pr_debug("read %u bytes from cluster 0x%u\n", len, cluster);
-#endif
-
 	data_sector_base =
 		(sb->reserved_sectors + sb->nr_fats * sb->sectors_per_fat);
 
@@ -783,7 +779,7 @@ static void load_elf(const void *buf)
 	asm volatile("b		%0" :: "r"(info.ehdr->e_entry));
 }
 
-static void dump_root_dir(const struct fat_superblock *sb)
+static void find_and_exec_boot_elf(const struct fat_superblock *sb)
 {
 	unsigned long offs = fat_root_dir_offs(sb);
 	int err;
@@ -838,7 +834,7 @@ void boot_from_sd(void)
 	read_sector(start * 512, sector_buf);
 	sb.partition_lba = start;
 	fat_decode_boot_sect(sector_buf, &sb);
-	dump_root_dir(&sb);
+	find_and_exec_boot_elf(&sb);
 
 out:
 	putstr("ERROR: boot failed\n");

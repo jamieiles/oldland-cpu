@@ -29,7 +29,7 @@ add_executable(bootrom
 	       kernel.c
 	       uart.c
 	       string.c
-	       readmbr.c)
+	       sdcard.c)
 
 add_custom_command(OUTPUT bootrom.bin
 		   COMMAND oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x4000
