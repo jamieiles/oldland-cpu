@@ -46,14 +46,15 @@ reg [19:0]	run_counter = 20'hfffff;
 
 wire		spi_clk;
 wire		spi_mosi;
-wire		spi_miso = spi_miso1 | spi_miso2;
+wire		spi_miso = !spi_ncs[0] ? spi_miso1 :
+			   !spi_ncs[1] ? spi_miso2 : 1'b1;
 
 reg		rst_req = 1'b0;
 
 assign		spi_mosi1 = spi_mosi;
 assign		spi_clk1 = spi_clk;
 assign		spi_mosi2 = spi_mosi;
-assign		spi_clk2 = spi_mosi;
+assign		spi_clk2 = spi_clk;
 
 assign		spi_cs0_active = ~spi_ncs[0];
 assign		spi_cs1_active = ~spi_ncs[1];
