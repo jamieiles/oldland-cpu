@@ -15,7 +15,7 @@ add_custom_command(OUTPUT oldland-types.h oldland-instructions.c
 		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/instructions.yaml
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_executable(oldland-debug debugger.c loadelf.c regcache.c
-	       oldland-instructions.c breakpoint.c)
+	       oldland-instructions.c breakpoint.c elfmap.c loadsyms.c)
 target_link_libraries(oldland-debug ${LUA_LIBRARIES})
 target_link_libraries(oldland-debug ${READLINE_LIBRARY})
 

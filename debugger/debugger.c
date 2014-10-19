@@ -27,6 +27,7 @@
 #include "breakpoint.h"
 #include "debugger.h"
 #include "protocol.h"
+#include "loadsyms.h"
 
 #define NUM_HISTORY_LINES	1000
 
@@ -635,6 +636,44 @@ static int lua_write_reg(lua_State *L)
 	return 0;
 }
 
+static void set_symbols(lua_State *L, const char *path)
+{
+	struct symtab *symtab = load_symbols(path);
+	unsigned m;
+
+	if (!symtab) {
+		warnx("failed to load symbols for %s", path);
+		return;
+	}
+
+	lua_newtable(L);
+	for (m = 0; m < symtab->nr_syms; ++m) {
+		lua_pushstring(L, symtab->syms[m].name);
+		lua_pushinteger(L, symtab->syms[m].value);
+		lua_settable(L, -3);
+	}
+	lua_setglobal(L, "syms");
+
+	free_symbols(symtab);
+}
+
+static int lua_loadsyms(lua_State *L)
+{
+	const char *path;
+
+	assert_target(L);
+
+	if (lua_gettop(L) != 1) {
+		lua_pushstring(L, "no elf file provided.");
+		lua_error(L);
+	}
+
+	path = lua_tostring(L, 1);
+	set_symbols(L, path);
+
+	return 0;
+}
+
 static void push_testpoint(lua_State *L, const struct testpoint *tp)
 {
 	lua_pushinteger(L, tp->addr);
@@ -670,6 +709,8 @@ static int lua_loadelf(lua_State *L)
 	if (load_elf(target, path, &testpoints, &nr_testpoints))
 		warnx("failed to load device with %s", path);
 	lua_pop(L, 1);
+
+	set_symbols(L, path);
 
 	lua_newtable(L);
 	for (n = 0; n < nr_testpoints; ++n)
@@ -730,6 +771,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "read8", lua_read8 },
 	{ "write8", lua_write8 },
 	{ "loadelf", lua_loadelf },
+	{ "loadsyms", lua_loadsyms },
 	{ "connect", lua_connect },
 	{ "term", lua_term },
 	{ "reset", lua_reset },
