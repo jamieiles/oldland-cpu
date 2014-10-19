@@ -154,3 +154,62 @@ function cpuid()
 	print(string.format("  Size: %uKB", size / 1024))
 	print(string.format("  Line: %u", line_size))
 end
+
+function pairsByKeys (t, f)
+	local a = {}
+	for n in pairs(t) do
+		table.insert(a, n)
+	end
+	table.sort(a, f)
+	local i = 0
+	local iter = function()
+		i = i + 1
+		if a[i] == nil then
+			return nil
+		else
+			return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
+
+function lookup_sym_from_address(search_address)
+	local inverse_symtab = {}
+
+	for k, v in pairs(syms) do
+		inverse_symtab[v] = k
+	end
+
+	local sym = "??"
+
+	for addr, name in pairsByKeys(inverse_symtab) do
+		if addr > search_address then
+			break
+		end
+		sym = name
+	end
+
+	return sym
+end
+
+function print_bt_sym(index, name, value)
+	print(string.format("  #%d %s <%08x>", index, name, value))
+end
+
+function backtrace(limit)
+	local fp = target.read_reg(14)
+
+	if limit == nil then
+		limit = 64
+	end
+
+	print_bt_sym(0, lookup_sym_from_address(target.read_reg(16)), target.read_reg(16))
+	local i = 0
+	while bit32.band(fp, 0x1) ~= 0x1 and i < limit do
+		prev_fp = target.read32(fp)
+		prev_lr = target.read32(fp + 4)
+		print_bt_sym(i + 1, lookup_sym_from_address(prev_lr), prev_lr)
+		fp = prev_fp
+		i = i + 1
+	end
+end
