@@ -22,9 +22,9 @@ oldland-elf-as -c $SCRIPT_PATH/../bootrom/sdram.s -o sdram.o -I$SCRIPT_PATH/../b
 oldland-elf-gcc -c $SCRIPT_PATH/../bootrom/kernel.c -o kernel.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../bootrom
 oldland-elf-gcc -c $SCRIPT_PATH/../bootrom/uart.c -o uart.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../bootrom
 oldland-elf-gcc -c $SCRIPT_PATH/../bootrom/string.c -o string.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../bootrom
-oldland-elf-gcc -c $SCRIPT_PATH/../bootrom/readmbr.c -o readmbr.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../bootrom
+oldland-elf-gcc -c $SCRIPT_PATH/../bootrom/sdcard.c -o sdcard.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../bootrom
 
-oldland-elf-gcc -nostdlib build.o entry.o sdram.o kernel.o uart.o string.o readmbr.o -o bootrom -T $BOOTROM_DIR/bootrom.x -Wl,-EL -lgcc
+oldland-elf-gcc -nostdlib build.o entry.o sdram.o kernel.o uart.o string.o sdcard.o -o bootrom -T $BOOTROM_DIR/bootrom.x -Wl,-EL -lgcc
 oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x4000
 $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
 $TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
