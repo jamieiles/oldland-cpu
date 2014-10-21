@@ -94,14 +94,14 @@ Flush the write buffer for coherence.</li>
 <h2 id="cache-tags--indexes">Cache tags + indexes</h2>
 
 <p>Cache lines are 32 bytes, so 5 bits for byte offset, cache line is word
-indexed so only 3 bits for the real offset.  For a cache of N bytes we have
-N/32 indexes so $clog2(N/32) bits.</p>
+indexed so only 3 bits for the real offset.  For a cache of N bytes and M ways
+we have (N/M)/32 indexes so $clog2((N/M)/32) bits.</p>
 
-<p>8KB cache:</p>
+<p>8KB cache, 2 ways:</p>
 
 <ul>
-  <li>19 bits tag.</li>
-  <li>8 bits index.</li>
+  <li>20 bits tag.</li>
+  <li>7 bits index.</li>
   <li>5 bits offset.</li>
 </ul>
 
