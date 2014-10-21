@@ -63,13 +63,13 @@ Cache tags + indexes
 --------------------
 
 Cache lines are 32 bytes, so 5 bits for byte offset, cache line is word
-indexed so only 3 bits for the real offset.  For a cache of N bytes we have
-N/32 indexes so $clog2(N/32) bits.
+indexed so only 3 bits for the real offset.  For a cache of N bytes and M ways
+we have (N/M)/32 indexes so $clog2((N/M)/32) bits.
 
-8KB cache:
+8KB cache, 2 ways:
 
-  - 19 bits tag.
-  - 8 bits index.
+  - 20 bits tag.
+  - 7 bits index.
   - 5 bits offset.
 
 Reset
