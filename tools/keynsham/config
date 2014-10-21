@@ -98,8 +98,10 @@ def generate_config(writer):
     cpu = keynsham_config['cpu']
     writer.out('ICACHE_SIZE', cpu['icache']['size'])
     writer.out('ICACHE_LINE_SIZE', cpu['icache']['line_size'])
+    writer.out('ICACHE_NUM_WAYS', cpu['icache']['num_ways'])
     writer.out('DCACHE_SIZE', cpu['dcache']['size'])
     writer.out('DCACHE_LINE_SIZE', cpu['dcache']['line_size'])
+    writer.out('DCACHE_NUM_WAYS', cpu['dcache']['num_ways'])
     writer.out_int('CPUID_MANUFACTURER', cpu['manufacturer'], width = 16)
     writer.out_int('CPUID_MODEL', cpu['model'], width = 16)
     writer.out('CPU_CLOCK_SPEED', cpu['clock_speed'])
@@ -118,11 +120,11 @@ def generate_config(writer):
         writer.out('ICACHE_OFFSET_BITS',
                    int(math.log(cpu['icache']['line_size'], 2)))
         writer.out('ICACHE_INDEX_BITS',
-                   int(math.log(cpu['icache']['size'] / cpu['icache']['line_size'], 2)))
+                   int((math.log((cpu['icache']['size'] / cpu['icache']['num_ways']) / cpu['icache']['line_size'], 2))))
         writer.out('DCACHE_OFFSET_BITS',
                    int(math.log(cpu['dcache']['line_size'], 2)))
         writer.out('DCACHE_INDEX_BITS',
-                   int(math.log(cpu['dcache']['size'] / cpu['dcache']['line_size'], 2)))
+                   int((math.log((cpu['dcache']['size'] / cpu['dcache']['num_ways']) / cpu['dcache']['line_size'], 2))))
 
 if __name__ == '__main__':
     if '--verilog' in sys.argv:

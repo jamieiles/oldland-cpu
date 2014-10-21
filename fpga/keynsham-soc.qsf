@@ -79,6 +79,7 @@ set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_debug.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cpu.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_pipeline.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cache.v
+set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cache_way.v
 set_global_assignment -name VERILOG_FILE ../rtl/oldland/oldland_cpuid.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/sync2ff.v
 set_global_assignment -name VERILOG_FILE ../rtl/common/dc_ram.v

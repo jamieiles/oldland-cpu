@@ -94,9 +94,11 @@ enum cpuid_reg_names {
 };
 
 #define CPUID_ICACHE_VAL	((ICACHE_LINE_SIZE / sizeof(uint32_t)) | \
-				  ((1 << ICACHE_INDEX_BITS) << 8))
+				  ((1 << ICACHE_INDEX_BITS) << 8) | \
+                                 (ICACHE_NUM_WAYS << 24))
 #define CPUID_DCACHE_VAL	((DCACHE_LINE_SIZE / sizeof(uint32_t)) | \
-				  ((1 << DCACHE_INDEX_BITS) << 8))
+				  ((1 << DCACHE_INDEX_BITS) << 8) | \
+                                 (DCACHE_NUM_WAYS << 24))
 
 static const uint32_t cpuid_regs[] = {
 	[CPUID_VERSION]		= (CPUID_MANUFACTURER << 16) | CPUID_MODEL,

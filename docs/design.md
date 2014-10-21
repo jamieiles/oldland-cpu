@@ -250,10 +250,10 @@ features:
 - 2: Instruction set features
      - \[31:0\]:	SBZ
 - 3: Instruction cache feature register
-     - \[31:24\]:	SBZ
+     - \[31:24\]:	number of ways
      - \[23:8\]:	number of cache lines
      - \[7:0\]:	words per cache line
 - 4: Data cache feature register
-     - \[31:24\]:	SBZ
+     - \[31:24\]:	number of ways
      - \[23:8\]:	number of cache lines
      - \[7:0\]:	words per cache line

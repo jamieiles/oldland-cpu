@@ -30,7 +30,8 @@ struct cache_line {
 
 struct cache {
 	struct mem_map *mem;
-	struct cache_line lines[CACHE_INDEX_SZ];
+	struct cache_line lines[ICACHE_NUM_WAYS][CACHE_INDEX_SZ];
+	unsigned victimsel;
 };
 
 struct cache *cache_new(struct mem_map *mem)
@@ -61,8 +62,12 @@ static inline uint32_t addr_tag(uint32_t addr)
 void cache_inval_index(struct cache *cache, uint32_t indx)
 {
 	if (indx <= CACHE_INDEX_SZ) {
-		cache->lines[indx].valid = 0;
-		cache->lines[indx].dirty = 0;
+		unsigned way;
+
+		for (way = 0; way < ICACHE_NUM_WAYS; ++way) {
+			cache->lines[way][indx].valid = 0;
+			cache->lines[way][indx].dirty = 0;
+		}
 	}
 }
 
@@ -71,8 +76,12 @@ void cache_inval_all(struct cache *cache)
 	int i;
 
 	for (i = 0; i < CACHE_INDEX_SZ; ++i) {
-		cache->lines[i].valid = 0;
-		cache->lines[i].dirty = 0;
+		unsigned way;
+
+		for (way = 0; way < ICACHE_NUM_WAYS; ++way) {
+			cache->lines[way][i].valid = 0;
+			cache->lines[way][i].dirty = 0;
+		}
 	}
 }
 
@@ -96,10 +105,25 @@ static int cache_fill_line(const struct cache *cache, struct cache_line *line,
 	return rc;
 }
 
+static struct cache_line *cache_find_line(struct cache *cache, uint32_t addr)
+{
+	unsigned way;
+
+	/* Look for a cache hit. */
+	for (way = 0; way < ICACHE_NUM_WAYS; ++way) {
+		struct cache_line *line = &cache->lines[way][addr_index(addr)];
+		if (line->valid && line->tag == addr_tag(addr))
+			return line;
+	}
+
+	/* Return the next victim. */
+	return &cache->lines[cache->victimsel][addr_index(addr)];
+}
+
 int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 	       uint32_t *val)
 {
-	struct cache_line *line = &cache->lines[addr_index(addr)];
+	struct cache_line *line = cache_find_line(cache, addr);
 	uint32_t tag = addr_tag(addr);
 	uint32_t offs = addr_offs(addr);
 	int rc = 0;
@@ -126,6 +150,8 @@ int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 		return -EIO;
 	}
 
+	cache->victimsel = (cache->victimsel + 1) % ICACHE_NUM_WAYS;
+
 out:
 	return rc;
 }
@@ -133,7 +159,7 @@ out:
 int cache_write(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 		uint32_t val)
 {
-	struct cache_line *line = &cache->lines[addr_index(addr)];
+	struct cache_line *line = cache_find_line(cache, addr);
 	uint32_t tag = addr_tag(addr);
 	uint32_t offs = addr_offs(addr);
 	int rc = 0;
@@ -157,30 +183,35 @@ int cache_write(struct cache *cache, uint32_t addr, unsigned int nr_bits,
 	}
 	line->dirty = 1;
 
+	cache->victimsel = (cache->victimsel + 1) % ICACHE_NUM_WAYS;
+
 	return rc;
 }
 
 int cache_flush_index(struct cache *cache, uint32_t indx)
 {
 	int rc = 0;
-	unsigned int m;
-	uint32_t addr = (cache->lines[indx].tag << CACHE_TAG_SHIFT) |
-		(indx << CACHE_INDEX_SHIFT);
+	unsigned int m, way;
 
 	if (indx >= CACHE_INDEX_SZ)
 		return 0;
 
-	if (!cache->lines[indx].dirty)
-		return 0;
+	for (way = 0; way < ICACHE_NUM_WAYS; ++way) {
+		uint32_t addr = (cache->lines[way][indx].tag << CACHE_TAG_SHIFT) |
+			(indx << CACHE_INDEX_SHIFT);
 
-	for (m = 0; m < CACHE_OFFSET_SZ / 4; ++m) {
-		rc = mem_map_write(cache->mem, addr + m * 4, 32,
-				   cache->lines[indx].data32[m]);
-		if (rc)
-			return rc;
+		if (!cache->lines[way][indx].dirty)
+			continue;
+
+		for (m = 0; m < CACHE_OFFSET_SZ / 4; ++m) {
+			rc = mem_map_write(cache->mem, addr + m * 4, 32,
+					cache->lines[way][indx].data32[m]);
+			if (rc)
+				return rc;
+		}
+
+		cache->lines[way][indx].dirty = 0;
 	}
-
-	cache->lines[indx].dirty = 0;
 
 	return 0;
 }

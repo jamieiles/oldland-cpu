@@ -144,15 +144,19 @@ function cpuid()
 	print("Instruction Cache:")
 	icache = target.read_cpuid(3)
 	line_size = bit32.band(icache, 0xff) * 4
-	size = bit32.rshift(icache, 8) * line_size
+        num_ways = bit32.rshift(icache, 24)
+	size = bit32.band(bit32.rshift(icache, 8), 0xffff) * line_size
 	print(string.format("  Size: %uKB", size / 1024))
 	print(string.format("  Line: %u", line_size))
+	print(string.format("  Ways: %u", num_ways))
 	print("Data Cache:")
 	dcache = target.read_cpuid(4)
 	line_size = bit32.band(dcache, 0xff) * 4
-	size = bit32.rshift(dcache, 8) * line_size
+	size = bit32.band(bit32.rshift(dcache, 8), 0xffff) * line_size
+        num_ways = bit32.rshift(dcache, 24)
 	print(string.format("  Size: %uKB", size / 1024))
 	print(string.format("  Line: %u", line_size))
+	print(string.format("  Ways: %u", num_ways))
 end
 
 function pairsByKeys (t, f)

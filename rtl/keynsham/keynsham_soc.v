@@ -259,6 +259,10 @@ keynsham_spimaster	#(.bus_address(`SPIMASTER_ADDRESS),
 
 oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		  .icache_line_size(`ICACHE_LINE_SIZE),
+                  .icache_num_ways(`ICACHE_NUM_WAYS),
+                  .dcache_size(`DCACHE_SIZE),
+                  .dcache_line_size(`DCACHE_LINE_SIZE),
+                  .dcache_num_ways(`DCACHE_NUM_WAYS),
 		  .cpuid_manufacturer(`CPUID_MANUFACTURER),
 		  .cpuid_model(`CPUID_MODEL),
 		  .cpu_clock_speed(`CPU_CLOCK_SPEED))

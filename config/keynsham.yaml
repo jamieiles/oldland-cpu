@@ -2,11 +2,13 @@
     cpu: {
         icache: {
             size: 8192,
-            line_size: 32
+            line_size: 32,
+            num_ways: 2
         },
         dcache: {
             size: 8192,
-            line_size: 32
+            line_size: 32,
+            num_ways: 2
         },
         manufacturer: 0x4a49,
         model: 0x0001,

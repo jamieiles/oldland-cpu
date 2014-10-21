@@ -29,15 +29,17 @@ module oldland_cpu(input wire		clk,
 
 parameter	icache_size = 8192;
 parameter	icache_line_size = 32;
+parameter	icache_num_ways = 2;
 parameter	dcache_size = 8192;
 parameter	dcache_line_size = 32;
+parameter	dcache_num_ways = 2;
 parameter	cpuid_manufacturer = 16'h4a49;
 parameter	cpuid_model = 16'h0001;
 parameter	cpu_clock_speed = 32'd50000000;
 
-localparam	icache_nr_lines = icache_size / icache_line_size;
+localparam	icache_nr_lines = (icache_size / icache_num_ways) / icache_line_size;
 localparam	icache_idx_bits = $clog2(icache_nr_lines);
-localparam	dcache_nr_lines = dcache_size / dcache_line_size;
+localparam	dcache_nr_lines = (dcache_size / dcache_num_ways) / dcache_line_size;
 localparam	dcache_idx_bits = $clog2(dcache_nr_lines);
 
 /* CPU<->I$ signals. */
@@ -108,13 +110,16 @@ oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
 			  .cpu_clock_speed(cpu_clock_speed),
 			  .icache_size(icache_size),
 			  .icache_line_size(icache_line_size),
+                          .icache_num_ways(icache_num_ways),
 			  .dcache_size(dcache_size),
-			  .dcache_line_size(dcache_line_size))
+			  .dcache_line_size(dcache_line_size),
+                          .dcache_num_ways(dcache_num_ways))
 			oldland_cpuid(.reg_sel(cpuid_sel),
 				      .val(cpuid_val));
 
 oldland_cache		#(.cache_size(icache_size),
 			  .cache_line_size(icache_line_size),
+			  .num_ways(icache_num_ways),
 			  .read_only(1'b1))
 			icache(.clk(clk),
 			       .rst(dbg_rst),
@@ -146,7 +151,8 @@ oldland_cache		#(.cache_size(icache_size),
 			       .cacheable_addr(1'b1));
 
 oldland_cache		#(.cache_size(dcache_size),
-			  .cache_line_size(dcache_line_size))
+			  .cache_line_size(dcache_line_size),
+			  .num_ways(dcache_num_ways))
 			dcache(.clk(clk),
 			       .rst(dbg_rst),
 			       .c_access(dc_access),
