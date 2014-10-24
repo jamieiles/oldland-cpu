@@ -10,10 +10,10 @@
 
 .globl _start
 _start:
+	mov	$r12, 0x60 /* I+D cache enable. */
+	scr	1, $r12
 	ldr32	$r0, loop
 	str32	$r0, target
-	nop
-	nop
 	nop
 target:
 	nop

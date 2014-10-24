@@ -63,6 +63,8 @@ struct cpu {
 	union {
 		uint32_t flagsw;
 		struct {
+			unsigned ic:1;
+			unsigned dc:1;
 			unsigned i:1;
 			unsigned n:1;
 			unsigned o:1;
@@ -114,7 +116,19 @@ enum psr_flags {
 	PSR_O	= (1 << 2),
 	PSR_N	= (1 << 3),
 	PSR_I	= (1 << 4),
+	PSR_DC	= (1 << 5),
+	PSR_IC	= (1 << 6),
 };
+
+static inline int data_cache_enabled(const struct cpu *c)
+{
+	return c->flagsbf.dc;
+}
+
+static inline int instruction_cache_enabled(const struct cpu *c)
+{
+	return c->flagsbf.ic;
+}
 
 static void set_psr(struct cpu *c, uint32_t psr)
 {
@@ -123,12 +137,15 @@ static void set_psr(struct cpu *c, uint32_t psr)
 	c->flagsbf.o = !!(psr & PSR_O);
 	c->flagsbf.c = !!(psr & PSR_C);
 	c->flagsbf.z = !!(psr & PSR_Z);
+	c->flagsbf.dc = !!(psr & PSR_DC);
+	c->flagsbf.ic = !!(psr & PSR_IC);
 }
 
 static uint32_t current_psr(const struct cpu *c)
 {
 	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
-		(c->flagsbf.n << 3) | (c->flagsbf.i << 4);
+		(c->flagsbf.n << 3) | (c->flagsbf.i << 4) |
+		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6);
 }
 
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
@@ -168,7 +185,8 @@ int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
 
 int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits)
 {
-	if (mem_map_addr_cacheable(c->mem, addr))
+	if (mem_map_addr_cacheable(c->mem, addr) &&
+	    data_cache_enabled(c))
 		return cache_read(c->dcache, addr, nbits, v);
 
 	return mem_map_read(c->mem, addr, nbits, v);
@@ -176,7 +194,8 @@ int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits)
 
 int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
 {
-	if (mem_map_addr_cacheable(c->mem, addr))
+	if (mem_map_addr_cacheable(c->mem, addr) &&
+	    data_cache_enabled(c))
 		return cache_write(c->dcache, addr, nbits, v);
 
 	return mem_map_write(c->mem, addr, nbits, v);
@@ -529,7 +548,9 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 			c->flagsbf.c << 1 |
 			c->flagsbf.o << 2 |
 			c->flagsbf.n << 3 |
-			c->flagsbf.i << 4);
+			c->flagsbf.i << 4 |
+			c->flagsbf.dc << 5 |
+			c->flagsbf.ic << 6);
 		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
 		break;
 	case ALU_OPCODE_SWI:
@@ -705,6 +726,13 @@ static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 		return;
 }
 
+static int instruction_read(struct cpu *c, uint32_t *instr)
+{
+	if (instruction_cache_enabled(c))
+		return cache_read(c->icache, c->pc, 32, instr);
+	return mem_map_read(c->mem, c->pc, 32, instr);
+}
+
 int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 {
 	uint32_t instr;
@@ -716,7 +744,7 @@ int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 	if (c->trace_file)
 		fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
 	trace(c->trace_file, TRACE_PC, c->pc);
-	if (cache_read(c->icache, c->pc, 32, &instr)) {
+	if (instruction_read(c, &instr)) {
 		do_vector(c, VECTOR_IFETCH_ABORT);
 		goto out;
 	}

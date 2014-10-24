@@ -21,6 +21,7 @@
 module oldland_cache_way(input wire		clk,
 			 input wire		rst,
 			 output wire		hit,
+			 input wire		enabled,
 			 /* CPU<->cache bus signals. */
 			 input wire		c_access,
 			 input wire [29:0]	c_addr,
@@ -172,7 +173,7 @@ cache_data_ram		#(.nr_entries(way_size / 4))
 always @(*) begin
 	case (state)
 	STATE_IDLE: begin
-		if (c_access && cacheable_addr)
+		if (c_access && cacheable_addr && enabled)
 			next_state = STATE_COMPARE;
 		else if ((c_flush || dbg_flush) && ~read_only)
 			next_state = STATE_FLUSH;
@@ -272,12 +273,12 @@ always @(*) begin
 			/* Pipelined access. */
 			data_ram_read_addr = {index, offset};
 
-		if (latched_wr_en && hit)
+		if (latched_wr_en && hit && enabled)
 			set_dirty(1'b1);
 
 		valid_index = c_inval | dbg_inval | dbg_flush | rst ? c_index : index;
 
-		data_ram_wr_en = latched_access && latched_wr_en && hit;
+		data_ram_wr_en = enabled && latched_access && latched_wr_en && hit;
 		data_bytesel = c_bytesel;
 		cm_addr = latched_addr;
 	end

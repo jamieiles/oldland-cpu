@@ -2,6 +2,8 @@
 
 .globl _start
 _start:
+	mov	$r12, 0x60 /* I+D cache enable. */
+	scr	1, $r12
 	mul	$r0, $r0, 0
 	TESTPOINT	TP_USER, 0
 

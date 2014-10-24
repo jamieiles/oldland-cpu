@@ -2,6 +2,8 @@
 
 .globl	_start
 _start:
+	mov	$r12, 0x60 /* I+D cache enable. */
+	scr	1, $r12
 	/*
 	 * Wait for the SDRAM to be configured.  The controller lives at
 	 * 0x800001000, bit 0 in any register in the 4KB space indicates

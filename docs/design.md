@@ -226,7 +226,8 @@ Control registers:
 
 - cr1:	PSR
 	- \[31:4\]: reserved, SBZ
-	- \[5:5\]:  user mode
+	- \[6:6\]:  instruction cache enabled
+	- \[5:5\]:  data cache enabled
 	- \[4:4\]:  irqs enabled
 	- \[3:3\]:  negative flag
 	- \[2:2\]:  overflow flag

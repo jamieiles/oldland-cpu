@@ -49,6 +49,7 @@ wire [31:0]	ic_data;
 wire		ic_ack;
 wire		ic_error;
 wire		pipeline_icache_inval;
+wire		i_cache_enabled;
 wire [icache_idx_bits - 1:0] pipeline_icache_idx;
 
 /* CPU<->D$ signals. */
@@ -60,6 +61,7 @@ wire		dc_wr_en;
 wire [3:0]	dc_bytesel;
 wire		dc_ack;
 wire		dc_error;
+wire		d_cache_enabled;
 wire		pipeline_dcache_inval;
 wire		pipeline_dcache_flush;
 wire [dcache_idx_bits - 1:0] pipeline_dcache_idx;
@@ -123,6 +125,7 @@ oldland_cache		#(.cache_size(icache_size),
 			  .read_only(1'b1))
 			icache(.clk(clk),
 			       .rst(dbg_rst),
+			       .enabled(i_cache_enabled),
 			       .c_access(ic_access),
 			       .c_addr(ic_addr),
 			       .c_wr_val(32'b0),
@@ -155,6 +158,7 @@ oldland_cache		#(.cache_size(dcache_size),
 			  .num_ways(dcache_num_ways))
 			dcache(.clk(clk),
 			       .rst(dbg_rst),
+			       .enabled(d_cache_enabled),
 			       .c_access(dc_access),
 			       .c_addr(dc_addr),
 			       .c_wr_val(dc_wr_val),
@@ -246,6 +250,7 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits),
 				 .i_idx(pipeline_icache_idx),
 				 .i_inval(pipeline_icache_inval),
 				 .i_cacheop_complete(i_cacheop_complete),
+				 .i_cache_enabled(i_cache_enabled),
 				 /* Data bus. */
 				 .d_addr(dc_addr),
 				 .d_bytesel(dc_bytesel),
@@ -259,6 +264,7 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits),
 				 .d_inval(pipeline_dcache_inval),
 				 .d_flush(pipeline_dcache_flush),
 				 .d_cacheop_complete(d_cacheop_complete),
+				 .d_cache_enabled(d_cache_enabled),
 				 /* Debug signals. */
 				 .run(cpu_run),
 				 .stopped(cpu_stopped),

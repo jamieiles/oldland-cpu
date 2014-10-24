@@ -51,7 +51,9 @@ module oldland_exec(input wire		clk,
 		    input wire [31:0]	cpuid_val,
 		    input wire		cache_instr,
 		    output reg		cache_instr_out,
-		    output reg [1:0]	cache_op);
+		    output reg [1:0]	cache_op,
+		    output reg		icache_enabled,
+		    output reg		dcache_enabled);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -72,9 +74,9 @@ reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
-wire [4:0]      psr = {irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+wire [6:0]      psr = {icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
 
-reg [4:0]       saved_psr = 5'b0;
+reg [6:0]       saved_psr = 7'b0;
 reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
@@ -82,8 +84,8 @@ assign		vector_base = vector_addr;
 
 wire [31:0]	control_regs[7:0];
 assign		control_regs[0] = {vector_addr, 6'b0};
-assign		control_regs[1] = {27'b0, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
-assign		control_regs[2] = {27'b0, saved_psr};
+assign		control_regs[1] = {25'b0, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+assign		control_regs[2] = {25'b0, saved_psr};
 assign		control_regs[3] = fault_address;
 assign		control_regs[4] = data_fault_address;
 assign		control_regs[5] = 32'b0;
@@ -113,6 +115,8 @@ initial begin
 	irqs_enabled = 1'b0;
 	cache_instr_out = 1'b0;
 	cache_op = 2'b00;
+	icache_enabled = 1'b0;
+	dcache_enabled = 1'b0;
 end
 
 always @(*) begin
@@ -192,13 +196,13 @@ always @(posedge clk)
 /* CR2: saved PSR. */
 always @(posedge clk) begin
 	if (rst)
-		saved_psr <= 5'b0;
+		saved_psr <= 7'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
-		saved_psr <= dbg_cr_wr_val[4:0];
+		saved_psr <= dbg_cr_wr_val[6:0];
 	else if (is_swi || exception_start || exception_disable_irqs || irq_start || data_abort)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
-                saved_psr <= ra[4:0];
+                saved_psr <= ra[6:0];
 end
 
 /* CR3: fault address register. */
@@ -234,6 +238,8 @@ always @(posedge clk) begin
 		n_flag <= 1'b0;
 		o_flag <= 1'b0;
 		irqs_enabled <= 1'b0;
+		icache_enabled <= 1'b0;
+		dcache_enabled <= 1'b0;
 	end else begin
 		alu_out <= alu_q;
 		wr_result <= update_rd;
@@ -252,6 +258,8 @@ always @(posedge clk) begin
 			irqs_enabled <= 1'b0;
 
 		if (is_rfe) begin
+			icache_enabled <= saved_psr[6];
+			dcache_enabled <= saved_psr[5];
 			irqs_enabled <= saved_psr[4];
 			n_flag <= saved_psr[3];
 			o_flag <= saved_psr[2];
@@ -261,12 +269,16 @@ always @(posedge clk) begin
 
 		/* CR1: PSR. */
 		if (write_cr && cr_sel == 3'h1) begin
+			icache_enabled <= ra[6];
+			dcache_enabled <= ra[5];
 			irqs_enabled <= ra[4];
 			n_flag <= ra[3];
 			o_flag <= ra[2];
 			c_flag <= ra[1];
 			z_flag <= ra[0];
 		end else if (dbg_cr_wr_en && dbg_cr_sel == 3'h1) begin
+			icache_enabled <= dbg_cr_wr_val[6];
+			dcache_enabled <= dbg_cr_wr_val[5];
 			irqs_enabled <= dbg_cr_wr_val[4];
 			n_flag <= dbg_cr_wr_val[3];
 			o_flag <= dbg_cr_wr_val[2];

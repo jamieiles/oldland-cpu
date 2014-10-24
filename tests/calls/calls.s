@@ -2,6 +2,8 @@
 
 .globl _start
 _start:
+	mov		$r12, 0x60 /* I+D cache enable. */
+	scr		1, $r12
 	movhi		$sp, %hi(stack_top)
 	orlo		$sp, $sp, %lo(stack_top)
 	call		f1

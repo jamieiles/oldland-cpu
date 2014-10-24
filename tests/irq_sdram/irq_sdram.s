@@ -3,6 +3,8 @@
 
 .globl _start
 _start:
+	mov	$r12, 0x60 /* I+D cache enable. */
+	scr	1, $r12
 	/* Wait for SDRAM to initialize. */
 	movhi	$r0, 0x8000
 	orlo	$r0, $r0, 0x1000

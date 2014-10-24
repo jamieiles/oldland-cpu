@@ -1,5 +1,6 @@
 module oldland_cache(input wire		clk,
 		     input wire		rst,
+		     input wire		enabled,
 		     /* CPU<->cache bus signals. */
 		     input wire		c_access,
 		     input wire	[29:0]	c_addr,
@@ -105,6 +106,7 @@ oldland_cache_way	#(.way_size(way_size),
 			  .read_only(read_only))
 			way(.clk(clk),
 			    .rst(rst),
+			    .enabled(enabled),
 			    .hit(w_hit[i]),
 			    /* CPU<->cache bus signals. */
 			    .c_access(c_access),
@@ -141,7 +143,7 @@ endgenerate
 always @(*) begin
 	case (state)
 	STATE_CACHED: begin
-		if (c_access && !cacheable_addr)
+		if (c_access && (!cacheable_addr || !enabled))
 			next_state = STATE_BYPASS;
 		else if (latched_access && latched_wr_en && ~|w_hit)
 			next_state = STATE_WRITE_MISS;

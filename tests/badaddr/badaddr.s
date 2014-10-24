@@ -2,6 +2,8 @@
 
 .globl _start
 _start:
+	mov	$r12, 0x60 /* I+D cache enable. */
+	scr	1, $r12
 	movhi	$r0, %hi(ex_table)
 	orlo	$r0, $r0, %lo(ex_table)
 	scr	0, $r0

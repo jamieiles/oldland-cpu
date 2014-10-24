@@ -9,6 +9,7 @@ module oldland_pipeline(input wire		clk,
 			output wire		i_inval,
 			output wire [icache_idx_bits - 1:0] i_idx,
 			input wire		i_cacheop_complete,
+			output wire		i_cache_enabled,
 			/* Data bus. */
 			output wire [29:0]	d_addr,
 			output wire [3:0]	d_bytesel,
@@ -22,6 +23,7 @@ module oldland_pipeline(input wire		clk,
 			output wire		d_inval,
 			output wire		d_flush,
 			input wire		d_cacheop_complete,
+			output wire		d_cache_enabled,
 			/* Debug signals. */
 			input wire		run,
 			output wire		stopped,
@@ -259,7 +261,9 @@ oldland_exec	execute(.clk(clk),
 			.cpuid_val(cpuid_val),
 			.cache_instr(de_cache_instr),
 			.cache_instr_out(em_cache_instr),
-			.cache_op(em_cache_op));
+			.cache_op(em_cache_op),
+			.icache_enabled(i_cache_enabled),
+			.dcache_enabled(d_cache_enabled));
 
 oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		  .dcache_idx_bits(dcache_idx_bits))
