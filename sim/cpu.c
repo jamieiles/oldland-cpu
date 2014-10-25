@@ -153,7 +153,7 @@ int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
 	c->control_regs[CR_PSR] = current_psr(c);
 
 	if ((regnum > PC && regnum < CR_BASE) ||
-	    regnum > CR_BASE + NUM_CONTROL_REGS)
+	    regnum >= CR_BASE + NUM_CONTROL_REGS)
 		return -1;
 	if (regnum == 16)
 		*v = c->pc;
@@ -168,7 +168,7 @@ int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
 int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
 {
 	if ((regnum > PC && regnum < CR_BASE) ||
-	    regnum > CR_BASE + NUM_CONTROL_REGS)
+	    regnum >= CR_BASE + NUM_CONTROL_REGS)
 		return -1;
 	if (regnum == 16)
 		c->pc = v;
@@ -626,7 +626,7 @@ static void do_scr(struct cpu *c, uint32_t instr, uint32_t ucode,
 	if (!ucode_wcr(ucode))
 		return;
 
-	if (cr_sel > NUM_CONTROL_REGS)
+	if (cr_sel >= NUM_CONTROL_REGS)
 		return;
 
 	c->control_regs[cr_sel] = alu->alu_q;
