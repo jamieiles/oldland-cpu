@@ -2,10 +2,16 @@ cmake_minimum_required(VERSION 2.6)
 project(OldlandVerilatorSim)
 
 option(OPTIMIZE_VERILATOR "Enable verilator -O3, faster model, slower builds" OFF)
+option(TRACE_VERILATOR "Enable tracing in verilator model" OFF)
 
 set(VERILATOR_FLAGS
     --cc -DSIMULATION=1 -DUSE_DEBUG_UART=1
     -DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\")
+
+if(TRACE_VERILATOR)
+set(VERILATOR_FLAGS ${VERILATOR_FLAGS} --trace -DVERILATOR_TRACE -CFLAGS "-DVERILATOR_TRACE")
+endif(TRACE_VERILATOR)
+
 set(VERILATOR_INCLUDES
     -I${CMAKE_CURRENT_SOURCE_DIR}/..
     -I${CMAKE_CURRENT_SOURCE_DIR}/../common
