@@ -33,7 +33,7 @@ add_custom_target(generate
 
 add_custom_target(lint ALL
 		  DEPENDS generate
-		  COMMAND verilator --lint-only ${VERILATOR_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/../config/keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)
+		  COMMAND verilator -Wfuture-PINCONNECTEMPTY --lint-only ${VERILATOR_FLAGS} -I${CMAKE_CURRENT_SOURCE_DIR} ${VERILATOR_INCLUDES} -D__ICARUS__ oldland_defines.v ${CMAKE_CURRENT_BINARY_DIR}/../config/keynsham_defines.v ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/keynsham/keynsham_soc.v)
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/decode.hex DESTINATION lib)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/oldland-rtlsim DESTINATION bin)
