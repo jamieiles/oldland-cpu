@@ -226,6 +226,7 @@ Control registers:
 
 - cr1:	PSR
 	- \[31:4\]: reserved, SBZ
+	- \[7:7\]:  mmu enabled
 	- \[6:6\]:  instruction cache enabled
 	- \[5:5\]:  data cache enabled
 	- \[4:4\]:  irqs enabled
@@ -236,6 +237,8 @@ Control registers:
 - cr2:	saved PSR
 - cr3:	fault address register
 - cr4:	data fault address
+- cr5:  dtlb miss handler physical address
+- cr6:  itlb miss handler physical address
 
 CPUID registers
 ---------------

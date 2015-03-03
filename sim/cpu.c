@@ -15,6 +15,7 @@
 #include "irq_ctrl.h"
 #include "io.h"
 #include "microcode.h"
+#include "tlb.h"
 #include "trace.h"
 #include "oldland-types.h"
 #include "periodic.h"
@@ -51,6 +52,8 @@ enum control_register {
 	CR_SAVED_PSR		= 2,
 	CR_FAULT_ADDRESS	= 3,
 	CR_DATA_FAULT_ADDRESS	= 4,
+        CR_DTLB_MISS_HANDLER    = 5,
+        CR_ITLB_MISS_HANDLER    = 6,
 	NUM_CONTROL_REGS
 };
 
@@ -63,6 +66,7 @@ struct cpu {
 	union {
 		uint32_t flagsw;
 		struct {
+			unsigned m:1;
 			unsigned ic:1;
 			unsigned dc:1;
 			unsigned i:1;
@@ -85,6 +89,8 @@ struct cpu {
         struct spimaster *spimaster;
 	struct cache *icache;
 	struct cache *dcache;
+        struct tlb *dtlb;
+        struct tlb *itlb;
 };
 
 enum cpuid_reg_names {
@@ -118,6 +124,7 @@ enum psr_flags {
 	PSR_I	= (1 << 4),
 	PSR_DC	= (1 << 5),
 	PSR_IC	= (1 << 6),
+	PSR_M	= (1 << 7),
 };
 
 static inline int data_cache_enabled(const struct cpu *c)
@@ -130,6 +137,11 @@ static inline int instruction_cache_enabled(const struct cpu *c)
 	return c->flagsbf.ic;
 }
 
+static inline int mmu_enabled(const struct cpu *c)
+{
+	return c->flagsbf.m;
+}
+
 static void set_psr(struct cpu *c, uint32_t psr)
 {
 	c->flagsbf.i = !!(psr & PSR_I);
@@ -139,13 +151,15 @@ static void set_psr(struct cpu *c, uint32_t psr)
 	c->flagsbf.z = !!(psr & PSR_Z);
 	c->flagsbf.dc = !!(psr & PSR_DC);
 	c->flagsbf.ic = !!(psr & PSR_IC);
+	c->flagsbf.m = !!(psr & PSR_M);
 }
 
 static uint32_t current_psr(const struct cpu *c)
 {
 	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
 		(c->flagsbf.n << 3) | (c->flagsbf.i << 4) |
-		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6);
+		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6) |
+                (c->flagsbf.m << 7);
 }
 
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
@@ -183,22 +197,106 @@ int cpu_write_reg(struct cpu *c, unsigned regnum, uint32_t v)
 	return 0;
 }
 
-int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits)
+static void cpu_set_next_pc(struct cpu *c, uint32_t v)
 {
-	if (mem_map_addr_cacheable(c->mem, addr) &&
-	    data_cache_enabled(c))
-		return cache_read(c->dcache, addr, nbits, v);
+	c->next_pc = v;
+}
 
-	return mem_map_read(c->mem, addr, nbits, v);
+static void do_dtlb_miss(struct cpu *c, uint32_t fault_address)
+{
+	c->control_regs[CR_SAVED_PSR] = current_psr(c);
+	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	c->control_regs[CR_DATA_FAULT_ADDRESS] = fault_address;
+	/* TLB miss handlers run with interrupts and MMU disabled. */
+	c->flagsbf.i = 0;
+	c->flagsbf.m = 0;
+	cpu_set_next_pc(c, c->control_regs[CR_DTLB_MISS_HANDLER]);
+}
+
+static void do_itlb_miss(struct cpu *c, uint32_t fault_address)
+{
+	c->control_regs[CR_SAVED_PSR] = current_psr(c);
+	c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
+	/* TLB miss handlers run with interrupts and MMU disabled. */
+	c->flagsbf.i = 0;
+	c->flagsbf.m = 0;
+	cpu_set_next_pc(c, c->control_regs[CR_ITLB_MISS_HANDLER]);
+}
+
+static int translate_data_address(struct cpu *c,
+				  struct translation *translation)
+{
+	if (mmu_enabled(c)) {
+		int err = tlb_translate(c->dtlb, translation);
+		if (err) {
+			do_dtlb_miss(c, translation->virt);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int translate_instruction_address(struct cpu *c,
+					 struct translation *translation)
+{
+	if (mmu_enabled(c)) {
+		int err = tlb_translate(c->itlb, translation);
+		if (err) {
+			do_itlb_miss(c, translation->virt);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits,
+		 int *tlb_miss)
+{
+	struct translation translation = {
+		.virt = addr,
+		.phys = addr,
+	};
+
+	/*
+	 * Translation failure triggers a TLB miss, we don't want to take a
+	 * data abort or read garbage.
+	 */
+	if (translate_data_address(c, &translation)) {
+		*tlb_miss = 1;
+		return 0;
+	}
+
+	*tlb_miss = 0;
+
+	if (mem_map_addr_cacheable(c->mem, translation.phys) &&
+	    data_cache_enabled(c))
+		return cache_read(c->dcache, addr, translation.phys, nbits,
+				  v);
+
+	return mem_map_read(c->mem, translation.phys, nbits, v);
 }
 
 int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
 {
-	if (mem_map_addr_cacheable(c->mem, addr) &&
-	    data_cache_enabled(c))
-		return cache_write(c->dcache, addr, nbits, v);
+	struct translation translation = {
+		.virt = addr,
+		.phys = addr,
+	};
 
-	return mem_map_write(c->mem, addr, nbits, v);
+	/*
+	 * Translation failure triggers a TLB miss, we don't want to take a
+	 * data abort or write garbage.
+	 */
+	if (translate_data_address(c, &translation))
+		return 0;
+	if (mem_map_addr_cacheable(c->mem, translation.phys) &&
+	    data_cache_enabled(c))
+		return cache_write(c->dcache, addr, translation.phys, nbits,
+				   v);
+
+	return mem_map_write(c->mem, translation.phys, nbits, v);
 }
 
 static inline enum instruction_class instr_class(uint32_t instr)
@@ -245,11 +343,6 @@ static void cpu_wr_reg(struct cpu *c, enum regs r, uint32_t v)
 {
 	trace(c->trace_file, TRACE_R0 + r, v);
 	c->regs[r] = v;
-}
-
-static void cpu_set_next_pc(struct cpu *c, uint32_t v)
-{
-	c->next_pc = v;
 }
 
 static int load_microcode(struct cpu *c, const char *path)
@@ -357,6 +450,11 @@ struct cpu *new_cpu(const char *binary, int flags,
 
 	c->dcache = cache_new(c->mem);
 	assert(c->dcache);
+
+        c->dtlb = tlb_new();
+        assert(c->dtlb);
+        c->itlb = tlb_new();
+        assert(c->itlb);
 
 	err = load_microcode(c, MICROCODE_FILE);
 	assert(!err);
@@ -550,7 +648,8 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 			c->flagsbf.n << 3 |
 			c->flagsbf.i << 4 |
 			c->flagsbf.dc << 5 |
-			c->flagsbf.ic << 6);
+			c->flagsbf.ic << 6 |
+                        c->flagsbf.m << 7);
 		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
 		break;
 	case ALU_OPCODE_SWI:
@@ -662,9 +761,11 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 					maw_to_bits(ucode_maw(ucode)),
 					alu->mem_write_val);
 	} else if (ucode_mldr(ucode)) {
+		int tlb_miss;
 		err = cpu_read_mem(c, alu->alu_q,
-				   &v, maw_to_bits(ucode_maw(ucode)));
-		if (!err)
+				   &v, maw_to_bits(ucode_maw(ucode)),
+				   &tlb_miss);
+		if (!err && !tlb_miss)
 			cpu_wr_reg(c, instr_rd(instr), v);
 	} else if (ucode_cache(ucode)) {
 		uint32_t op2 = fetch_op2(c, instr, ucode);
@@ -678,6 +779,22 @@ static int do_memory(struct cpu *c, uint32_t instr, uint32_t ucode,
 			break;
 		case 0x2:
 			cache_flush_index(c->dcache, alu->alu_q);
+			break;
+		case 0x3:
+			tlb_inval(c->dtlb);
+			tlb_inval(c->itlb);
+			break;
+		case 0x4:
+			tlb_set_virt(c->dtlb, alu->alu_q);
+			break;
+		case 0x5:
+			tlb_set_phys(c->dtlb, alu->alu_q);
+			break;
+		case 0x6:
+			tlb_set_virt(c->itlb, alu->alu_q);
+			break;
+		case 0x7:
+			tlb_set_phys(c->itlb, alu->alu_q);
 			break;
 		}
 	}
@@ -726,16 +843,20 @@ static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 		return;
 }
 
-static int instruction_read(struct cpu *c, uint32_t *instr)
+static int instruction_read(struct cpu *c, uint32_t phys, uint32_t *instr)
 {
 	if (instruction_cache_enabled(c))
-		return cache_read(c->icache, c->pc, 32, instr);
+		return cache_read(c->icache, c->pc, phys, 32, instr);
 	return mem_map_read(c->mem, c->pc, 32, instr);
 }
 
 int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 {
 	uint32_t instr;
+	struct translation translation = {
+		.virt = c->pc,
+		.phys = c->pc,
+	};
 
 	event_list_tick(&c->events);
 
@@ -744,7 +865,14 @@ int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 	if (c->trace_file)
 		fprintf(c->trace_file, "#%llu\n", c->cycle_count++);
 	trace(c->trace_file, TRACE_PC, c->pc);
-	if (instruction_read(c, &instr)) {
+
+	/*
+	 * Translation failure triggers a TLB miss.
+	 */
+	if (translate_instruction_address(c, &translation))
+		goto out;
+
+	if (instruction_read(c, translation.phys, &instr)) {
 		do_vector(c, VECTOR_IFETCH_ABORT);
 		goto out;
 	}
@@ -791,4 +919,6 @@ void cpu_reset(struct cpu *c)
 	timers_reset(c->timers);
 	cache_inval_all(c->icache);
 	cache_inval_all(c->dcache);
+	tlb_inval(c->dtlb);
+	tlb_inval(c->itlb);
 }

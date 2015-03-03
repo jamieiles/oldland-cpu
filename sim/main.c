@@ -48,6 +48,7 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 		       struct cpu *cpu)
 {
 	struct dbg_response resp = { .status = req->addr > 3 ? -EINVAL : 0 };
+	int tlb_miss = 0;
 
 	if (!req->read_not_write)
 		debug->debug_regs[req->addr & 0x3] = req->value;
@@ -81,7 +82,9 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 			resp.status = cpu_read_mem(cpu,
 						   debug->debug_regs[REG_ADDRESS],
 						   &debug->debug_regs[REG_RDATA],
-						   32);
+						   32, &tlb_miss);
+			if (tlb_miss && !resp.status)
+				resp.status = -1;
 			break;
 		case CMD_WMEM32:
 			resp.status = cpu_write_mem(cpu,
@@ -93,7 +96,9 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 			resp.status = cpu_read_mem(cpu,
 						   debug->debug_regs[REG_ADDRESS],
 						   &debug->debug_regs[REG_RDATA],
-						   16);
+						   16, &tlb_miss);
+			if (tlb_miss && !resp.status)
+				resp.status = -1;
 			break;
 		case CMD_WMEM16:
 			resp.status = cpu_write_mem(cpu,
@@ -105,7 +110,9 @@ static void handle_req(struct debug_data *debug, struct dbg_request *req,
 			resp.status = cpu_read_mem(cpu,
 						   debug->debug_regs[REG_ADDRESS],
 						   &debug->debug_regs[REG_RDATA],
-						   8);
+						   8, &tlb_miss);
+			if (tlb_miss && !resp.status)
+				resp.status = -1;
 			break;
 		case CMD_WMEM8:
 			resp.status = cpu_write_mem(cpu,

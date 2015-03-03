@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "cache.h"
@@ -120,18 +121,18 @@ static struct cache_line *cache_find_line(struct cache *cache, uint32_t addr)
 	return &cache->lines[cache->victimsel][addr_index(addr)];
 }
 
-int cache_read(struct cache *cache, uint32_t addr, unsigned int nr_bits,
-	       uint32_t *val)
+int cache_read(struct cache *cache, uint32_t virt, uint32_t phys,
+	       unsigned int nr_bits, uint32_t *val)
 {
-	struct cache_line *line = cache_find_line(cache, addr);
-	uint32_t tag = addr_tag(addr);
-	uint32_t offs = addr_offs(addr);
+	struct cache_line *line = cache_find_line(cache, virt);
+	uint32_t tag = addr_tag(phys);
+	uint32_t offs = addr_offs(virt);
 	int rc = 0;
 
 	if (!line->valid || tag != line->tag) {
-		cache_flush_index(cache, addr_index(addr));
+		cache_flush_index(cache, addr_index(virt));
 
-		rc = cache_fill_line(cache, line, addr & ~CACHE_OFFSET_MASK);
+		rc = cache_fill_line(cache, line, phys & ~CACHE_OFFSET_MASK);
 		if (rc != 0)
 			goto out;
 	}
@@ -156,17 +157,17 @@ out:
 	return rc;
 }
 
-int cache_write(struct cache *cache, uint32_t addr, unsigned int nr_bits,
-		uint32_t val)
+int cache_write(struct cache *cache, uint32_t virt, uint32_t phys,
+		unsigned int nr_bits, uint32_t val)
 {
-	struct cache_line *line = cache_find_line(cache, addr);
-	uint32_t tag = addr_tag(addr);
-	uint32_t offs = addr_offs(addr);
+	struct cache_line *line = cache_find_line(cache, virt);
+	uint32_t tag = addr_tag(phys);
+	uint32_t offs = addr_offs(virt);
 	int rc = 0;
 
 	/* No allocate on write. */
 	if (!line->valid || tag != line->tag)
-		return mem_map_write(cache->mem, addr, nr_bits, val);
+		return mem_map_write(cache->mem, phys, nr_bits, val);
 
 	switch (nr_bits) {
 	case 8:

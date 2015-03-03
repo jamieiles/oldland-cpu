@@ -19,7 +19,7 @@ add_executable(oldland-sim debug_uart.c io.c main.c memory.c trace.c cpu.c
 	       oldland-instructions.c irq_ctrl.c periodic.c timer.c cache.c
 	       oldland-types.h oldland-instructions.c
 	       spimaster.c ../devicemodels/uart.c ../devicemodels/jtag.c
-	       sdcard.c ../devicemodels/spi_sdcard.c)
+	       sdcard.c ../devicemodels/spi_sdcard.c tlb.c)
 add_dependencies(oldland-sim gendefines)
 
 target_link_libraries(oldland-sim ${CMAKE_THREAD_LIBS_INIT})

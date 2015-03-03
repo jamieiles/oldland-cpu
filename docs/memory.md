@@ -49,8 +49,19 @@ Data cache:
   Invalidate cache line for index.
 - `D_FLUSH	index`
   Flush cache line for index.
-- `DMB`
-  Flush the write buffer for coherence.
+
+TLB:
+
+- `INVAL_TLB`
+  Invalidate all TLB entries.
+- `DTLB_STORE_VIRT   virt_mapping`
+  Store the virtual mapping and permissions for an instruction TLB entry.
+- `DTLB_STORE_PHYS   phys_address`
+  Store the physical mapping for an instruction TLB entry.
+- `ITLB_STORE_VIRT   virt_mapping`
+  Store the virtual mapping and permissions for a data TLB entry.
+- `ITLB_STORE_PHYS   phys_address`
+  Store the physical mapping for a data TLB entry.
 
 All maintenance instructions are encoded into a single cache instruction:
 
