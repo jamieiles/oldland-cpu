@@ -23,6 +23,7 @@ module oldland_memory(input wire		clk,
 		      output wire		d_access,
 		      input wire		d_ack,
 		      input wire		d_error,
+		      input wire		dtlb_miss,
 		      /* Debug control signals. */
 		      input wire		dbg_en,
 		      input wire		dbg_access,
@@ -34,14 +35,21 @@ module oldland_memory(input wire		clk,
 		      output wire		dbg_compl,
 		      output wire		busy,
 		      input wire		cache_instr,
-		      input wire [1:0]		cache_op,
+		      input wire [2:0]		cache_op,
 		      output wire		i_inval,
 		      output wire [icache_idx_bits - 1:0] i_idx,
 		      input wire		i_cacheop_complete,
 		      output wire		d_inval,
 		      output wire		d_flush,
 		      input wire		d_cacheop_complete,
-		      output wire [dcache_idx_bits - 1:0] d_idx);
+		      output wire [dcache_idx_bits - 1:0] d_idx,
+		      /* TLB signals. */
+		      output wire		tlb_inval,
+		      output wire [31:0]	tlb_load_data,
+		      output wire		dtlb_load_virt,
+		      output wire		dtlb_load_phys,
+		      output wire		itlb_load_virt,
+		      output wire		itlb_load_phys);
 
 parameter	icache_idx_bits = 0;
 parameter	dcache_idx_bits = 0;
@@ -68,21 +76,34 @@ reg [31:0]	load_val = 32'b0;
 
 assign		reg_wr_val = load_complete ? load_val : wr_val_bypass;
 assign		complete = d_ack | d_error | i_cacheop_complete |
-			d_cacheop_complete;
-assign		update_rd_out = load_complete && !dbg_en && !d_error ?
+			d_cacheop_complete | tlb_cacheop_complete |
+			dtlb_miss;
+assign		update_rd_out = load_complete && !dbg_en && !d_error && !dtlb_miss ?
 			1'b1 : update_rd_bypass;
 assign		rd_sel_out = complete | load_complete ? mem_rd : rd_sel_out_bypass;
 
 assign		dbg_rd_val = mem_rd_val;
-assign		dbg_compl = complete;
+assign		dbg_compl = complete | dtlb_miss;
 assign		data_abort = d_error;
 
 assign		busy = load | store | update_rd_out;
 assign		i_idx = wr_val[icache_idx_bits - 1:0];
 assign		d_idx = wr_val[dcache_idx_bits - 1:0];
-assign		i_inval = cache_instr && cache_op == 2'b00;
-assign		d_inval = cache_instr && cache_op == 2'b01;
-assign		d_flush = cache_instr && cache_op == 2'b10;
+assign		i_inval = cache_instr && cache_op == 3'd0;
+assign		d_inval = cache_instr && cache_op == 3'd1;
+assign		d_flush = cache_instr && cache_op == 3'd2;
+assign		tlb_inval = cache_instr && cache_op == 3'd3;
+assign		dtlb_load_virt = cache_instr && cache_op == 3'd4;
+assign		dtlb_load_phys = cache_instr && cache_op == 3'd5;
+assign		itlb_load_virt = cache_instr && cache_op == 3'd6;
+assign		itlb_load_phys = cache_instr && cache_op == 3'd7;
+assign		tlb_load_data = wr_val;
+
+reg             tlb_cacheop_complete = 1'b0;
+
+always @(posedge clk)
+	tlb_cacheop_complete <= (dtlb_load_phys | dtlb_load_virt | itlb_load_phys
+				 | itlb_load_virt | tlb_inval);
 
 initial begin
 	wr_val_bypass = 32'b0;
@@ -95,13 +116,14 @@ always @(posedge clk) begin
 	load_complete <= 1'b0;
 	load_val <= 32'b0;
 
-	if (load || store)
-		loading <= load;
-
 	if (complete && loading) begin
-		load_complete <= 1'b1;
+		load_complete <= ~(dtlb_miss | d_error);
+		loading <= 1'b0;
 		load_val <= mem_rd_val;
 	end
+
+	if (load || store)
+		loading <= load;
 end
 
 always @(posedge clk) begin

@@ -52,29 +52,27 @@ _start:
 	nop
 	nop
 	nop
-	TESTPOINT	TP_USER, 0
 
 _test_dtlb_miss:
-	/* Load from an unmapped address, should hit a TLB miss. */
 	movhi	$r0, %hi(0x40000100)
 	orlo	$r0, $r0, %lo(0x40000100)
-	ldr32	$r1, [$r0, 0]
-	TESTPOINT	TP_USER, 2
-
+	ldr32	$r11, [$r0, 0]
 
 _test_itlb_miss:
 	movhi	$r0, %hi(sdram_text)
 	orlo	$r0, $r0, %lo(sdram_text)
 	call	$r0
-	TESTPOINT	TP_USER, 4
-	nop
-	nop
+	cmp	$r12, 0x77
+	bne	failure
+	cmp	$r11, $r9
+	bne	failure
 
 	SUCCESS
 
-dtlb_miss_handler:
-	TESTPOINT	TP_USER, 1
+failure:
+	FAILURE
 
+dtlb_miss_handler:
 	/*
 	 * Install a TLB entry for the faulting address.
 	 */
@@ -93,8 +91,6 @@ dtlb_miss_handler:
 	rfe
 
 itlb_miss_handler:
-	TESTPOINT	TP_USER, 3
-
 	/*
 	 * Install a TLB entry for the faulting address.
 	 */
@@ -126,6 +122,7 @@ ex_table:
 
 .section ".text.sdram"
 sdram_text:
+	mov	$r12, 0x77
 	nop
 	nop
 	ret

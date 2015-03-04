@@ -84,10 +84,15 @@ module oldland_fetch(input wire		clk,
 		     input wire		pipeline_busy,
 		     input wire		irqs_enabled,
 		     output wire	exception_disable_irqs,
+		     output wire	exception_disable_mmu,
 		     input wire		decode_exception,
 		     output wire	irq_start,
-		     output reg [31:0]	irq_fault_address,
-		     input wire		bkpt_hit);
+		     output reg [31:0]	exception_fault_address,
+		     input wire		bkpt_hit,
+		     input wire [31:2]	dtlb_miss_handler,
+		     input wire [31:2]	itlb_miss_handler,
+		     input wire		dtlb_miss,
+		     input wire		itlb_miss);
 
 localparam	STATE_RUNNING	= 3'b000;
 localparam	STATE_STALLED	= 3'b001;
@@ -102,6 +107,7 @@ reg [31:0]	pc = `OLDLAND_RESET_ADDR;
 assign		pc_plus_4 = pc + 32'd4;
 reg [31:0]	next_pc = `OLDLAND_RESET_ADDR;
 assign		dbg_pc = pc;
+reg		itlb_miss_pending = 1'b0;
 
 /*
  * Load/store or branches cause stalling.  This means a class of 01 or 10.
@@ -113,17 +119,21 @@ wire		should_stall = ^instr[31:30] == 1'b1;
 assign		stopped = state == STATE_STOPPED;
 
 assign		fetch_addr = next_pc[31:2];
-assign		instr = i_ack ? fetch_data : `INSTR_NOP;
+assign		instr = i_ack && !itlb_miss ? fetch_data : `INSTR_NOP;
 
 reg		fetching = 1'b0;
-assign		i_fetched = i_ack;
+assign		i_fetched = i_ack && ~itlb_miss;
 wire		take_irq = irqs_enabled && !pipeline_busy && irq_req && (i_access && !fetching);
+wire		do_itlb_miss = !pipeline_busy && itlb_miss_pending && (i_access && !fetching);
 assign		exception_disable_irqs = illegal_instr |
 					 data_abort |
 					 take_irq |
-					 decode_exception;
+					 decode_exception |
+					 dtlb_miss;
 assign		irq_start = take_irq;
 reg		starting_irq = 1'b0;
+
+assign		exception_disable_mmu = dtlb_miss | do_itlb_miss;
 
 initial	begin
 	i_access = 1'b1;
@@ -131,9 +141,9 @@ end
 
 always @(*) begin
 	if (state == STATE_STOPPED)
-		irq_fault_address = pc;
+		exception_fault_address = pc;
 	else
-		irq_fault_address = branch_taken ? branch_pc : pc_plus_4;
+		exception_fault_address = branch_taken ? branch_pc : pc_plus_4;
 end
 
 always @(posedge clk) begin
@@ -143,6 +153,15 @@ always @(posedge clk) begin
 		starting_irq <= 1'b0;
 	else if (take_irq)
 		starting_irq <= 1'b1;
+end
+
+always @(posedge clk) begin
+	if (rst)
+		itlb_miss_pending <= 1'b0;
+	else if (itlb_miss)
+		itlb_miss_pending <= 1'b1;
+	else if (do_itlb_miss)
+		itlb_miss_pending <= 1'b0;
 end
 
 always @(*) begin
@@ -156,6 +175,10 @@ always @(*) begin
 		next_pc = {vector_base, 6'h4};	/* Illegal instruction. */
 	else if (take_irq || starting_irq)
 		next_pc = {vector_base, 6'hc};  /* Interrupt. */
+	else if (do_itlb_miss)
+		next_pc = {itlb_miss_handler, 2'b0}; /* ITLB miss. */
+	else if (dtlb_miss)
+		next_pc = {dtlb_miss_handler, 2'b0}; /* DTLB miss. */
 	else if (branch_taken)
 		next_pc = branch_pc;
 	else if (stall_clear || (i_ack && !should_stall))
@@ -168,10 +191,10 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk) begin
-	if (i_access) begin
-		fetching <= 1'b1;
-	end else if (i_ack)
+	if (i_ack || itlb_miss || itlb_miss_pending)
 		fetching <= 1'b0;
+	else if (i_access)
+		fetching <= 1'b1;
 end
 
 always @(*) begin
@@ -179,6 +202,8 @@ always @(*) begin
 	STATE_RUNNING: begin
 		/* Stall for branches and memory accesses. */
 		if (irq_req && irqs_enabled && pipeline_busy)
+			next_state = STATE_FLUSHING;
+		else if (itlb_miss && pipeline_busy)
 			next_state = STATE_FLUSHING;
 		else if (should_stall)
 			next_state = STATE_STALLED;
@@ -190,7 +215,7 @@ always @(*) begin
 	STATE_STALLED: begin
 		if (stall_clear && !run)
 			next_state = STATE_STOPPING;
-		else if (stall_clear || i_error)
+		else if (stall_clear || i_error || itlb_miss)
 			next_state = STATE_RUNNING;
 		else
 			next_state = STATE_STALLED;
@@ -230,7 +255,7 @@ always @(posedge clk) begin
 		pc <= dbg_pc_wr_val;
 	else if (state == STATE_STALLED && stall_clear)
 		pc <= next_pc;
-	else if ((i_ack || take_irq) && !bkpt_hit)
+	else if (((i_ack && !itlb_miss) || take_irq || do_itlb_miss) && !bkpt_hit)
 		pc <= next_pc;
 end
 

@@ -102,6 +102,27 @@ wire            dbg_bkpt_hit;
 wire		i_cacheop_complete;
 wire		d_cacheop_complete;
 
+/* TLB signals. */
+wire		tlb_inval;
+wire [31:0]	tlb_load_data;
+wire		tlb_enabled;
+wire		dtlb_load_virt;
+wire		dtlb_load_phys;
+wire [31:12]	dtlb_virt;
+wire [31:12]	dtlb_phys;
+wire		dtlb_valid;
+wire		dtlb_translate;
+wire		dtlb_miss;
+wire		dtlb_complete;
+wire		itlb_load_virt;
+wire		itlb_load_phys;
+wire [31:12]	itlb_virt;
+wire [31:12]	itlb_phys;
+wire		itlb_valid;
+wire		itlb_translate;
+wire		itlb_miss;
+wire		itlb_complete;
+
 /* CPUID signals. */
 wire [2:0]	cpu_cpuid_sel;
 wire [2:0]	cpuid_sel = dbg_en ? dbg_cpuid_sel : cpu_cpuid_sel;
@@ -151,7 +172,12 @@ oldland_cache		#(.cache_size(icache_size),
 			       .m_wr_en(),
 			       .m_wr_val(),
 			       /* verilator lint_on PINCONNECTEMPTY */
-			       .cacheable_addr(1'b1));
+			       .tlb_translate(itlb_translate),
+			       .tlb_virt(itlb_virt),
+			       .tlb_phys(itlb_phys),
+			       .tlb_valid(itlb_valid),
+			       .tlb_miss(itlb_miss),
+			       .tlb_complete(itlb_complete));
 
 oldland_cache		#(.cache_size(dcache_size),
 			  .cache_line_size(dcache_line_size),
@@ -182,7 +208,42 @@ oldland_cache		#(.cache_size(dcache_size),
 			       .m_bytesel(d_bytesel),
 			       .m_wr_en(d_wr_en),
 			       .m_wr_val(d_wr_val),
-			       .cacheable_addr(~dc_addr[29]));
+			       .tlb_translate(dtlb_translate),
+			       .tlb_virt(dtlb_virt),
+			       .tlb_phys(dtlb_phys),
+			       .tlb_valid(dtlb_valid),
+			       .tlb_miss(dtlb_miss),
+			       .tlb_complete(dtlb_complete));
+
+oldland_tlb		dtlb(.clk(clk),
+			     .rst(dbg_rst),
+			     .enabled(tlb_enabled),
+			     .starting_miss(dtlb_miss | itlb_miss),
+			     .inval(tlb_inval),
+			     .load_data(tlb_load_data),
+			     .load_virt(dtlb_load_virt),
+			     .load_phys(dtlb_load_phys),
+			     .translate(dtlb_translate),
+			     .virt(dtlb_virt),
+			     .phys(dtlb_phys),
+			     .valid(dtlb_valid),
+			     .miss(dtlb_miss),
+			     .complete(dtlb_complete));
+
+oldland_tlb		itlb(.clk(clk),
+			     .rst(dbg_rst),
+			     .enabled(tlb_enabled),
+			     .starting_miss(dtlb_miss | itlb_miss),
+			     .inval(tlb_inval),
+			     .load_data(tlb_load_data),
+			     .load_virt(itlb_load_virt),
+			     .load_phys(itlb_load_phys),
+			     .translate(itlb_translate),
+			     .virt(itlb_virt),
+			     .phys(itlb_phys),
+			     .valid(itlb_valid),
+			     .miss(itlb_miss),
+			     .complete(itlb_complete));
 
 oldland_debug		#(.icache_nr_lines(icache_nr_lines),
 			  .dcache_nr_lines(dcache_nr_lines))
@@ -251,6 +312,7 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits),
 				 .i_inval(pipeline_icache_inval),
 				 .i_cacheop_complete(i_cacheop_complete),
 				 .i_cache_enabled(i_cache_enabled),
+				 .itlb_miss(itlb_miss),
 				 /* Data bus. */
 				 .d_addr(dc_addr),
 				 .d_bytesel(dc_bytesel),
@@ -265,6 +327,15 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits),
 				 .d_flush(pipeline_dcache_flush),
 				 .d_cacheop_complete(d_cacheop_complete),
 				 .d_cache_enabled(d_cache_enabled),
+				 .dtlb_miss(dtlb_miss),
+				 /* TLB control. */
+				 .tlb_enabled(tlb_enabled),
+				 .tlb_inval(tlb_inval),
+				 .dtlb_load_virt(dtlb_load_virt),
+				 .dtlb_load_phys(dtlb_load_phys),
+				 .itlb_load_virt(itlb_load_virt),
+				 .itlb_load_phys(itlb_load_phys),
+				 .tlb_load_data(tlb_load_data),
 				 /* Debug signals. */
 				 .run(cpu_run),
 				 .stopped(cpu_stopped),

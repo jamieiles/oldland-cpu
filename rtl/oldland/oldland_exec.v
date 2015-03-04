@@ -41,19 +41,24 @@ module oldland_exec(input wire		clk,
 		    output reg		i_valid_out,
 		    output reg		irqs_enabled,
 		    input wire		exception_disable_irqs,
+		    input wire		exception_disable_mmu,
 		    input wire [2:0]	dbg_cr_sel,
 		    output wire [31:0]	dbg_cr_val,
 		    input wire [31:0]	dbg_cr_wr_val,
 		    input wire		dbg_cr_wr_en,
 		    input wire		irq_start,
-		    input wire [31:0]	irq_fault_address,
+		    input wire [31:0]	exception_fault_address,
 		    output wire [2:0]	cpuid_sel,
 		    input wire [31:0]	cpuid_val,
 		    input wire		cache_instr,
 		    output reg		cache_instr_out,
-		    output reg [1:0]	cache_op,
+		    output reg [2:0]	cache_op,
 		    output reg		icache_enabled,
-		    output reg		dcache_enabled);
+		    output reg		dcache_enabled,
+                    output reg          tlb_enabled,
+		    input wire		dtlb_miss,
+                    output reg [31:2]   dtlb_miss_handler,
+                    output reg [31:2]   itlb_miss_handler);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
@@ -74,9 +79,9 @@ reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
-wire [6:0]      psr = {icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+wire [7:0]      psr = {tlb_enabled, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
 
-reg [6:0]       saved_psr = 7'b0;
+reg [7:0]       saved_psr = 8'b0;
 reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
@@ -84,12 +89,12 @@ assign		vector_base = vector_addr;
 
 wire [31:0]	control_regs[7:0];
 assign		control_regs[0] = {vector_addr, 6'b0};
-assign		control_regs[1] = {25'b0, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
-assign		control_regs[2] = {25'b0, saved_psr};
+assign		control_regs[1] = {24'b0, tlb_enabled, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+assign		control_regs[2] = {24'b0, saved_psr};
 assign		control_regs[3] = fault_address;
 assign		control_regs[4] = data_fault_address;
-assign		control_regs[5] = 32'b0;
-assign		control_regs[6] = 32'b0;
+assign		control_regs[5] = {dtlb_miss_handler, 2'b0};
+assign		control_regs[6] = {itlb_miss_handler, 2'b0};
 assign		control_regs[7] = 32'b0;
 
 assign		dbg_cr_val = control_regs[dbg_cr_sel];
@@ -114,9 +119,12 @@ initial begin
 	i_valid_out = 1'b0;
 	irqs_enabled = 1'b0;
 	cache_instr_out = 1'b0;
-	cache_op = 2'b00;
+	cache_op = 3'b00;
 	icache_enabled = 1'b0;
 	dcache_enabled = 1'b0;
+        tlb_enabled = 1'b0;
+        dtlb_miss_handler = 30'b0;
+        itlb_miss_handler = 30'b0;
 end
 
 always @(*) begin
@@ -196,13 +204,14 @@ always @(posedge clk)
 /* CR2: saved PSR. */
 always @(posedge clk) begin
 	if (rst)
-		saved_psr <= 7'b0;
+		saved_psr <= 8'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
-		saved_psr <= dbg_cr_wr_val[6:0];
-	else if (is_swi || exception_start || exception_disable_irqs || irq_start || data_abort)
+		saved_psr <= dbg_cr_wr_val[7:0];
+        else if (is_swi || exception_start || exception_disable_irqs ||
+                 irq_start || data_abort || exception_disable_mmu)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
-                saved_psr <= ra[6:0];
+                saved_psr <= ra[7:0];
 end
 
 /* CR3: fault address register. */
@@ -212,8 +221,8 @@ always @(posedge clk)
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h3)
 		fault_address <= dbg_cr_wr_val;
 	else if (irq_start)
-		fault_address <= irq_fault_address;
-	else if (exception_disable_irqs)
+		fault_address <= exception_fault_address;
+	else if (exception_disable_irqs || exception_disable_mmu)
                 fault_address <= pc_plus_4;
 	else if (write_cr && cr_sel == 3'h3)
 		fault_address <= ra;
@@ -224,10 +233,28 @@ always @(posedge clk)
 		data_fault_address <= 32'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h4)
 		data_fault_address <= dbg_cr_wr_val;
-	else if (data_abort)
+	else if (data_abort || dtlb_miss)
 		data_fault_address <= mar;
 	else if (write_cr && cr_sel == 3'h4)
 		data_fault_address <= ra;
+
+/* CR5: DTLB miss handler physical address. */
+always @(posedge clk)
+	if (rst)
+		dtlb_miss_handler <= 30'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h5)
+		dtlb_miss_handler <= dbg_cr_wr_val[31:2];
+	else if (write_cr && cr_sel == 3'h5)
+		dtlb_miss_handler <= ra[31:2];
+
+/* CR6: ITLB miss handler physical address. */
+always @(posedge clk)
+	if (rst)
+		itlb_miss_handler <= 30'b0;
+	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h6)
+		itlb_miss_handler <= dbg_cr_wr_val[31:2];
+	else if (write_cr && cr_sel == 3'h6)
+		itlb_miss_handler <= ra[31:2];
 
 always @(posedge clk) begin
 	if (rst) begin
@@ -240,6 +267,7 @@ always @(posedge clk) begin
 		irqs_enabled <= 1'b0;
 		icache_enabled <= 1'b0;
 		dcache_enabled <= 1'b0;
+                tlb_enabled <= 1'b0;
 	end else begin
 		alu_out <= alu_q;
 		wr_result <= update_rd;
@@ -256,8 +284,11 @@ always @(posedge clk) begin
 
 		if (exception_disable_irqs)
 			irqs_enabled <= 1'b0;
+		if (exception_disable_mmu)
+			tlb_enabled <= 1'b0;
 
 		if (is_rfe) begin
+			tlb_enabled <= saved_psr[7];
 			icache_enabled <= saved_psr[6];
 			dcache_enabled <= saved_psr[5];
 			irqs_enabled <= saved_psr[4];
@@ -269,6 +300,7 @@ always @(posedge clk) begin
 
 		/* CR1: PSR. */
 		if (write_cr && cr_sel == 3'h1) begin
+			tlb_enabled <= ra[7];
 			icache_enabled <= ra[6];
 			dcache_enabled <= ra[5];
 			irqs_enabled <= ra[4];
@@ -277,6 +309,7 @@ always @(posedge clk) begin
 			c_flag <= ra[1];
 			z_flag <= ra[0];
 		end else if (dbg_cr_wr_en && dbg_cr_sel == 3'h1) begin
+			tlb_enabled <= dbg_cr_wr_val[7];
 			icache_enabled <= dbg_cr_wr_val[6];
 			dcache_enabled <= dbg_cr_wr_val[5];
 			irqs_enabled <= dbg_cr_wr_val[4];
@@ -325,7 +358,7 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	cache_op <= op2[1:0];
+	cache_op <= op2[2:0];
 	cache_instr_out <= cache_instr;
 end
 

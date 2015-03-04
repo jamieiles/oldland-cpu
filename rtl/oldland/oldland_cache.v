@@ -28,7 +28,13 @@ module oldland_cache(input wire		clk,
 		     input wire [31:0]	m_data,
 		     input wire		m_ack,
 		     input wire		m_error,
-		     input wire		cacheable_addr);
+		     /* TLB signals. */
+		     output reg		tlb_translate,
+		     output reg [31:12] tlb_virt,
+		     input wire [31:12]	tlb_phys,
+		     input wire		tlb_valid,
+		     input wire		tlb_miss,
+		     input wire		tlb_complete);
 
 parameter cache_size		= 8192;
 parameter cache_line_size	= 32;
@@ -60,6 +66,7 @@ wire [num_ways - 1:0]		wc_error;
 wire [num_ways - 1:0]		wm_wr_en;
 wire [3:0]			wm_bytesel[num_ways - 1:0];
 wire [num_ways - 1:0]		w_hit;
+wire [num_ways - 1:0]		w_filled;
 
 reg [num_ways - 1:0]		completed_dbg_ops = {num_ways{1'b0}};
 wire [num_ways - 1:0]		w_dbg_complete;
@@ -71,7 +78,9 @@ assign				cacheop_complete = &(completed_cacheops | w_cacheop_complete);
 
 reg				latched_access = 1'b0;
 reg				latched_wr_en = 1'b0;
+/* verilator lint_off UNUSED */
 reg [29:0]			latched_addr = 30'b0;
+/* verilator lint_on UNUSED */
 reg [31:0]			latched_wr_val = 32'b0;
 reg [3:0]			latched_bytesel = 4'b0;
 
@@ -85,7 +94,7 @@ reg				bypass_access = 1'b0;
 reg				bypass_error = 1'b0;
 reg				bypass_ack = 1'b0;
 assign				m_access = bypass ? bypass_access : wm_access[victim_sel];
-assign				m_addr = bypass ? latched_addr : wm_addr[victim_sel];
+assign				m_addr = bypass ? {tlb_phys, latched_addr[9:0]} : wm_addr[victim_sel];
 assign				m_wr_val = bypass ? latched_wr_val : wm_wr_val[victim_sel];
 assign				m_wr_en = bypass ? latched_wr_en : wm_wr_en[victim_sel];
 assign				m_bytesel = bypass ? latched_bytesel : wm_bytesel[victim_sel];
@@ -94,6 +103,7 @@ integer way;
 
 initial begin
 	c_data = 32'b0;
+	tlb_virt = 20'b0;
 end
 
 genvar i;
@@ -108,6 +118,8 @@ oldland_cache_way	#(.way_size(way_size),
 			    .rst(rst),
 			    .enabled(enabled),
 			    .hit(w_hit[i]),
+			    .way_sel(victim_sel == i[$clog2(num_ways) - 1:0]),
+			    .all_ways_ack(|w_hit),
 			    /* CPU<->cache bus signals. */
 			    .c_access(c_access),
 			    .c_addr(c_addr),
@@ -135,7 +147,10 @@ oldland_cache_way	#(.way_size(way_size),
 			    .m_data(m_data),
 			    .m_ack(m_ack),
 			    .m_error(m_error),
-			    .cacheable_addr(cacheable_addr));
+			    .tlb_valid(tlb_valid),
+			    .tlb_phys(tlb_phys),
+			    .filled(w_filled[i]),
+			    .tlb_miss(tlb_miss));
 
 end
 endgenerate
@@ -143,17 +158,29 @@ endgenerate
 always @(*) begin
 	case (state)
 	STATE_CACHED: begin
-		if (c_access && (!cacheable_addr || !enabled))
+		if (c_access && !enabled)
 			next_state = STATE_BYPASS;
-		else if (latched_access && latched_wr_en && ~|w_hit)
+		else if (enabled && tlb_complete && tlb_valid && tlb_phys[31])
+			next_state = STATE_BYPASS;
+		else if (enabled && tlb_complete && tlb_valid &&
+			 latched_access && latched_wr_en && ~|w_hit)
 			next_state = STATE_WRITE_MISS;
 		else if ((c_flush || dbg_flush) && ~read_only)
 			next_state = STATE_FLUSH;
 		else
 			next_state = STATE_CACHED;
 	end
-	STATE_WRITE_MISS, STATE_BYPASS: begin
-		next_state = m_ack ? STATE_CACHED : STATE_BYPASS;
+	STATE_WRITE_MISS: begin
+		if (m_ack)
+			next_state = STATE_CACHED;
+		else
+			next_state = STATE_WRITE_MISS;
+	end
+	STATE_BYPASS: begin
+		if (m_ack)
+			next_state = STATE_CACHED;
+		else
+			next_state = STATE_BYPASS;
 	end
 	STATE_FLUSH: begin
 		next_state = cacheop_complete ? STATE_CACHED : STATE_FLUSH;
@@ -162,9 +189,24 @@ always @(*) begin
 	endcase
 end
 
+
+reg access_in_progress = 1'b0;
+
+always @(posedge clk) begin
+	if (c_ack || tlb_miss)
+	        access_in_progress <= 1'b0;
+	if (c_access && !tlb_miss)
+	        access_in_progress <= 1'b1;
+end
+
+wire starting_request = c_access & (!access_in_progress || c_ack);
+
 always @(*) begin
 	bypass = 1'b0;
 	bypass_access = 1'b0;
+
+	tlb_translate = starting_request;
+	tlb_virt = c_addr[29:10];
 
 	if (state == STATE_BYPASS || state == STATE_WRITE_MISS) begin
 		bypass_access = ~m_ack;
@@ -227,10 +269,12 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk) begin
-	if (victim_sel == num_ways[$clog2(num_ways) - 1:0] - 1'b1 && c_ack)
-		victim_sel <= {$clog2(num_ways){1'b0}};
-	else
-		victim_sel <= c_ack ? victim_sel + 1'b1 : victim_sel;
+	if (enabled && |w_filled) begin
+		if (victim_sel == num_ways[$clog2(num_ways) - 1:0] - 1'b1)
+			victim_sel <= {$clog2(num_ways){1'b0}};
+        else
+	        victim_sel <= victim_sel + 1'b1;
+	end
 end
 
 endmodule

@@ -37,5 +37,7 @@ cpu_tb.v
 ../../rtl/oldland/oldland_cache.v
 ../../rtl/oldland/oldland_cache_way.v
 ../../rtl/oldland/oldland_cpuid.v
+../../rtl/oldland/oldland_tlb.v
+../../rtl/oldland/oldland_tlb_entry.v
 ../common/simuart.v
 ../common/spislave.v

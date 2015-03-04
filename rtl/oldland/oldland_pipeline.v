@@ -10,6 +10,7 @@ module oldland_pipeline(input wire		clk,
 			output wire [icache_idx_bits - 1:0] i_idx,
 			input wire		i_cacheop_complete,
 			output wire		i_cache_enabled,
+                        input wire              itlb_miss,
 			/* Data bus. */
 			output wire [29:0]	d_addr,
 			output wire [3:0]	d_bytesel,
@@ -24,6 +25,15 @@ module oldland_pipeline(input wire		clk,
 			output wire		d_flush,
 			input wire		d_cacheop_complete,
 			output wire		d_cache_enabled,
+                        input wire              dtlb_miss,
+                        /* TLB control. */
+                        output wire             tlb_enabled,
+                        output wire             tlb_inval,
+                        output wire             dtlb_load_virt,
+                        output wire             dtlb_load_phys,
+                        output wire             itlb_load_virt,
+                        output wire             itlb_load_phys,
+                        output wire [31:0]      tlb_load_data,
 			/* Debug signals. */
 			input wire		run,
 			output wire		stopped,
@@ -64,8 +74,11 @@ wire [31:0]	fd_pc_plus_4;
 wire [31:0]	fd_instr;
 wire		fd_i_fetched;
 wire		fe_disable_irqs;
+wire		fe_disable_mmu;
 wire		fe_irq_start;
-wire [31:0]	fe_irq_fault_address;
+wire [31:0]	fe_exception_fault_address;
+wire [31:2]     dtlb_miss_handler;
+wire [31:2]     itlb_miss_handler;
 
 /* Execute -> fetch signals. */
 wire		ef_branch_taken;
@@ -119,7 +132,7 @@ wire		em_i_valid;
 wire		m_busy; /* Memory/writeback busy. */
 wire		ei_irqs_enabled;
 wire		em_cache_instr;
-wire [1:0]	em_cache_op;
+wire [2:0]	em_cache_op;
 
 /* Memory -> writeback signals. */
 wire [31:0]	mw_wr_val;
@@ -171,9 +184,14 @@ oldland_fetch	fetch(.clk(clk),
 		      .irqs_enabled(ei_irqs_enabled),
 		      .decode_exception(de_exception_start),
 		      .exception_disable_irqs(fe_disable_irqs),
+		      .exception_disable_mmu(fe_disable_mmu),
 		      .irq_start(fe_irq_start),
-		      .irq_fault_address(fe_irq_fault_address),
-		      .bkpt_hit(bkpt_hit));
+		      .exception_fault_address(fe_exception_fault_address),
+		      .bkpt_hit(bkpt_hit),
+                      .dtlb_miss_handler(dtlb_miss_handler),
+                      .itlb_miss_handler(itlb_miss_handler),
+                      .dtlb_miss(dtlb_miss),
+                      .itlb_miss(itlb_miss));
 
 oldland_decode	decode(.clk(clk),
 		       .rst(dbg_rst),
@@ -251,19 +269,24 @@ oldland_exec	execute(.clk(clk),
 			.i_valid_out(em_i_valid),
 			.irqs_enabled(ei_irqs_enabled),
 			.exception_disable_irqs(fe_disable_irqs),
+			.exception_disable_mmu(fe_disable_mmu),
 			.dbg_cr_sel(dbg_cr_sel),
 			.dbg_cr_val(dbg_cr_val),
 			.dbg_cr_wr_val(dbg_cr_wr_val),
 			.dbg_cr_wr_en(dbg_cr_wr_en),
 			.irq_start(fe_irq_start),
-			.irq_fault_address(fe_irq_fault_address),
+			.exception_fault_address(fe_exception_fault_address),
 			.cpuid_sel(cpuid_sel),
 			.cpuid_val(cpuid_val),
 			.cache_instr(de_cache_instr),
 			.cache_instr_out(em_cache_instr),
 			.cache_op(em_cache_op),
 			.icache_enabled(i_cache_enabled),
-			.dcache_enabled(d_cache_enabled));
+			.dcache_enabled(d_cache_enabled),
+                        .tlb_enabled(tlb_enabled),
+			.dtlb_miss(dtlb_miss),
+                        .dtlb_miss_handler(dtlb_miss_handler),
+                        .itlb_miss_handler(itlb_miss_handler));
 
 oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		  .dcache_idx_bits(dcache_idx_bits))
@@ -289,6 +312,7 @@ oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		    .d_access(d_access),
 		    .d_ack(d_ack),
 		    .d_error(d_error),
+                    .dtlb_miss(dtlb_miss),
 		    .complete(mf_complete),
 		    .dbg_en(dbg_en),
 		    .dbg_access(dbg_mem_access),
@@ -308,7 +332,13 @@ oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		    .d_idx(d_idx),
 		    .d_inval(d_inval),
 		    .d_cacheop_complete(d_cacheop_complete),
-		    .d_flush(d_flush));
+		    .d_flush(d_flush),
+                    .tlb_inval(tlb_inval),
+                    .tlb_load_data(tlb_load_data),
+                    .dtlb_load_virt(dtlb_load_virt),
+                    .dtlb_load_phys(dtlb_load_phys),
+                    .itlb_load_virt(itlb_load_virt),
+                    .itlb_load_phys(itlb_load_phys));
 
 oldland_regfile	regfile(.clk(clk),
 			.rst(dbg_rst),
