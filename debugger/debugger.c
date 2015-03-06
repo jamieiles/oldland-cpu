@@ -30,6 +30,7 @@
 #include "loadsyms.h"
 
 #define NUM_HISTORY_LINES	1000
+#define PSR_BASE		32
 
 #ifndef INSTALL_PATH
 #define INSTALL_PATH "/usr/local"
@@ -52,6 +53,8 @@ struct target {
 	bool mem_written;
 
 	bool breakpoint_hit;
+
+	uint32_t psr;
 
 	/* Populated when stopped. */
 	uint32_t pc;
@@ -447,6 +450,25 @@ static struct target *target_alloc(const char *hostname,
 	return t;
 }
 
+static void disable_mmu(struct target *t)
+{
+	uint32_t psr;
+
+	if (dbg_read_reg(t, CR_BASE + 1, &psr))
+		err(1, "failed to read psr");
+	target->psr = psr;
+	psr &= ~(1 << 8);
+
+	if (dbg_write_reg(t, CR_BASE + 1, psr))
+		err(1, "failed to write psr");
+}
+
+static void restore_mmu(struct target *t)
+{
+	if (dbg_write_reg(t, CR_BASE + 1, t->psr))
+		err(1, "failed to write psr");
+}
+
 static void wait_until_stopped(struct target *t)
 {
 	target->interrupted = false;
@@ -472,10 +494,12 @@ static void do_exec(struct target *target,
 	if (bkp)
 		breakpoint_exec_orig(bkp);
 
+	restore_mmu(target);
 	if (fn(target))
 		warnx("failed to step target");
 
 	wait_until_stopped(target);
+	disable_mmu(target);
 
 	bkp = breakpoint_at_addr(target->pc);
 	if (bkp)
@@ -515,6 +539,7 @@ static int lua_stop(lua_State *L)
 
 	if (dbg_stop(target))
 		warnx("failed to step target");
+	disable_mmu(target);
 
 	return 0;
 }
@@ -534,6 +559,7 @@ static int lua_reset(lua_State *L)
 
 	if (dbg_reset(target))
 		warnx("failed to reset target");
+	disable_mmu(target);
 
 	return 0;
 }
