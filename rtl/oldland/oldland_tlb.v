@@ -71,7 +71,7 @@ always @(*) begin
 	 * don't have duplicate entries, otherwise take the next victim in
 	 * a round-robin fashion.
 	 */
-	for (entry_idx = 0; entry_idx < nr_entries; entry_idx = entry_idx + 1) begin
+	for (entry_idx = 0; entry_idx < nr_entries; entry_idx = entry_idx + 1'b1) begin
 		entry = entry_idx[entry_bits - 1:0];
 		if (entry_valid[entry] && entry_virt[entry] == next_virt[31:12] && load_phys)
 			load_entry[entry] = 1'b1;
@@ -95,7 +95,7 @@ always @(posedge clk) begin
 	if (enabled)
 		tlb_miss <= translate;
 
-	for (entry_idx = 0; entry_idx < nr_entries; entry_idx = entry_idx + 1) begin
+	for (entry_idx = 0; entry_idx < nr_entries; entry_idx = entry_idx + 1'b1) begin
 		if (entry_valid[entry_idx[entry_bits - 1:0]] &&
 		    entry_virt[entry_idx[entry_bits - 1:0]] == virt[31:12] &&
 		    translate && enabled) begin
