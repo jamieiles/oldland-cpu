@@ -30,6 +30,7 @@ add_subdirectory(alu)
 add_subdirectory(tlb)
 add_subdirectory(tlb_notestpoints)
 add_subdirectory(tlb_miss_alignment)
+add_subdirectory(tlb_accesscontrol)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"

@@ -35,9 +35,15 @@ pipeline first.
 When writing a TLB entry, the virtual address format is:
 
   - \[31:12\]: 20 MSB's of the virtual address to map the page at.
-  - \[11:0\]: SBZ.  Reserved for access control bits.
+  - \[11:2\]: SBZ.  Reserved for access control bits.
+  - \[1]: Page is writable.
+  - \[0]: Page is readable.
 
 The physical address format is:
 
   - \[31:12\]: 20 MSB's of the physical page being mapped.
   - \[11:0\]: SBZ
+
+For ITLB entries the writable bit is ignored.  Note that there is no need for
+an executable bit - to make a non-executable page just insert into the ITLB
+with the readable bit clear.

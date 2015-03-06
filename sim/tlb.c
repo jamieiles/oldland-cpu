@@ -50,7 +50,7 @@ static struct tlb_entry *tlb_find_mapping(struct tlb *tlb, uint32_t virt)
 		if (!entry->valid)
 			continue;
 
-		if (entry->virt == (virt & PAGE_MASK))
+		if ((entry->virt & PAGE_MASK) == (virt & PAGE_MASK))
 			return entry;
 	}
 
@@ -66,7 +66,7 @@ void tlb_set_phys(struct tlb *tlb, uint32_t phys)
 		entry = &tlb->entries[tlb->victim_sel];
 
 	entry->virt = tlb->next_virt;
-	entry->phys = phys;
+	entry->phys = phys & PAGE_MASK;
 	entry->valid = 1;
 
 	tlb->victim_sel = (tlb->victim_sel + 1) % NUM_TLB_ENTRIES;
@@ -85,6 +85,7 @@ int tlb_translate(struct tlb *tlb, struct translation *translation)
 		return -1;
 
 	translation->phys = entry->phys | (translation->virt & PAGE_OFFSET);
+	translation->perms = entry->virt & TLB_PERMS_MASK;
 
 	return 0;
 }

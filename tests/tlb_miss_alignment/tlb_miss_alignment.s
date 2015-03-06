@@ -1,6 +1,6 @@
 .include "common.s"
 
-.equ	IDENTITY_VIRT_MAPPING, 0x20000000
+.equ	IDENTITY_VIRT_MAPPING, 0x20000003 /* R|W */
 .equ	IDENTITY_PHYS_MAPPING, 0x20000000
 .equ	DTLB_STORE_VIRT, 4
 .equ	DTLB_STORE_PHYS, 5
@@ -71,6 +71,7 @@ itlb_miss_handler:
 	mov	$r1, 4095
 	xor	$r1, $r1, -1
 	and	$r0, $r0, $r1
+	or	$r0, $r0, 1 /* R */
 	cache	$r0, ITLB_STORE_VIRT
 	cache	$r0, ITLB_STORE_PHYS
 

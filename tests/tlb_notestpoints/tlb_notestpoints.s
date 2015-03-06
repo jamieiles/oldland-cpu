@@ -1,6 +1,6 @@
 .include "common.s"
 
-.equ	IDENTITY_VIRT_MAPPING, 0
+.equ	IDENTITY_VIRT_MAPPING, 3 /* R|W */
 .equ	IDENTITY_PHYS_MAPPING, 0
 .equ	DTLB_STORE_VIRT, 4
 .equ	DTLB_STORE_PHYS, 5
@@ -76,8 +76,8 @@ dtlb_miss_handler:
 	/*
 	 * Install a TLB entry for the faulting address.
 	 */
-	movhi	$r7, %hi(0x40000000)
-	orlo	$r7, $r7, %lo(0x40000000)
+	movhi	$r7, %hi(0x40000003)	  /* R|W */
+	orlo	$r7, $r7, %lo(0x40000003)
 	cache	$r7, DTLB_STORE_VIRT
 	movhi	$r7, %hi(0x20000000)
 	orlo	$r7, $r7, %lo(0x20000000)
@@ -94,8 +94,8 @@ itlb_miss_handler:
 	/*
 	 * Install a TLB entry for the faulting address.
 	 */
-	movhi	$r7, %hi(0x20000000)
-	orlo	$r7, $r7, %lo(0x20000000)
+	movhi	$r7, %hi(0x20000003)		/* R|W */
+	orlo	$r7, $r7, %lo(0x20000003)
 	cache	$r7, ITLB_STORE_VIRT
 	movhi	$r7, %hi(0x20000000)
 	orlo	$r7, $r7, %lo(0x20000000)

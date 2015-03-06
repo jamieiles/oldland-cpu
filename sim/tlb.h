@@ -3,9 +3,16 @@
 
 struct tlb;
 
+enum tlb_perms {
+	TLB_READ = (1 << 0),
+	TLB_WRITE = (1 << 1),
+	TLB_PERMS_MASK = (1 << 2) - 1,
+};
+
 struct translation {
 	uint32_t virt;
 	uint32_t phys;
+	uint32_t perms;
 };
 
 struct tlb *tlb_new(void);

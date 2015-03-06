@@ -226,6 +226,8 @@ static void do_itlb_miss(struct cpu *c, uint32_t fault_address)
 static int translate_data_address(struct cpu *c,
 				  struct translation *translation)
 {
+	translation->perms = TLB_PERMS_MASK;
+
 	if (mmu_enabled(c)) {
 		int err = tlb_translate(c->dtlb, translation);
 		if (err) {
@@ -240,6 +242,8 @@ static int translate_data_address(struct cpu *c,
 static int translate_instruction_address(struct cpu *c,
 					 struct translation *translation)
 {
+	translation->perms = TLB_PERMS_MASK;
+
 	if (mmu_enabled(c)) {
 		int err = tlb_translate(c->itlb, translation);
 		if (err) {
@@ -268,6 +272,9 @@ int cpu_read_mem(struct cpu *c, uint32_t addr, uint32_t *v, size_t nbits,
 		return 0;
 	}
 
+	if (!(translation.perms & TLB_READ))
+		return -1;
+
 	*tlb_miss = 0;
 
 	if (mem_map_addr_cacheable(c->mem, translation.phys) &&
@@ -291,6 +298,8 @@ int cpu_write_mem(struct cpu *c, uint32_t addr, uint32_t v, size_t nbits)
 	 */
 	if (translate_data_address(c, &translation))
 		return 0;
+	if (!(translation.perms & TLB_WRITE))
+		return -1;
 	if (mem_map_addr_cacheable(c->mem, translation.phys) &&
 	    data_cache_enabled(c))
 		return cache_write(c->dcache, addr, translation.phys, nbits,
@@ -871,8 +880,8 @@ int cpu_cycle(struct cpu *c, bool *breakpoint_hit)
 	 */
 	if (translate_instruction_address(c, &translation))
 		goto out;
-
-	if (instruction_read(c, translation.phys, &instr)) {
+	if (!(translation.perms & TLB_READ) ||
+	    instruction_read(c, translation.phys, &instr)) {
 		do_vector(c, VECTOR_IFETCH_ABORT);
 		goto out;
 	}
