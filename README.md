@@ -3,11 +3,17 @@ Oldland CPU
 
 [![Build Status](https://travis-ci.org/jamieiles/oldland-cpu.svg?branch=master)](https://travis-ci.org/jamieiles/oldland-cpu)
 
-Oldland is a 32-bit RISC CPU targeted at FPGAs.  It is has a 5 stage pipeline,
-16 general purpose registers, instruction+data caches and support for
-exceptions including interrupts, data+instruction abort and software
-interrupts.  A debug controller allows execution control (run, stop, step),
-inspection+modification of registers+memory and breakpoints.
+Oldland is a 32-bit RISC CPU targeted at FPGAs.  The main features are:
+
+  - 5 stage load/store pipeline.
+  - 16 general purpose registers.
+  - N-way set-associative blocking instruction/data caches
+  - Software managed instruction/data TLBs with 4KB page size.
+  - JTAG debug controller for execution control and state
+  modification/inspection.
+  - Exception table for interrupts, data/instruction aborts, illegal
+  instruction and software interrupts along with separate ITLB/DTLB miss
+  handlers.
 
 Keynsham is a SoC using Oldland as the core and has a number of peripherals:
 
