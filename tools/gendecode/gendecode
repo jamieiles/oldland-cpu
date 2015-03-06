@@ -150,7 +150,15 @@ def add_mem_instruction(opcode, idef):
             'str8':  0.
         }[opcode])
 
-    if not 'cache' in opcode:
+    if opcode in ['gcr', 'scr']:
+        rom_entries[(opcode, 'immediate')] = {
+            'valid': 1,
+            'wcr':   opcode == 'scr',
+            'op1ra': opcode == 'scr', # cr[N] := ra
+            'wrrd':  opcode == 'gcr', # rd := cr[N]
+            'aluop': alu_opcode_val('copya') if opcode == 'scr' else alu_opcode_val('gcr'),
+        }
+    elif not 'cache' in opcode:
         rom_entries[(opcode, 'register')] = {
             'valid': 1,
             'maw':   access_width(opcode),
@@ -204,14 +212,6 @@ def add_misc_instruction(opcode, idef):
     elif opcode in ['bkp', 'nop']:
         rom_entries[(opcode, 'immediate')] = {
             'valid': 1,
-        }
-    elif opcode in ['gcr', 'scr']:
-        rom_entries[(opcode, 'immediate')] = {
-            'valid': 1,
-            'wcr':   opcode == 'scr',
-            'op1ra': opcode == 'scr', # cr[N] := ra
-            'wrrd':  opcode == 'gcr', # rd := cr[N]
-            'aluop': alu_opcode_val('copya') if opcode == 'scr' else alu_opcode_val('gcr'),
         }
     elif opcode == 'cpuid':
         rom_entries[(opcode, 'immediate')] = {

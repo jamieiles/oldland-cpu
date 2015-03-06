@@ -331,7 +331,8 @@ always @(posedge clk) begin
 	end else begin
 		branch_taken <= instr_class == `CLASS_BRANCH &&
 			(branch_condition_met || is_swi || is_rfe);
-		stall_clear <= instr_class == `CLASS_BRANCH;
+		stall_clear <= instr_class == `CLASS_BRANCH || write_cr ||
+			(instr_class == `CLASS_MEM && alu_opc == `ALU_OPC_GCR);
 	end
 end
 

@@ -359,14 +359,14 @@
             description: "Rd := cpuid[imm16]."
         },
         gcr: {
-            class: 3,
-            opcode: 1,
+            class: 2,
+            opcode: 9,
             format: [[rd], [imm13]],
             description: "Rd := control register N."
         },
         scr: {
-            class: 3,
-            opcode: 2,
+            class: 2,
+            opcode: 10,
             format: [[imm13], [ra]],
             description: "Control register N := ra."
         },
