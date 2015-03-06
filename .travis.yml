@@ -14,7 +14,7 @@ install:
 before_script:
 - mkdir -p BUILD/{install,oldland}
 - cd BUILD/oldland
-- cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ../../
+- cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ../../ -DOPTIMIZE_VERILATOR=on -DDEBUG_UART=on
 
 script:
 - make
