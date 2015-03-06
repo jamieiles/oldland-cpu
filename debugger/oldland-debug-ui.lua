@@ -48,9 +48,9 @@ end
 
 function regs()
 	print(string.format(" PSR: %08x", target.read_cr(1)))
-	print(string.format("SPSR: %08x", target.read_cr(2)))
-	print(string.format(" FAR: %08x", target.read_cr(3)))
-	print(string.format("DFAR: %08x", target.read_cr(4)))
+	print(string.format("SPSR: %08x EXTAB: %08x", target.read_cr(2), target.read_cr(0)))
+	print(string.format(" FAR: %08x IMISS: %08x", target.read_cr(3), target.read_cr(6)))
+	print(string.format("DFAR: %08x DMISS: %08x", target.read_cr(4), target.read_cr(5)))
 	print(string.format("  r0: %08x %08x %08x %08x", target.read_reg(0),
 			    target.read_reg(1), target.read_reg(2),
 			    target.read_reg(3)))
