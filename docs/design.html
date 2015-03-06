@@ -162,10 +162,10 @@ STR16	 1  0  0  1  0  1  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb
 STR8	 1  0  0  1  1  0  R  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra rb rb rb rb  x  x  x  x
 
 CACHE	 1  0  1  1  1  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
+GCR	 1  0  1  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
+SCR	 1  0  1  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
 
 BKP	 1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  x  x  x  x  x  x  x  x  x  x  x  x
-GCR	 1  1  0  0  0  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
-SCR	 1  1  0  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
 MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd
 ORLO	 1  1  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x rb rb rb rb rd rd rd rd
 CPUID	 1  1  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
@@ -290,7 +290,9 @@ usermode $sp, only from supervisor mode.  There are only 2 processor modes.</p>
   <li>cr1:	PSR
     <ul>
       <li>[31:4]: reserved, SBZ</li>
-      <li>[5:5]:  user mode</li>
+      <li>[7:7]:  mmu enabled</li>
+      <li>[6:6]:  instruction cache enabled</li>
+      <li>[5:5]:  data cache enabled</li>
       <li>[4:4]:  irqs enabled</li>
       <li>[3:3]:  negative flag</li>
       <li>[2:2]:  overflow flag</li>
@@ -301,6 +303,8 @@ usermode $sp, only from supervisor mode.  There are only 2 processor modes.</p>
   <li>cr2:	saved PSR</li>
   <li>cr3:	fault address register</li>
   <li>cr4:	data fault address</li>
+  <li>cr5:  dtlb miss handler physical address</li>
+  <li>cr6:  itlb miss handler physical address</li>
 </ul>
 
 <h2 id="cpuid-registers">CPUID registers</h2>

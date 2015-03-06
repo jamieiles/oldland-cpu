@@ -80,8 +80,21 @@ and therefore used for peripherals where memory-mapped I/O is performed.</p>
 Invalidate cache line for index.</li>
   <li><code>D_FLUSH	index</code>
 Flush cache line for index.</li>
-  <li><code>DMB</code>
-Flush the write buffer for coherence.</li>
+</ul>
+
+<p>TLB:</p>
+
+<ul>
+  <li><code>INVAL_TLB</code>
+Invalidate all TLB entries.</li>
+  <li><code>DTLB_STORE_VIRT   virt_mapping</code>
+Store the virtual mapping and permissions for an instruction TLB entry.</li>
+  <li><code>DTLB_STORE_PHYS   phys_address</code>
+Store the physical mapping for an instruction TLB entry.</li>
+  <li><code>ITLB_STORE_VIRT   virt_mapping</code>
+Store the virtual mapping and permissions for a data TLB entry.</li>
+  <li><code>ITLB_STORE_PHYS   phys_address</code>
+Store the physical mapping for a data TLB entry.</li>
 </ul>
 
 <p>All maintenance instructions are encoded into a single cache instruction:</p>

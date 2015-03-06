@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Oldland-cpu : Oldland CPU - a 32-bit RISC FPGA CPU including RTL + tools" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="../stylesheets/stylesheet.css">
+
+    <title>Oldland CPU</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jamieiles/oldland-cpu">View on GitHub</a>
+
+	  <a href="http://jamieiles.github.io/oldland-cpu/">
+          <h1 id="project_title">Oldland CPU</h1>
+          <h2 id="project_tagline">Synthesizeable, 32-bit RISC CPU, SoC with toolchain</h2>
+	  </a>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jamieiles/oldland-cpu/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jamieiles/oldland-cpu/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+
+<p>The TLB is software managed and has a configurable number of entries, pages
+are 4KB in size.  The TLB is managed with the new “tlb” instruction to set
+physical/virtual mappings.</p>
+
+<p>On a TLB miss, the CPU jumps to the tlb miss handler, and the address of this
+handler is stored in (cr5: dtlb miss, cr6: itlb miss).  The address is
+physical and the handler is called with the MMU disabled.  Once the handler
+has performed the translation and installed a new TLB entry, the fault address
+register (cr3) should be fixed up to retry the instruction and an rfe issued
+to restart that instruction and re-enable the MMU.  The miss handlers are
+stored separately from the exception table as they use physical addresses.</p>
+
+<p>To install a new TLB entry:</p>
+
+<pre><code>cache	4, $r0 // Latch in the TLB entry.  This is the virtual
+	       // address, access permissions etc.
+cache	5, $r1 // Latch in the physical address, this loads the TLB
+	       // entry into the TLB.
+</code></pre>
+
+<p>Installation of the TLB is not complete until both instructions have been
+executed and must be executed in that order.  A new operation is added to the
+cache instruction to invalidate all TLB entries.</p>
+
+<p>TLB replacement policy is round-robin and the MMU is enabled with the M bit in
+the PSR.  Sufficient NOP’s should be inserted to clear the pipeline before
+enabling the MMU for the first time, re-enabling by rfe will flush the
+pipeline first.</p>
+
+<p>When writing a TLB entry, the virtual address format is:</p>
+
+<ul>
+  <li>[31:12]: 20 MSB’s of the virtual address to map the page at.</li>
+  <li>[11:0]: SBZ.  Reserved for access control bits.</li>
+</ul>
+
+<p>The physical address format is:</p>
+
+<ul>
+  <li>[31:12]: 20 MSB’s of the physical page being mapped.</li>
+  <li>[11:0]: SBZ</li>
+</ul>
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Oldland-cpu maintained by <a href="https://github.com/jamieiles">jamieiles</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-43848066-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
+
