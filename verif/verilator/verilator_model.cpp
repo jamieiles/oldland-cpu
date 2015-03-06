@@ -10,6 +10,13 @@
 #include "uart.h"
 #include "spi.h"
 
+bool tracing_active = false;
+
+void start_trace()
+{
+	tracing_active = true;
+}
+
 class TopLevel {
 public:
 	TopLevel();
@@ -58,7 +65,7 @@ void TopLevel::cycle()
 	top->clk = !top->clk;
 	top->dbg_clk = !top->dbg_clk;
 #ifdef VERILATOR_TRACE
-	if (tracer)
+	if (tracer && tracing_active)
 		tracer->dump(cur_time++);
 #endif /* VERILATOR_TRACE */
 }

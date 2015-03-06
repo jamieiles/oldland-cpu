@@ -9,6 +9,7 @@ module debug_controller(input wire		clk,
 `ifdef verilator
 `systemc_imp_header
 void dbg_sim_term(IData val);
+void start_trace();
 void dbg_put(IData val);
 void dbg_get(CData *req, CData *rnw, CData *addr, IData *val);
 `verilog
@@ -50,6 +51,14 @@ begin
 	$c("{dbg_sim_term(0);}");
 `else
 	$dbg_sim_term(32'b0);
+`endif
+end
+endtask
+
+task do_start_trace;
+begin
+`ifdef verilator
+	$c("{start_trace();}");
 `endif
 end
 endtask
@@ -129,6 +138,8 @@ always @(*) begin
 		if (dbg_addr == 2'b00 && dbg_val == 32'hffffffff) begin
 			do_term();
 			$finish;
+		end else if (dbg_addr == 2'b00 && dbg_val == 32'hfffffffe) begin
+			do_start_trace();
 		end
 	end
 end

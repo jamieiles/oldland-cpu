@@ -20,6 +20,7 @@ enum dbg_cmd {
 	CMD_CPUID,
 	CMD_GET_EXEC_STATUS,
 
+	CMD_START_TRACE = -2,
 	CMD_SIM_TERM = -1,
 };
 

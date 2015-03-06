@@ -144,6 +144,11 @@ static int dbg_term(struct target *t)
 	return dbg_write(t, REG_CMD, CMD_SIM_TERM);
 }
 
+static int dbg_start_trace(struct target *t)
+{
+	return dbg_write(t, REG_CMD, CMD_START_TRACE);
+}
+
 int dbg_stop(struct target *t)
 {
 	int rc = dbg_write(t, REG_CMD, CMD_STOP);
@@ -495,6 +500,15 @@ static int lua_term(lua_State *L)
 	return 0;
 }
 
+static int lua_start_trace(lua_State *L)
+{
+	assert_target(L);
+
+	(void)dbg_start_trace(target);
+
+	return 0;
+}
+
 static int lua_stop(lua_State *L)
 {
 	assert_target(L);
@@ -774,6 +788,7 @@ static const struct luaL_Reg dbg_funcs[] = {
 	{ "loadsyms", lua_loadsyms },
 	{ "connect", lua_connect },
 	{ "term", lua_term },
+	{ "start_trace", lua_start_trace },
 	{ "reset", lua_reset },
 	{ "read_cpuid", lua_read_cpuid },
 	{ "set_bkp", lua_set_bkp },
