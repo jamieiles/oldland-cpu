@@ -10,6 +10,12 @@
             line_size: 32,
             num_ways: 2
         },
+        itlb: {
+            num_entries: 8
+        },
+        dtlb: {
+            num_entries: 8
+        },
         manufacturer: 0x4a49,
         model: 0x0001,
         clock_speed: 50000000

@@ -36,6 +36,8 @@ parameter	dcache_num_ways = 2;
 parameter	cpuid_manufacturer = 16'h4a49;
 parameter	cpuid_model = 16'h0001;
 parameter	cpu_clock_speed = 32'd50000000;
+parameter	itlb_num_entries = 8;
+parameter	dtlb_num_entries = 8;
 
 localparam	icache_nr_lines = (icache_size / icache_num_ways) / icache_line_size;
 localparam	icache_idx_bits = $clog2(icache_nr_lines);
@@ -138,7 +140,9 @@ oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
                           .icache_num_ways(icache_num_ways),
 			  .dcache_size(dcache_size),
 			  .dcache_line_size(dcache_line_size),
-                          .dcache_num_ways(dcache_num_ways))
+                          .dcache_num_ways(dcache_num_ways),
+			  .dtlb_num_entries(dtlb_num_entries),
+			  .itlb_num_entries(itlb_num_entries))
 			oldland_cpuid(.reg_sel(cpuid_sel),
 				      .val(cpuid_val));
 
@@ -221,7 +225,8 @@ oldland_cache		#(.cache_size(dcache_size),
 			       .tlb_complete(dtlb_complete),
 			       .tlb_access(dtlb_access));
 
-oldland_tlb		dtlb(.clk(clk),
+oldland_tlb		#(.nr_entries(dtlb_num_entries))
+			dtlb(.clk(clk),
 			     .rst(dbg_rst),
 			     .enabled(tlb_enabled),
 			     .starting_miss(dtlb_miss | itlb_miss),
@@ -237,7 +242,8 @@ oldland_tlb		dtlb(.clk(clk),
 			     .miss(dtlb_miss),
 			     .complete(dtlb_complete));
 
-oldland_tlb		itlb(.clk(clk),
+oldland_tlb		#(.nr_entries(itlb_num_entries))
+			itlb(.clk(clk),
 			     .rst(dbg_rst),
 			     .enabled(tlb_enabled),
 			     .starting_miss(dtlb_miss | itlb_miss),

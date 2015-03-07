@@ -265,7 +265,9 @@ oldland_cpu	#(.icache_size(`ICACHE_SIZE),
                   .dcache_num_ways(`DCACHE_NUM_WAYS),
 		  .cpuid_manufacturer(`CPUID_MANUFACTURER),
 		  .cpuid_model(`CPUID_MODEL),
-		  .cpu_clock_speed(`CPU_CLOCK_SPEED))
+		  .cpu_clock_speed(`CPU_CLOCK_SPEED),
+		  .itlb_num_entries(`ITLB_NUM_ENTRIES),
+		  .dtlb_num_entries(`DTLB_NUM_ENTRIES))
 		cpu(.clk(clk),
 		    .running(running),
 		    .irq_req(irq_req),

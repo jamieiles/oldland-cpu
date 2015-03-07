@@ -105,6 +105,8 @@ def generate_config(writer):
     writer.out_int('CPUID_MANUFACTURER', cpu['manufacturer'], width = 16)
     writer.out_int('CPUID_MODEL', cpu['model'], width = 16)
     writer.out('CPU_CLOCK_SPEED', cpu['clock_speed'])
+    writer.out('ITLB_NUM_ENTRIES', cpu['itlb']['num_entries'])
+    writer.out('DTLB_NUM_ENTRIES', cpu['dtlb']['num_entries'])
 
     for p in keynsham_config['peripherals']:
         periph_writer = type(writer)(p['name'] + "_defines")

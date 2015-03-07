@@ -261,3 +261,8 @@ features:
      - \[31:24\]:	number of ways
      - \[23:8\]:	number of cache lines
      - \[7:0\]:	words per cache line
+- 5: TLB feature register
+     - \[31:24\]:	SBZ
+     - \[23:16\]:	number of ITLB entries
+     - \[15:8\]:	SBZ
+     - \[7:0\]:		number of DTLB entries

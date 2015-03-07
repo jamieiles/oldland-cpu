@@ -99,6 +99,7 @@ enum cpuid_reg_names {
 	CPUID_FEATURES,
 	CPUID_ICACHE,
 	CPUID_DCACHE,
+	CPUID_TLB,
 };
 
 #define CPUID_ICACHE_VAL	((ICACHE_LINE_SIZE / sizeof(uint32_t)) | \
@@ -107,6 +108,8 @@ enum cpuid_reg_names {
 #define CPUID_DCACHE_VAL	((DCACHE_LINE_SIZE / sizeof(uint32_t)) | \
 				  ((1 << DCACHE_INDEX_BITS) << 8) | \
                                  (DCACHE_NUM_WAYS << 24))
+#define CPUID_TLB_VAL		((ITLB_NUM_ENTRIES << 16) | \
+				 (DTLB_NUM_ENTRIES))
 
 static const uint32_t cpuid_regs[] = {
 	[CPUID_VERSION]		= (CPUID_MANUFACTURER << 16) | CPUID_MODEL,
@@ -114,6 +117,7 @@ static const uint32_t cpuid_regs[] = {
 	[CPUID_FEATURES]	= 0,
 	[CPUID_ICACHE]		= CPUID_ICACHE_VAL,
 	[CPUID_DCACHE]		= CPUID_DCACHE_VAL,
+	[CPUID_TLB]		= CPUID_TLB_VAL,
 };
 
 enum psr_flags {
@@ -460,9 +464,9 @@ struct cpu *new_cpu(const char *binary, int flags,
 	c->dcache = cache_new(c->mem);
 	assert(c->dcache);
 
-        c->dtlb = tlb_new();
+        c->dtlb = tlb_new(DTLB_NUM_ENTRIES);
         assert(c->dtlb);
-        c->itlb = tlb_new();
+        c->itlb = tlb_new(ITLB_NUM_ENTRIES);
         assert(c->itlb);
 
 	err = load_microcode(c, MICROCODE_FILE);

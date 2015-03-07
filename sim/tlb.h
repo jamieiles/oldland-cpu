@@ -15,7 +15,7 @@ struct translation {
 	uint32_t perms;
 };
 
-struct tlb *tlb_new(void);
+struct tlb *tlb_new(unsigned int num_entries);
 void tlb_inval(struct tlb *tlb);
 void tlb_set_phys(struct tlb *tlb, uint32_t phys);
 void tlb_set_virt(struct tlb *tlb, uint32_t virt);
