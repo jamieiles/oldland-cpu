@@ -67,7 +67,9 @@ pipeline first.</p>
 
 <ul>
   <li>[31:12]: 20 MSB’s of the virtual address to map the page at.</li>
-  <li>[11:0]: SBZ.  Reserved for access control bits.</li>
+  <li>[11:2]: SBZ.  Reserved for access control bits.</li>
+  <li>[1]: Page is writable.</li>
+  <li>[0]: Page is readable.</li>
 </ul>
 
 <p>The physical address format is:</p>
@@ -76,6 +78,10 @@ pipeline first.</p>
   <li>[31:12]: 20 MSB’s of the physical page being mapped.</li>
   <li>[11:0]: SBZ</li>
 </ul>
+
+<p>For ITLB entries the writable bit is ignored.  Note that there is no need for
+an executable bit - to make a non-executable page just insert into the ITLB
+with the readable bit clear.</p>
 
       </section>
     </div>
