@@ -35,7 +35,7 @@ pipeline first.
 When writing a TLB entry, the virtual address format is:
 
   - \[31:12\]: 20 MSB's of the virtual address to map the page at.
-  - \[11:2\]: SBZ.  Reserved for access control bits.
+  - \[11:4\]: SBZ.  Reserved for future use.
   - \[3]: Page is writable (user).
   - \[2]: Page is readable (user).
   - \[1]: Page is writable (supervisor).
