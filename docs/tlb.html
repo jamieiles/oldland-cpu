@@ -68,8 +68,10 @@ pipeline first.</p>
 <ul>
   <li>[31:12]: 20 MSB’s of the virtual address to map the page at.</li>
   <li>[11:2]: SBZ.  Reserved for access control bits.</li>
-  <li>[1]: Page is writable.</li>
-  <li>[0]: Page is readable.</li>
+  <li>[3]: Page is writable (user).</li>
+  <li>[2]: Page is readable (user).</li>
+  <li>[1]: Page is writable (supervisor).</li>
+  <li>[0]: Page is readable (supervisor).</li>
 </ul>
 
 <p>The physical address format is:</p>
