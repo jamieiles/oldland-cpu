@@ -457,7 +457,7 @@ static void disable_mmu(struct target *t)
 	if (dbg_read_reg(t, CR_BASE + 1, &psr))
 		err(1, "failed to read psr");
 	target->psr = psr;
-	psr &= ~(1 << 8);
+	psr &= ~(1 << 7);
 
 	if (dbg_write_reg(t, CR_BASE + 1, psr))
 		err(1, "failed to write psr");
