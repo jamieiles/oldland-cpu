@@ -157,6 +157,11 @@ function cpuid()
 	print(string.format("  Size: %uKB", size / 1024))
 	print(string.format("  Line: %u", line_size))
 	print(string.format("  Ways: %u", num_ways))
+	print("TLBs:")
+	itlb_num_entries = bit32.band(bit32.rshift(target.read_cpuid(5), 16), 0xff)
+	print(string.format("  ITLB entries: %u", itlb_num_entries))
+	dtlb_num_entries = bit32.band(target.read_cpuid(5), 0xff)
+	print(string.format("  DTLB entries: %u", dtlb_num_entries))
 end
 
 function pairsByKeys (t, f)
