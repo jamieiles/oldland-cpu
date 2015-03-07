@@ -37,7 +37,7 @@ always @(*) begin
 	3'h2: val = cpuid2;
 	3'h3: val = cpuid3;
 	3'h4: val = cpuid4;
-	3'h7: val = cpuid5;
+	3'h5: val = cpuid5;
 	default: val = 32'b0;
 	endcase
 end
