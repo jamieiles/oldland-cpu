@@ -54,6 +54,7 @@ module oldland_cache_way(input wire		clk,
 			 input wire		tlb_valid,
 			 input wire [31:12]	tlb_phys,
 			 input wire		tlb_miss,
+			 input wire		access_ok,
                          output reg             filled);
 
 parameter way_size		= 4096;
@@ -193,15 +194,19 @@ always @(*) begin
 	STATE_COMPARE: begin
 		if (tlb_miss || !enabled)
 			next_state = STATE_IDLE;
-		else if (tlb_valid && tlb_phys[31])
+		else if (tlb_valid && tlb_phys[31] && access_ok)
 			next_state = STATE_IDLE;
 		else if (all_ways_ack && !c_access)
 			next_state = STATE_IDLE;
-		else if (way_sel && valid && !all_ways_ack && tlb_valid && !tags_match && !latched_wr_en && ~read_only)
+		else if (way_sel && valid && !all_ways_ack && tlb_valid &&
+			 !tags_match && !latched_wr_en && ~read_only &&
+			 access_ok)
 			next_state = STATE_EVICT;
-		else if (way_sel && valid && !all_ways_ack && tlb_valid && !tags_match && !latched_wr_en)
+		else if (way_sel && valid && !all_ways_ack && tlb_valid &&
+			 !tags_match && !latched_wr_en && access_ok)
 			next_state = STATE_FILL;
-		else if (way_sel && !hit && !all_ways_ack && tlb_valid && !latched_wr_en)
+		else if (way_sel && !hit && !all_ways_ack && tlb_valid &&
+			 !latched_wr_en && access_ok)
 			next_state = STATE_FILL;
 		else if (hit && c_access && latched_index == index) /* Pipelined accesses. */
 			next_state = STATE_COMPARE;

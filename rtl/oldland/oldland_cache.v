@@ -1,3 +1,5 @@
+`include "oldland_defs.v"
+
 module oldland_cache(input wire		clk,
 		     input wire		rst,
 		     input wire		enabled,
@@ -34,7 +36,8 @@ module oldland_cache(input wire		clk,
 		     input wire [31:12]	tlb_phys,
 		     input wire		tlb_valid,
 		     input wire		tlb_miss,
-		     input wire		tlb_complete);
+		     input wire		tlb_complete,
+		     input wire [1:0]	tlb_access);
 
 parameter cache_size		= 8192;
 parameter cache_line_size	= 32;
@@ -86,8 +89,8 @@ reg [3:0]			latched_bytesel = 4'b0;
 
 reg				read_from_bypass = 1'b0;
 reg [31:0]			bypass_data = 32'b0;
-assign				c_ack = |wc_ack | bypass_ack;
-assign				c_error = |wc_error | bypass_error;
+assign				c_ack = |wc_ack | bypass_ack | c_error;
+assign				c_error = |wc_error | bypass_error | (tlb_complete && ~access_ok);
 
 reg				bypass = 1'b0;
 reg				bypass_access = 1'b0;
@@ -98,6 +101,10 @@ assign				m_addr = bypass ? {tlb_phys, latched_addr[9:0]} : wm_addr[victim_sel];
 assign				m_wr_val = bypass ? latched_wr_val : wm_wr_val[victim_sel];
 assign				m_wr_en = bypass ? latched_wr_en : wm_wr_en[victim_sel];
 assign				m_bytesel = bypass ? latched_bytesel : wm_bytesel[victim_sel];
+
+wire				access_ok = 
+					((latched_wr_en && tlb_access[`TLB_WRITE]) ||
+					 (!latched_wr_en && tlb_access[`TLB_READ]));
 
 integer way;
 
@@ -149,6 +156,7 @@ oldland_cache_way	#(.way_size(way_size),
 			    .m_error(m_error),
 			    .tlb_valid(tlb_valid),
 			    .tlb_phys(tlb_phys),
+			    .access_ok(access_ok),
 			    .filled(w_filled[i]),
 			    .tlb_miss(tlb_miss));
 
@@ -160,10 +168,12 @@ always @(*) begin
 	STATE_CACHED: begin
 		if (c_access && !enabled)
 			next_state = STATE_BYPASS;
-		else if (enabled && tlb_complete && tlb_valid && tlb_phys[31])
+		else if (enabled && tlb_complete && tlb_valid && tlb_phys[31]
+			 && access_ok)
 			next_state = STATE_BYPASS;
 		else if (enabled && tlb_complete && tlb_valid &&
-			 latched_access && latched_wr_en && ~|w_hit)
+			 latched_access && latched_wr_en && ~|w_hit &&
+			 access_ok)
 			next_state = STATE_WRITE_MISS;
 		else if ((c_flush || dbg_flush) && ~read_only)
 			next_state = STATE_FLUSH;
@@ -193,7 +203,7 @@ end
 reg access_in_progress = 1'b0;
 
 always @(posedge clk) begin
-	if (c_ack || tlb_miss)
+	if (c_ack || tlb_miss || c_error)
 	        access_in_progress <= 1'b0;
 	if (c_access && !tlb_miss)
 	        access_in_progress <= 1'b1;

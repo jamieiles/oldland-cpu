@@ -110,6 +110,7 @@ wire		dtlb_load_virt;
 wire		dtlb_load_phys;
 wire [31:12]	dtlb_virt;
 wire [31:12]	dtlb_phys;
+wire [1:0]	dtlb_access;
 wire		dtlb_valid;
 wire		dtlb_translate;
 wire		dtlb_miss;
@@ -118,6 +119,7 @@ wire		itlb_load_virt;
 wire		itlb_load_phys;
 wire [31:12]	itlb_virt;
 wire [31:12]	itlb_phys;
+wire [1:0]	itlb_access;
 wire		itlb_valid;
 wire		itlb_translate;
 wire		itlb_miss;
@@ -179,7 +181,8 @@ oldland_cache		#(.cache_size(icache_size),
 			       .tlb_phys(itlb_phys),
 			       .tlb_valid(itlb_valid),
 			       .tlb_miss(itlb_miss),
-			       .tlb_complete(itlb_complete));
+			       .tlb_complete(itlb_complete),
+			       .tlb_access(itlb_access));
 
 oldland_cache		#(.cache_size(dcache_size),
 			  .cache_line_size(dcache_line_size),
@@ -215,7 +218,8 @@ oldland_cache		#(.cache_size(dcache_size),
 			       .tlb_phys(dtlb_phys),
 			       .tlb_valid(dtlb_valid),
 			       .tlb_miss(dtlb_miss),
-			       .tlb_complete(dtlb_complete));
+			       .tlb_complete(dtlb_complete),
+			       .tlb_access(dtlb_access));
 
 oldland_tlb		dtlb(.clk(clk),
 			     .rst(dbg_rst),
@@ -228,6 +232,7 @@ oldland_tlb		dtlb(.clk(clk),
 			     .translate(dtlb_translate),
 			     .virt(dtlb_virt),
 			     .phys(dtlb_phys),
+			     .access(dtlb_access),
 			     .valid(dtlb_valid),
 			     .miss(dtlb_miss),
 			     .complete(dtlb_complete));
@@ -243,6 +248,7 @@ oldland_tlb		itlb(.clk(clk),
 			     .translate(itlb_translate),
 			     .virt(itlb_virt),
 			     .phys(itlb_phys),
+			     .access(itlb_access),
 			     .valid(itlb_valid),
 			     .miss(itlb_miss),
 			     .complete(itlb_complete));

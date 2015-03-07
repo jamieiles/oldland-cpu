@@ -11,6 +11,7 @@ module oldland_tlb(input wire clk,
 		   input wire translate,
 		   input wire [31:12] virt,
 		   output reg [31:12] phys,
+		   output reg [1:0] access,
 		   output reg valid,
 		   output wire miss,
 		   output reg complete);
@@ -26,6 +27,7 @@ reg [nr_entries - 1:0]	load_entry = {nr_entries{1'b0}};
 wire [nr_entries - 1:0] entry_valid;
 wire [31:12]		entry_virt[nr_entries - 1:0];
 wire [31:12]		entry_phys[nr_entries - 1:0];
+wire [1:0]		entry_access[nr_entries - 1:0];
 reg [entry_bits:0]	entry_idx = {entry_bits + 1{1'b0}};
 reg [entry_bits - 1:0]	entry = {entry_bits{1'b0}};
 reg			tlb_miss = 1'b0;
@@ -47,9 +49,11 @@ generate
 					.inval(inval),
 					.virt_in(next_virt[31:12]),
 					.phys_in(load_data[31:12]),
+					.access_in(next_virt[1:0]),
 					.load(load_entry[i]),
 					.virt_out(entry_virt[i]),
 					.phys_out(entry_phys[i]),
+					.access_out(entry_access[i]),
 					.valid_out(entry_valid[i]));
 	end
 endgenerate
@@ -88,6 +92,7 @@ always @(posedge clk) begin
 		valid <= 1'b0;
 		tlb_miss <= 1'b0;
 		phys <= virt;
+		access <= 2'b11;
 	end
 
 	complete <= translate;
@@ -100,6 +105,7 @@ always @(posedge clk) begin
 		    entry_virt[entry_idx[entry_bits - 1:0]] == virt[31:12] &&
 		    translate && enabled) begin
 			phys <= entry_phys[entry_idx[entry_bits - 1:0]];
+			access <= entry_access[entry_idx[entry_bits - 1:0]];
 			valid <= 1'b1;
 			tlb_miss <= 1'b0;
 		end
@@ -113,6 +119,7 @@ always @(posedge clk) begin
 		phys <= virt;
 		valid <= 1'b1;
 		tlb_miss <= 1'b0;
+		access <= 2'b11;
 	end
 end
 
