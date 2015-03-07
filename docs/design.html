@@ -254,10 +254,6 @@ handler.</p>
 the saved registers and sets the PC to the faulting address (which can be
 modified in the exception handler).</p>
 
-<p>$sp is banked between user/supervisor mode to make handling of exceptions more
-convenient and there are a pair of instructions for reading/writing the
-usermode $sp, only from supervisor mode.  There are only 2 processor modes.</p>
-
 <p>IRQ entry:</p>
 
 <ul>
@@ -289,7 +285,8 @@ usermode $sp, only from supervisor mode.  There are only 2 processor modes.</p>
   </li>
   <li>cr1:	PSR
     <ul>
-      <li>[31:4]: reserved, SBZ</li>
+      <li>[31:9]: reserved, SBZ</li>
+      <li>[8:8]:  user mode</li>
       <li>[7:7]:  mmu enabled</li>
       <li>[6:6]:  instruction cache enabled</li>
       <li>[5:5]:  data cache enabled</li>
@@ -341,6 +338,14 @@ features:</p>
       <li>[31:24]:	number of ways</li>
       <li>[23:8]:	number of cache lines</li>
       <li>[7:0]:	words per cache line</li>
+    </ul>
+  </li>
+  <li>5: TLB feature register
+    <ul>
+      <li>[31:24]:	SBZ</li>
+      <li>[23:16]:	number of ITLB entries</li>
+      <li>[15:8]:	SBZ</li>
+      <li>[7:0]:		number of DTLB entries</li>
     </ul>
   </li>
 </ul>
