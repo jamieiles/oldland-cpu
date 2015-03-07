@@ -14,6 +14,7 @@ Oldland is a 32-bit RISC CPU targeted at FPGAs.  The main features are:
   - Exception table for interrupts, data/instruction aborts, illegal
   instruction and software interrupts along with separate ITLB/DTLB miss
   handlers.
+  - User and supervisor modes.
 
 Keynsham is a SoC using Oldland as the core and has a number of peripherals:
 
