@@ -153,6 +153,8 @@ reg		ra_forward_mem = 1'b0;
 reg		rb_forward_exec = 1'b0;
 reg		rb_forward_mem = 1'b0;
 
+wire		user_mode;
+
 wire [31:0]	de_ra = ra_forward_exec ? em_alu_out :
 			ra_forward_mem ? mw_wr_val : ra;
 wire [31:0]	de_rb = rb_forward_exec ? em_alu_out :
@@ -224,7 +226,8 @@ oldland_decode	decode(.clk(clk),
 		       .i_fetched(fd_i_fetched),
 		       .i_valid(de_i_valid),
 		       .bkpt_hit(bkpt_hit),
-		       .cache_instr(de_cache_instr));
+		       .cache_instr(de_cache_instr),
+		       .user_mode(user_mode));
 
 oldland_exec	execute(.clk(clk),
 			.rst(dbg_rst),
@@ -286,7 +289,8 @@ oldland_exec	execute(.clk(clk),
                         .tlb_enabled(tlb_enabled),
 			.dtlb_miss(dtlb_miss),
                         .dtlb_miss_handler(dtlb_miss_handler),
-                        .itlb_miss_handler(itlb_miss_handler));
+                        .itlb_miss_handler(itlb_miss_handler),
+			.user_mode(user_mode));
 
 oldland_memory	#(.icache_idx_bits(icache_idx_bits),
 		  .dcache_idx_bits(dcache_idx_bits))

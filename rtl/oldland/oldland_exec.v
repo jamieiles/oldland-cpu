@@ -58,9 +58,8 @@ module oldland_exec(input wire		clk,
                     output reg          tlb_enabled,
 		    input wire		dtlb_miss,
                     output reg [31:2]   dtlb_miss_handler,
-                    output reg [31:2]   itlb_miss_handler);
-
-reg user_mode = 1'b0;
+                    output reg [31:2]   itlb_miss_handler,
+		    output reg		user_mode);
 
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;

@@ -362,13 +362,15 @@
             class: 2,
             opcode: 9,
             format: [[rd], [imm13]],
-            description: "Rd := control register N."
+            description: "Rd := control register N.",
+            privileged: 1
         },
         scr: {
             class: 2,
             opcode: 10,
             format: [[imm13], [ra]],
-            description: "Control register N := ra."
+            description: "Control register N := ra.",
+            privileged: 1
         },
         swi: {
             class: 1,
@@ -382,14 +384,16 @@
             opcode: 2,
             format: [],
             description: "Return from exception.",
-            comment: "marked as a branch so we get the stalling logic for free."
+            comment: "marked as a branch so we get the stalling logic for free.",
+            privileged: 1
         },
         cache: {
             class: 2,
             opcode: 15,
             format: [[ra], [imm13]],
             alu_opcode: "copya",
-            description: "Cache operation imm13, with index Ra if index valid."
+            description: "Cache operation imm13, with index Ra if index valid.",
+            privileged: 1
         }
     }
 }

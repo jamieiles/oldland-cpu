@@ -114,7 +114,7 @@ reg		itlb_miss_pending = 1'b0;
  *
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
-wire		should_stall = ^instr[31:30] == 1'b1;
+wire		should_stall = ^instr[31:30] == 1'b1 && ~illegal_instr;
 
 assign		stopped = state == STATE_STOPPED;
 

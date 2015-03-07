@@ -847,7 +847,8 @@ static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 		return;
 	}
 
-	if (!ucode_valid(ucode)) {
+	if (!ucode_valid(ucode) ||
+	    (ucode_priv(ucode) && c->flagsbf.u)) {
 		do_vector(c, VECTOR_ILLEGAL_INSTR);
 		return;
 	}

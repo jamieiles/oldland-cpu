@@ -38,14 +38,15 @@ module oldland_decode(input wire	clk,
 		      input wire	i_fetched,
 		      output reg	i_valid,
 		      output wire	bkpt_hit,
-		      output reg	cache_instr);
+		      output reg	cache_instr,
+		      input wire	user_mode);
 
 wire [6:0]      addr = instr[31:25];
 
 reg [31:0]      microcode[127:0];
-wire [27:0]     uc_val = microcode[addr][27:0];
+wire [28:0]     uc_val = microcode[addr][28:0];
 
-wire            valid = uc_val[22];
+wire            valid = uc_val[22] & ~(privileged & user_mode);
 wire [1:0]      imsel = uc_val[21:20];
 wire            rd_is_lr = uc_val[12];
 
@@ -57,6 +58,7 @@ wire [31:0]     lo16 = {16'b0, instr[25:10]};
 assign		ra_sel = instr[11:8];
 assign		rb_sel = instr[7:4];
 
+wire		privileged = uc_val[28];
 assign		illegal_instr = ~valid;
 
 assign		bkpt_hit = instr[31:30] == `CLASS_MISC &&
@@ -89,7 +91,7 @@ initial begin
 end
 
 always @(posedge clk) begin
-	if (rst) begin
+	if (rst || !valid) begin
 		/*
 		 * Reset is only concerned with anything that can affect
 		 * state.

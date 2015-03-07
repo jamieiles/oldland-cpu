@@ -18,6 +18,11 @@ enum maw {
 	MAW_32
 };
 
+static inline unsigned ucode_priv(uint32_t ucode)
+{
+	return ucode >> 28 & 0x1;
+}
+
 static inline unsigned ucode_cache(uint32_t ucode)
 {
 	return ucode >> 27 & 0x1;

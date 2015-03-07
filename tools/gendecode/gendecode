@@ -13,6 +13,7 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
+  [28]    priv  Privileged instruction.
   [27]    cache Cache operation.
   [26]    upc   Update carry flag.
   [25]    rfe   Is return-from-exception.
@@ -47,7 +48,21 @@ itab = instructions.instructions
 
 rom_entries = {}
 
+class RomEntry(object):
+    def __init__(self, idef, bits):
+        self._idef = idef
+        self._bits = bits
+
+    @property
+    def idef(self):
+        return self._idef
+
+    @property
+    def bits(self):
+        return self._bits
+
 field_shifts = {
+    'priv':  28,
     'cache': 27,
     'upc':   26,
     'rfe':   25,
@@ -87,7 +102,7 @@ def add_arith_instruction(opcode, idef):
     if 'alu_opcode' in idef:
         alu_opcode = instructions.alu_opcodes.get(idef['alu_opcode'],
                                                   alu_opcode)
-    rom_entries[(opcode, 'register')] = {
+    rom_entries[(opcode, 'register')] = RomEntry(idef, {
         'valid': 1,
         'op2rb': 1,
         'op1ra': 1,
@@ -95,8 +110,8 @@ def add_arith_instruction(opcode, idef):
         'aluop': alu_opcode,
         'upcc':  'Z' in flags_updated or 'O' in flags_updated,
         'upc':   'C' in flags_updated
-    }
-    rom_entries[(opcode, 'immediate')] = {
+    })
+    rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
         'valid': 1,
         'imsel': IMM13,
         'op1ra': 1,
@@ -104,7 +119,7 @@ def add_arith_instruction(opcode, idef):
         'aluop': alu_opcode,
         'upcc':  'Z' in flags_updated or 'O' in flags_updated,
         'upc':   'C' in flags_updated
-    }
+    })
 
 def alu_opcode_val(name):
     return instructions.alu_opcodes[name]
@@ -112,7 +127,7 @@ def alu_opcode_val(name):
 def add_branch_instruction(opcode, idef):
     cc = idef.get('branch_cc', '7')
     if opcode not in ['swi', 'rfe']:
-        rom_entries[(opcode, 'register')] = {
+        rom_entries[(opcode, 'register')] = RomEntry(idef, {
             'valid': 1,
             'bcc':   int(cc),
             'icall': opcode == 'call',
@@ -120,14 +135,14 @@ def add_branch_instruction(opcode, idef):
             'op1rb': 1,
             'wrrd':  opcode == 'call',
             'aluop': alu_opcode_val('copya')
-        }
+        })
     # Return to immediate isn't a real instruction, trap it.
     if opcode != 'ret':
         alu_opcodes = {
             'swi': 0x11,
             'rfe': 0x12,
         }
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'imsel': IMM24,
             'bcc':   int(cc),
@@ -137,7 +152,7 @@ def add_branch_instruction(opcode, idef):
             'aluop': alu_opcodes.get(opcode, alu_opcode_val('add')),
             'swi':   opcode == 'swi',
             'rfe':   opcode == 'rfe'
-        }
+        })
 
 def add_mem_instruction(opcode, idef):
     def access_width(opcode):
@@ -151,42 +166,42 @@ def add_mem_instruction(opcode, idef):
         }[opcode])
 
     if opcode in ['gcr', 'scr']:
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'wcr':   opcode == 'scr',
             'op1ra': opcode == 'scr', # cr[N] := ra
             'wrrd':  opcode == 'gcr', # rd := cr[N]
             'aluop': alu_opcode_val('copya') if opcode == 'scr' else alu_opcode_val('gcr'),
-        }
+        })
     elif not 'cache' in opcode:
-        rom_entries[(opcode, 'register')] = {
+        rom_entries[(opcode, 'register')] = RomEntry(idef, {
             'valid': 1,
             'maw':   access_width(opcode),
             'mstr':  'str' in opcode,
             'mldr':  'ldr' in opcode,
             'op1ra': 1,
             'aluop': alu_opcode_val('add'),
-        }
+        })
         # PC-relative load/store.
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'maw':   access_width(opcode),
             'mstr':  'str' in opcode,
             'mldr':  'ldr' in opcode,
             'aluop': alu_opcode_val('add'),
-        }
+        })
     else:
         alu_opcode = idef['opcode']
         if 'alu_opcode' in idef:
             alu_opcode = instructions.alu_opcodes.get(idef['alu_opcode'],
                                                     alu_opcode)
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'aluop': alu_opcode,
             'imsel': 0,
             'op1ra': True,
             'cache': 1,
-        }
+        })
 
 def add_misc_instruction(opcode, idef):
     if opcode in ['movhi', 'orlo']:
@@ -195,30 +210,30 @@ def add_misc_instruction(opcode, idef):
         also cover bit 25 so we need to insert this one twice in case the high
         bit of the immediate is set.
         """
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'imsel': HI16 if opcode == 'movhi' else LO16,
             'op1rb': opcode == 'orlo',
             'wrrd':  1,
             'aluop': idef['opcode'],
-        }
-        rom_entries[(opcode, 'register')] = {
+        })
+        rom_entries[(opcode, 'register')] = RomEntry(idef, {
             'valid': 1,
             'imsel': HI16 if opcode == 'movhi' else LO16,
             'op1rb': opcode == 'orlo',
             'wrrd':  1,
             'aluop': idef['opcode'],
-        }
+        })
     elif opcode in ['bkp', 'nop']:
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
-        }
+        })
     elif opcode == 'cpuid':
-        rom_entries[(opcode, 'immediate')] = {
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
             'valid': 1,
             'wrrd':  1,
             'aluop': alu_opcode_val('cpuid'),
-        }
+        })
 
 for opcode, idef in itab.items():
     if is_arith_instruction(idef):
@@ -230,6 +245,13 @@ for opcode, idef in itab.items():
     if is_misc_instruction(idef):
         add_misc_instruction(opcode, idef)
 
+def set_privileged():
+    for entry, romentry in rom_entries.items():
+        idef = romentry.idef
+        romentry.bits['priv'] = idef.get('privileged', 0)
+
+set_privileged()
+
 def dump_rom(rom):
     print('@00000000')
     for v in rom:
@@ -239,13 +261,13 @@ def build_rom():
     # All instructions are initially invalid
     rom = [0 for i in range(1 << 7)]
 
-    for entry, bits in rom_entries.items():
+    for entry, romentry in rom_entries.items():
         cls = itab[entry[0]]['class']
         opc = itab[entry[0]]['opcode']
         address = (cls << 5) | (opc << 1) | (entry[1] == 'register')
 
         data = 0
-        for k, v in bits.items():
+        for k, v in romentry.bits.items():
             data |= v << field_shifts[k]
         rom[address] = data
 
