@@ -66,6 +66,7 @@ struct cpu {
 	union {
 		uint32_t flagsw;
 		struct {
+			unsigned u:1;
 			unsigned m:1;
 			unsigned ic:1;
 			unsigned dc:1;
@@ -129,6 +130,7 @@ enum psr_flags {
 	PSR_DC	= (1 << 5),
 	PSR_IC	= (1 << 6),
 	PSR_M	= (1 << 7),
+	PSR_U	= (1 << 8),
 };
 
 static inline int data_cache_enabled(const struct cpu *c)
@@ -156,6 +158,7 @@ static void set_psr(struct cpu *c, uint32_t psr)
 	c->flagsbf.dc = !!(psr & PSR_DC);
 	c->flagsbf.ic = !!(psr & PSR_IC);
 	c->flagsbf.m = !!(psr & PSR_M);
+	c->flagsbf.u = !!(psr & PSR_U);
 }
 
 static uint32_t current_psr(const struct cpu *c)
@@ -163,7 +166,7 @@ static uint32_t current_psr(const struct cpu *c)
 	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
 		(c->flagsbf.n << 3) | (c->flagsbf.i << 4) |
 		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6) |
-                (c->flagsbf.m << 7);
+                (c->flagsbf.m << 7) | (c->flagsbf.u << 8);
 }
 
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
@@ -214,6 +217,7 @@ static void do_dtlb_miss(struct cpu *c, uint32_t fault_address)
 	/* TLB miss handlers run with interrupts and MMU disabled. */
 	c->flagsbf.i = 0;
 	c->flagsbf.m = 0;
+	c->flagsbf.u = 0;
 	cpu_set_next_pc(c, c->control_regs[CR_DTLB_MISS_HANDLER]);
 }
 
@@ -224,6 +228,7 @@ static void do_itlb_miss(struct cpu *c, uint32_t fault_address)
 	/* TLB miss handlers run with interrupts and MMU disabled. */
 	c->flagsbf.i = 0;
 	c->flagsbf.m = 0;
+	c->flagsbf.u = 0;
 	cpu_set_next_pc(c, c->control_regs[CR_ITLB_MISS_HANDLER]);
 }
 
@@ -483,6 +488,7 @@ static void do_vector(struct cpu *c, enum exception_vector vector)
 	c->control_regs[CR_FAULT_ADDRESS] = c->irq_active ? c->pc : c->pc + 4;
 	/* Exception handlers run with interrupts disabled. */
 	c->flagsbf.i = 0;
+	c->flagsbf.u = 0;
 	cpu_set_next_pc(c, c->control_regs[CR_VECTOR_ADDRESS] | vector);
 }
 
@@ -662,7 +668,8 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 			c->flagsbf.i << 4 |
 			c->flagsbf.dc << 5 |
 			c->flagsbf.ic << 6 |
-                        c->flagsbf.m << 7);
+                        c->flagsbf.m << 7 |
+			c->flagsbf.u << 8);
 		alu->alu_q = op2 < NUM_CONTROL_REGS ? c->control_regs[op2] : 0;
 		break;
 	case ALU_OPCODE_SWI:
@@ -727,6 +734,7 @@ static void process_branch(struct cpu *c, uint32_t instr, uint32_t ucode,
 		c->control_regs[CR_SAVED_PSR] = current_psr(c);
 		c->control_regs[CR_FAULT_ADDRESS] = c->pc + 4;
 		c->flagsbf.i = 0;
+		c->flagsbf.u = 0;
 	}
 }
 

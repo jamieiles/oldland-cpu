@@ -60,6 +60,8 @@ module oldland_exec(input wire		clk,
                     output reg [31:2]   dtlb_miss_handler,
                     output reg [31:2]   itlb_miss_handler);
 
+reg user_mode = 1'b0;
+
 wire [31:0]	op1 = alu_op1_ra ? ra : alu_op1_rb ? rb : pc_plus_4;
 wire [31:0]	op2 = alu_op2_rb ? rb : imm32;
 
@@ -79,9 +81,10 @@ reg		n_flag = 1'b0;
 
 reg [25:0]      vector_addr = 26'b0;
 
-wire [7:0]      psr = {tlb_enabled, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
+wire [8:0]      psr = {user_mode, tlb_enabled, icache_enabled, dcache_enabled,
+		       irqs_enabled, n_flag, o_flag, c_flag, z_flag};
 
-reg [7:0]       saved_psr = 8'b0;
+reg [8:0]       saved_psr = 9'b0;
 reg [31:0]      fault_address = 32'b0;
 reg [31:0]	data_fault_address = 32'b0;
 
@@ -89,8 +92,11 @@ assign		vector_base = vector_addr;
 
 wire [31:0]	control_regs[7:0];
 assign		control_regs[0] = {vector_addr, 6'b0};
-assign		control_regs[1] = {24'b0, tlb_enabled, icache_enabled, dcache_enabled, irqs_enabled, n_flag, o_flag, c_flag, z_flag};
-assign		control_regs[2] = {24'b0, saved_psr};
+assign		control_regs[1] = {23'b0, user_mode, tlb_enabled,
+				   icache_enabled, dcache_enabled,
+				   irqs_enabled, n_flag, o_flag, c_flag,
+				   z_flag};
+assign		control_regs[2] = {23'b0, saved_psr};
 assign		control_regs[3] = fault_address;
 assign		control_regs[4] = data_fault_address;
 assign		control_regs[5] = {dtlb_miss_handler, 2'b0};
@@ -125,6 +131,7 @@ initial begin
         tlb_enabled = 1'b0;
         dtlb_miss_handler = 30'b0;
         itlb_miss_handler = 30'b0;
+	user_mode = 1'b0;
 end
 
 always @(*) begin
@@ -204,14 +211,14 @@ always @(posedge clk)
 /* CR2: saved PSR. */
 always @(posedge clk) begin
 	if (rst)
-		saved_psr <= 8'b0;
+		saved_psr <= 9'b0;
 	else if (dbg_cr_wr_en && dbg_cr_sel == 3'h2)
-		saved_psr <= dbg_cr_wr_val[7:0];
+		saved_psr <= dbg_cr_wr_val[8:0];
         else if (is_swi || exception_start || exception_disable_irqs ||
                  irq_start || data_abort || exception_disable_mmu)
                 saved_psr <= psr;
         else if (write_cr && cr_sel == 3'h2)
-                saved_psr <= ra[7:0];
+                saved_psr <= ra[8:0];
 end
 
 /* CR3: fault address register. */
@@ -268,6 +275,7 @@ always @(posedge clk) begin
 		icache_enabled <= 1'b0;
 		dcache_enabled <= 1'b0;
                 tlb_enabled <= 1'b0;
+		user_mode <= 1'b0;
 	end else begin
 		alu_out <= alu_q;
 		wr_result <= update_rd;
@@ -282,12 +290,18 @@ always @(posedge clk) begin
 		if (update_carry)
 			c_flag <= alu_c;
 
-		if (exception_disable_irqs)
+		if (exception_disable_irqs || is_swi) begin
 			irqs_enabled <= 1'b0;
-		if (exception_disable_mmu)
+			user_mode <= 1'b0;
+		end
+
+		if (exception_disable_mmu) begin
 			tlb_enabled <= 1'b0;
+			user_mode <= 1'b0;
+		end
 
 		if (is_rfe) begin
+			user_mode <= saved_psr[8];
 			tlb_enabled <= saved_psr[7];
 			icache_enabled <= saved_psr[6];
 			dcache_enabled <= saved_psr[5];
@@ -300,6 +314,7 @@ always @(posedge clk) begin
 
 		/* CR1: PSR. */
 		if (write_cr && cr_sel == 3'h1) begin
+			user_mode <= ra[8];
 			tlb_enabled <= ra[7];
 			icache_enabled <= ra[6];
 			dcache_enabled <= ra[5];
@@ -309,6 +324,7 @@ always @(posedge clk) begin
 			c_flag <= ra[1];
 			z_flag <= ra[0];
 		end else if (dbg_cr_wr_en && dbg_cr_sel == 3'h1) begin
+			user_mode <= dbg_cr_wr_val[8];
 			tlb_enabled <= dbg_cr_wr_val[7];
 			icache_enabled <= dbg_cr_wr_val[6];
 			dcache_enabled <= dbg_cr_wr_val[5];

@@ -198,10 +198,6 @@ To return from the exception the RFE instruction restores the saved PSR from
 the saved registers and sets the PC to the faulting address (which can be
 modified in the exception handler).
 
-$sp is banked between user/supervisor mode to make handling of exceptions more
-convenient and there are a pair of instructions for reading/writing the
-usermode $sp, only from supervisor mode.  There are only 2 processor modes.
-
 IRQ entry:
 
   - discard instructions in fetch and decode stages
@@ -225,7 +221,8 @@ Control registers:
 	- \[5:0\]:  reserved, SBZ
 
 - cr1:	PSR
-	- \[31:4\]: reserved, SBZ
+	- \[31:9\]: reserved, SBZ
+	- \[8:8\]:  user mode
 	- \[7:7\]:  mmu enabled
 	- \[6:6\]:  instruction cache enabled
 	- \[5:5\]:  data cache enabled

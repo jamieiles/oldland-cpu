@@ -125,11 +125,12 @@ reg		fetching = 1'b0;
 assign		i_fetched = i_ack && ~itlb_miss;
 wire		take_irq = irqs_enabled && !pipeline_busy && irq_req && (i_access && !fetching);
 wire		do_itlb_miss = !pipeline_busy && itlb_miss_pending && (i_access && !fetching);
-assign		exception_disable_irqs = illegal_instr |
-					 data_abort |
+assign		exception_disable_irqs = data_abort |
 					 take_irq |
 					 decode_exception |
-					 dtlb_miss;
+					 dtlb_miss |
+					 itlb_miss |
+					 i_error;
 assign		irq_start = take_irq;
 reg		starting_irq = 1'b0;
 
