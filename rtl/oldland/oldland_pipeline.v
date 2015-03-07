@@ -64,7 +64,9 @@ module oldland_pipeline(input wire		clk,
 			input wire		dbg_rst,
 			/* CPUID> */
 			output wire [2:0]	cpuid_sel,
-			input wire [31:0]	cpuid_val);
+			input wire [31:0]	cpuid_val,
+			/* State. */
+			output wire		user_mode);
 
 parameter	icache_idx_bits = 0;
 parameter	dcache_idx_bits = 0;
@@ -152,8 +154,6 @@ reg		ra_forward_exec = 1'b0;
 reg		ra_forward_mem = 1'b0;
 reg		rb_forward_exec = 1'b0;
 reg		rb_forward_mem = 1'b0;
-
-wire		user_mode;
 
 wire [31:0]	de_ra = ra_forward_exec ? em_alu_out :
 			ra_forward_mem ? mw_wr_val : ra;

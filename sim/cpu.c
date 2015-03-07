@@ -236,6 +236,7 @@ static int translate_data_address(struct cpu *c,
 				  struct translation *translation)
 {
 	translation->perms = TLB_PERMS_MASK;
+	translation->in_user_mode = c->flagsbf.u;
 
 	if (mmu_enabled(c)) {
 		int err = tlb_translate(c->dtlb, translation);
@@ -252,6 +253,7 @@ static int translate_instruction_address(struct cpu *c,
 					 struct translation *translation)
 {
 	translation->perms = TLB_PERMS_MASK;
+	translation->in_user_mode = c->flagsbf.u;
 
 	if (mmu_enabled(c)) {
 		int err = tlb_translate(c->itlb, translation);

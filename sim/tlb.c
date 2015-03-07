@@ -83,12 +83,21 @@ void tlb_set_virt(struct tlb *tlb, uint32_t virt)
 int tlb_translate(struct tlb *tlb, struct translation *translation)
 {
 	struct tlb_entry *entry = tlb_find_mapping(tlb, translation->virt);
+	uint32_t perms;
 
 	if (!entry)
 		return -1;
 
+	/*
+	 * Permissions are [3:2] for user, [1:0] for supervisor.
+	 */
+	perms = entry->virt & 0xf;
+	if (translation->in_user_mode)
+		perms >>= 2;
+	perms &= TLB_PERMS_MASK;
+
 	translation->phys = entry->phys | (translation->virt & PAGE_OFFSET);
-	translation->perms = entry->virt & TLB_PERMS_MASK;
+	translation->perms = perms;
 
 	return 0;
 }

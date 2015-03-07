@@ -13,6 +13,7 @@ struct translation {
 	uint32_t virt;
 	uint32_t phys;
 	uint32_t perms;
+	int in_user_mode;
 };
 
 struct tlb *tlb_new(unsigned int num_entries);

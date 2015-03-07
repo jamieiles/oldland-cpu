@@ -132,6 +132,8 @@ wire [2:0]	cpu_cpuid_sel;
 wire [2:0]	cpuid_sel = dbg_en ? dbg_cpuid_sel : cpu_cpuid_sel;
 wire [31:0]	cpuid_val;
 
+wire		user_mode;
+
 oldland_cpuid		#(.cpuid_manufacturer(cpuid_manufacturer),
 			  .cpuid_model(cpuid_model),
 			  .cpu_clock_speed(cpu_clock_speed),
@@ -230,6 +232,7 @@ oldland_tlb		#(.nr_entries(dtlb_num_entries))
 			     .rst(dbg_rst),
 			     .enabled(tlb_enabled),
 			     .starting_miss(dtlb_miss | itlb_miss),
+			     .user_mode(user_mode),
 			     .inval(tlb_inval),
 			     .load_data(tlb_load_data),
 			     .load_virt(dtlb_load_virt),
@@ -247,6 +250,7 @@ oldland_tlb		#(.nr_entries(itlb_num_entries))
 			     .rst(dbg_rst),
 			     .enabled(tlb_enabled),
 			     .starting_miss(dtlb_miss | itlb_miss),
+			     .user_mode(user_mode),
 			     .inval(tlb_inval),
 			     .load_data(tlb_load_data),
 			     .load_virt(itlb_load_virt),
@@ -379,6 +383,8 @@ oldland_pipeline	#(.icache_idx_bits(icache_idx_bits),
 				 .cpuid_sel(cpu_cpuid_sel),
 				 .cpuid_val(cpuid_val),
 				 /* Reset. */
-				 .dbg_rst(dbg_rst));
+				 .dbg_rst(dbg_rst),
+				 /* State. */
+				 .user_mode(user_mode));
 
 endmodule
