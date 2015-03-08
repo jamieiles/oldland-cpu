@@ -20,7 +20,8 @@
         swi:   0x11,
         rfe:   0x12,
         cpuid: 0x13,
-        mul:   0x14
+        mul:   0x14,
+        gpsr:  0x15
     },
     operands: {
         rd: {
@@ -394,6 +395,22 @@
             alu_opcode: "copya",
             description: "Cache operation imm13, with index Ra if index valid.",
             privileged: 1
+        },
+        gpsr: {
+            class: 3,
+            opcode: 1,
+            format: [[rd]],
+            alu_opcode: "gpsr",
+            description: "Move the PSR into Rd.",
+            alu_opcode: "gpsr"
+        },
+        spsr: {
+            class: 3,
+            opcode: 2,
+            format: [[ra]],
+            alu_opcode: "gpsr",
+            description: "Move the contents of Ra into the PSR.",
+            alu_opcode: "copya"
         }
     }
 }

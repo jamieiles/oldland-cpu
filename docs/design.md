@@ -130,6 +130,8 @@ Encoding:
 	SCR	 1  0  1  0  1  0  0  I  I  I  I  I  I  I  I  I  I  I  I  I ra ra ra ra  x  x  x  x  x  x  x  x
 	
 	BKP	 1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  x  x  x  x  x  x  x  x  x  x  x  x
+	GPSR	 1  1  0  0  0  1  0  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x  x rd rd rd rd
+	SPSR	 1  1  0  0  1  0  0  x  x  x  x  x  x  x  x  x  x  x  x  x ra ra ra ra  x  x  x  x  x  x  x  x
 	MOVHI	 1  1  1  0  1  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x  x  x  x  x rd rd rd rd
 	ORLO	 1  1  1  1  0  1  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  I  0  x rb rb rb rb rd rd rd rd
 	CPUID	 1  1  0  1  1  1  0  I  I  I  I  I  I  I  I  I  I  I  I  I  x  x  x  x  x  x  x  x rd rd rd rd
@@ -214,6 +216,16 @@ RFE implementation:
   - moved saved_psr into psr
   - move fault_address into pc (handler should have adjusted it).
 
+Program Status Register:
+
+The program status register may be accessed in an unprivileged mode for
+implementing things like setjmp/longjmp.  The bits are mirrored in cr1.
+
+- \[3:3\]:  negative flag
+- \[2:2\]:  overflow flag
+- \[1:1\]:  carry flag
+- \[0:0\]:  zero flag
+
 Control registers:
 
 - cr0:	exception table base address
@@ -227,7 +239,7 @@ Control registers:
 	- \[6:6\]:  instruction cache enabled
 	- \[5:5\]:  data cache enabled
 	- \[4:4\]:  irqs enabled
-	- \[3:3\]:  negative flag
+	- \[3:0\]:  reserved, SBZ
 	- \[2:2\]:  overflow flag
 	- \[1:1\]:  carry flag
 	- \[0:0\]:  zero flag

@@ -111,6 +111,7 @@ wire		de_update_flags;
 wire		de_update_carry;
 wire [2:0]      de_cr_sel;
 wire            de_write_cr;
+wire            de_spsr;
 wire            de_is_swi;
 wire            de_is_rfe;
 wire		df_illegal_instr;
@@ -219,6 +220,7 @@ oldland_decode	decode(.clk(clk),
 		       .update_carry(de_update_carry),
                        .cr_sel(de_cr_sel),
                        .write_cr(de_write_cr),
+                       .spsr(de_spsr),
                        .is_swi(de_is_swi),
 		       .is_rfe(de_is_rfe),
 		       .illegal_instr(df_illegal_instr),
@@ -263,6 +265,7 @@ oldland_exec	execute(.clk(clk),
 			.mem_wr_en(em_mem_wr_en),
                         .cr_sel(de_cr_sel),
                         .write_cr(de_write_cr),
+                        .spsr(de_spsr),
                         .is_swi(de_is_swi),
 			.is_rfe(de_is_rfe),
 			.vector_base(e_vector_base),

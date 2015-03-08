@@ -58,6 +58,7 @@ enum control_register {
 };
 
 #define MICROCODE_NR_WORDS	(1 << 7)
+#define GPSR_SPSR_MASK          (0xf)
 
 struct cpu {
 	uint32_t pc;
@@ -689,6 +690,9 @@ static void do_alu(struct cpu *c, uint32_t instr, uint32_t ucode,
 		else
 			alu->alu_q = cpuid_regs[op2];
 		break;
+        case ALU_OPCODE_GPSR:
+                alu->alu_q = current_psr(c) & GPSR_SPSR_MASK;
+                break;
 	}
 
 	alu->mem_write_val = c->regs[instr_rb(instr)];
@@ -754,6 +758,20 @@ static void do_scr(struct cpu *c, uint32_t instr, uint32_t ucode,
 	c->control_regs[cr_sel] = alu->alu_q;
 	if (cr_sel == CR_PSR)
 		set_psr(c, c->control_regs[CR_PSR]);
+}
+
+static void do_spsr(struct cpu *c, uint32_t instr, uint32_t ucode,
+                    const struct alu_result *alu)
+{
+        uint32_t cr1 = c->control_regs[CR_PSR];
+
+	if (!ucode_spsr(ucode))
+		return;
+
+        cr1 &= ~GPSR_SPSR_MASK;
+        cr1 |= alu->alu_q & GPSR_SPSR_MASK;
+	c->control_regs[CR_PSR] = cr1;
+        set_psr(c, c->control_regs[CR_PSR]);
 }
 
 static unsigned maw_to_bits(enum maw maw)
@@ -862,6 +880,7 @@ static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 	commit_alu(c, instr, ucode, &alu);
 	process_branch(c, instr, ucode, &alu);
 	do_scr(c, instr, ucode, &alu);
+        do_spsr(c, instr, ucode, &alu);
 
 	if (do_memory(c, instr, ucode, &alu))
 		return;

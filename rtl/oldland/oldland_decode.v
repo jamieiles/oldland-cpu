@@ -31,6 +31,7 @@ module oldland_decode(input wire	clk,
 		      output reg	update_carry,
                       output reg [2:0]  cr_sel,
                       output reg        write_cr,
+                      output reg        spsr,
                       output reg        is_swi,
 		      output reg	is_rfe,
 		      output wire	illegal_instr,
@@ -44,7 +45,7 @@ module oldland_decode(input wire	clk,
 wire [6:0]      addr = instr[31:25];
 
 reg [31:0]      microcode[127:0];
-wire [28:0]     uc_val = microcode[addr][28:0];
+wire [29:0]     uc_val = microcode[addr][29:0];
 
 wire            valid = uc_val[22] & ~(privileged & user_mode);
 wire [1:0]      imsel = uc_val[21:20];
@@ -83,6 +84,7 @@ initial begin
 	update_carry = 1'b0;
         cr_sel = 3'b0;
         write_cr = 1'b0;
+        spsr = 1'b0;
         is_swi = 1'b0;
 	is_rfe = 1'b0;
 	i_valid = 1'b0;
@@ -99,6 +101,7 @@ always @(posedge clk) begin
 		is_rfe <= 1'b0;
 		is_swi <= 1'b0;
 		write_cr <= 1'b0;
+		spsr <= 1'b0;
 		is_call <= 1'b0;
 		mem_store <= 1'b0;
 		mem_load <= 1'b0;
@@ -109,6 +112,7 @@ always @(posedge clk) begin
 		i_valid <= 1'b0;
 		cache_instr <= 1'b0;
 	end else begin
+                spsr <= uc_val[29];
 		cache_instr <= uc_val[27];
 		update_carry <= uc_val[26];
 		is_rfe <= uc_val[25];

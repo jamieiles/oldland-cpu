@@ -20,6 +20,7 @@ module oldland_exec(input wire		clk,
 		    input wire		update_flags,
                     input wire [2:0]    cr_sel,
                     input wire          write_cr,
+                    input wire          spsr,
 		    output reg		branch_taken,
 		    output reg [31:0]	alu_out,
 		    output reg		mem_load_out,
@@ -165,6 +166,7 @@ always @(*) begin
         `ALU_OPC_SWI:   alu_q = {vector_addr, 6'h8};
 	`ALU_OPC_RFE:   alu_q = fault_address;
 	`ALU_OPC_CPUID:	alu_q = cpuid_val;
+        `ALU_OPC_GPSR:  alu_q = {28'b0, psr[3:0]};
 	default:        alu_q = 32'b0;
 	endcase
 end
@@ -318,6 +320,11 @@ always @(posedge clk) begin
 			icache_enabled <= ra[6];
 			dcache_enabled <= ra[5];
 			irqs_enabled <= ra[4];
+			n_flag <= ra[3];
+			o_flag <= ra[2];
+			c_flag <= ra[1];
+			z_flag <= ra[0];
+                end else if (spsr) begin
 			n_flag <= ra[3];
 			o_flag <= ra[2];
 			c_flag <= ra[1];

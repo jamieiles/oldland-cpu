@@ -13,6 +13,7 @@ Given the instruction class, opcode, and format select bit, output the correct
 decode bits in a format suitable for insertion as a ROM.
 
 ROM outputs:
+  [29]    spsr  Set PSR.
   [28]    priv  Privileged instruction.
   [27]    cache Cache operation.
   [26]    upc   Update carry flag.
@@ -62,6 +63,7 @@ class RomEntry(object):
         return self._bits
 
 field_shifts = {
+    'spsr':  29,
     'priv':  28,
     'cache': 27,
     'upc':   26,
@@ -223,6 +225,14 @@ def add_misc_instruction(opcode, idef):
             'op1rb': opcode == 'orlo',
             'wrrd':  1,
             'aluop': idef['opcode'],
+        })
+    elif opcode in ['spsr', 'gpsr']:
+        rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
+            'valid': 1,
+            'spsr':  1 if opcode == 'spsr' else 0,
+            'op1ra': opcode == 'spsr', # psr := ra
+            'wrrd':  opcode == 'gpsr',  # rd := psr
+            'aluop': alu_opcode_val(idef['alu_opcode'])
         })
     elif opcode in ['bkp', 'nop']:
         rom_entries[(opcode, 'immediate')] = RomEntry(idef, {
