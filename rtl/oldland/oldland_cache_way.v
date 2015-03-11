@@ -237,7 +237,7 @@ always @(*) begin
 	endcase
 end
 
-wire	line_complete = m_ack &&
+wire	line_complete = way_sel && m_ack &&
 		words_done == CACHE_LINE_WORDS[CACHE_OFFSET_BITS - 1:0] - 1'b1;
 
 task mem_write_word;
@@ -339,8 +339,8 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
-	flush_complete <= state == STATE_FLUSH && (line_complete | ~valid);
-	dbg_flush_complete <= state == STATE_FLUSH && (line_complete | ~valid);
+	flush_complete <= state == STATE_FLUSH && (line_complete | ~valid | ~dirty);
+	dbg_flush_complete <= state == STATE_FLUSH && (line_complete | ~valid | ~dirty);
 end
 
 always @(posedge clk) begin
@@ -362,7 +362,7 @@ end
 
 always @(posedge clk) begin
 	if (state == STATE_FILL || state == STATE_FLUSH || state == STATE_EVICT) begin
-		if (m_ack)
+		if (m_ack && way_sel)
 			words_done <= words_done + 1'b1;
 	end else begin
 		words_done <= {CACHE_OFFSET_BITS{1'b0}};

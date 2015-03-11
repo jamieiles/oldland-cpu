@@ -279,11 +279,11 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk) begin
-	if (enabled && |w_filled) begin
+	if ((enabled && |w_filled) || (completed_cacheops[victim_sel])) begin
 		if (victim_sel == num_ways[$clog2(num_ways) - 1:0] - 1'b1)
 			victim_sel <= {$clog2(num_ways){1'b0}};
-        else
-	        victim_sel <= victim_sel + 1'b1;
+		else
+			victim_sel <= victim_sel + 1'b1;
 	end
 end
 
