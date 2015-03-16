@@ -108,6 +108,7 @@ assign		pc_plus_4 = pc + 32'd4;
 reg [31:0]	next_pc = `OLDLAND_RESET_ADDR;
 assign		dbg_pc = pc;
 reg		itlb_miss_pending = 1'b0;
+reg		branch_pending = 1'b0;
 
 /*
  * Load/store or branches cause stalling.  This means a class of 01 or 10.
@@ -115,14 +116,15 @@ reg		itlb_miss_pending = 1'b0;
  * If we detect a stall then issue NOP's until the stall is cleared.
  */
 wire		should_stall = ^instr[31:30] == 1'b1 && ~illegal_instr;
+wire		flushing = state == STATE_FLUSHING;
 
 assign		stopped = state == STATE_STOPPED;
 
 assign		fetch_addr = next_pc[31:2];
-assign		instr = i_ack && !itlb_miss ? fetch_data : `INSTR_NOP;
+assign		instr = i_ack && !itlb_miss && !flushing ? fetch_data : `INSTR_NOP;
 
 reg		fetching = 1'b0;
-assign		i_fetched = i_ack && ~itlb_miss;
+assign		i_fetched = i_ack && ~itlb_miss && ~flushing;
 wire		take_irq = irqs_enabled && !pipeline_busy && irq_req && (i_access && !fetching);
 wire		do_itlb_miss = !pipeline_busy && itlb_miss_pending && (i_access && !fetching);
 assign		exception_disable_irqs = data_abort |
@@ -133,18 +135,31 @@ assign		exception_disable_irqs = data_abort |
 					 i_error;
 assign		irq_start = take_irq;
 reg		starting_irq = 1'b0;
+reg		irq_return_to_this_instr = 1'b0;
 
 assign		exception_disable_mmu = dtlb_miss | do_itlb_miss;
 
 initial	begin
 	i_access = 1'b1;
+	branch_pending = 1'b0;
+end
+
+always @(posedge clk) begin
+	if (branch_taken)
+		branch_pending <= 1'b1;
+	if (i_ack || take_irq)
+		branch_pending <= 1'b0;
 end
 
 always @(*) begin
 	if (state == STATE_STOPPED)
 		exception_fault_address = pc;
+	else if (branch_taken)
+		exception_fault_address = branch_pc;
+	else if ((branch_pending && !i_ack) || irq_return_to_this_instr)
+		exception_fault_address = pc;
 	else
-		exception_fault_address = branch_taken ? branch_pc : pc_plus_4;
+		exception_fault_address = pc_plus_4;
 end
 
 always @(posedge clk) begin
@@ -192,7 +207,7 @@ always @(posedge clk)
 	state <= next_state;
 
 always @(posedge clk) begin
-	if (i_ack || itlb_miss || itlb_miss_pending)
+	if ((i_ack && !i_access) || itlb_miss || itlb_miss_pending)
 		fetching <= 1'b0;
 	else if (i_access)
 		fetching <= 1'b1;
@@ -256,8 +271,20 @@ always @(posedge clk) begin
 		pc <= dbg_pc_wr_val;
 	else if (state == STATE_STALLED && stall_clear)
 		pc <= next_pc;
-	else if (((i_ack && !itlb_miss) || take_irq || do_itlb_miss) && !bkpt_hit)
+	else if (((i_ack && !itlb_miss) || take_irq || do_itlb_miss) && !bkpt_hit && state != STATE_FLUSHING)
 		pc <= next_pc;
+end
+
+/*
+ * If we advance the PC during pipeline flushing for an IRQ then we won't
+ * begin the instruction and need to return to the new PC, not the next
+ * instruction.
+ */
+always @(posedge clk) begin
+	if (i_ack && irqs_enabled && irq_req && state == STATE_FLUSHING)
+		irq_return_to_this_instr <= 1'b1;
+	if (take_irq)
+		irq_return_to_this_instr <= 1'b0;
 end
 
 endmodule

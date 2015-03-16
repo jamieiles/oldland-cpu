@@ -23,14 +23,29 @@ _start:
 	add	$r2, $r2, 1
 	str32	$r2, [$r1, 0x4]	/* Enable IRQ0. */
 
+	nop
+	nop
+	nop
 	swi	0
+	nop
+	nop
+	nop
 	str32	$r2, [$r1, 0xc] /* Fire IRQ0. */
+	nop
+	nop
+	nop
 	swi	0
 
 	TESTPOINT	TP_USER, 1
 
 	swi	0
+	nop
+	nop
+	nop
 	str32	$r2, [$r1, 0xc] /* Fire IRQ0. */
+	nop
+	nop
+	nop
 	swi	0
 
 	TESTPOINT	TP_USER, 1
