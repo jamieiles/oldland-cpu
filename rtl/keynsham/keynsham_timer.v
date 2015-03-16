@@ -20,7 +20,6 @@ reg		periodic = 1'b0;
 reg		enabled = 1'b0;
 reg		irq_enable = 1'b0;
 reg		irq_active = 1'b0;
-reg		irq_cleared = 1'b0;
 
 wire [31:0]	reg_count = count;
 wire [31:0]	reg_reload = reload_val;
@@ -33,6 +32,8 @@ wire            access_count = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_COUNT_REG_O
 wire            access_reload = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_RELOAD_REG_OFFS;
 wire            access_control = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_CONTROL_REG_OFFS;
 wire            access_eoi = {28'b0, reg_sel[1:0], 2'b0} == `TIMER_EOI_REG_OFFS;
+
+wire		timer_complete = enabled && count == 32'b1;
 
 initial begin
 	bus_error = 1'b0;
@@ -55,9 +56,12 @@ always @(posedge clk) begin
 	if (enabled) begin
 		if (|count && !periodic && enabled)
 			count <= count - 32'b1;
+		else if (~|count && periodic && enabled)
+			count <= reload_val;
 		else if (periodic && enabled)
 			count <= count - 32'b1;
-		if (~|count && irq_enable && !irq_active && !irq_cleared)
+
+		if (timer_complete && irq_enable)
 			irq_active <= 1'b1;
 	end
 
@@ -68,19 +72,17 @@ always @(posedge clk) begin
 		enabled <= 1'b0;
 		irq_enable <= 1'b0;
 		irq_active <= 1'b0;
-		irq_cleared <= 1'b0;
 	end else if (timer_access && bus_wr_en) begin
                 if (access_reload) begin
 			reload_val <= bus_wr_val;
 			count <= bus_wr_val;
-			irq_cleared <= 1'b0;
 		end
+
                 if (access_control)
 		        {irq_enable, enabled, periodic} <= bus_wr_val[2:0];
-		if (access_eoi) begin
+
+		if (access_eoi)
 			irq_active <= 1'b0;
-			irq_cleared <= 1'b1;
-		end
 	end
 end
 
