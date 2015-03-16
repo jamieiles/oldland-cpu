@@ -149,6 +149,14 @@ static inline int mmu_enabled(const struct cpu *c)
 	return c->flagsbf.m;
 }
 
+static uint32_t current_psr(const struct cpu *c)
+{
+	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
+		(c->flagsbf.n << 3) | (c->flagsbf.i << 4) |
+		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6) |
+                (c->flagsbf.m << 7) | (c->flagsbf.u << 8);
+}
+
 static void set_psr(struct cpu *c, uint32_t psr)
 {
 	c->flagsbf.i = !!(psr & PSR_I);
@@ -160,14 +168,7 @@ static void set_psr(struct cpu *c, uint32_t psr)
 	c->flagsbf.ic = !!(psr & PSR_IC);
 	c->flagsbf.m = !!(psr & PSR_M);
 	c->flagsbf.u = !!(psr & PSR_U);
-}
-
-static uint32_t current_psr(const struct cpu *c)
-{
-	return c->flagsbf.z | (c->flagsbf.c << 1) | (c->flagsbf.o << 2) |
-		(c->flagsbf.n << 3) | (c->flagsbf.i << 4) |
-		(c->flagsbf.dc << 5) | (c->flagsbf.ic << 6) |
-                (c->flagsbf.m << 7) | (c->flagsbf.u << 8);
+	c->control_regs[CR_PSR] = current_psr(c);
 }
 
 int cpu_read_reg(struct cpu *c, unsigned regnum, uint32_t *v)
@@ -881,9 +882,8 @@ static void emul_insn(struct cpu *c, uint32_t instr, bool *breakpoint_hit)
 	process_branch(c, instr, ucode, &alu);
 	do_scr(c, instr, ucode, &alu);
         do_spsr(c, instr, ucode, &alu);
+	do_memory(c, instr, ucode, &alu);
 
-	if (do_memory(c, instr, ucode, &alu))
-		return;
 }
 
 static int instruction_read(struct cpu *c, uint32_t phys, uint32_t *instr)
