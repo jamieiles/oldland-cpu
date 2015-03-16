@@ -70,6 +70,7 @@ reg [3:0]	mem_rd = 4'b0;
 reg [31:0]	rd_mask = 32'b0;
 wire [1:0]	mem_width = dbg_en ? dbg_width : width;
 
+reg		bus_busy = 1'b0;
 reg		loading = 1'b0;
 reg		load_complete = 1'b0;
 reg [31:0]	load_val = 32'b0;
@@ -86,7 +87,7 @@ assign		dbg_rd_val = mem_rd_val;
 assign		dbg_compl = complete | dtlb_miss;
 assign		data_abort = d_error;
 
-assign		busy = load | store | update_rd_out;
+assign		busy = load | store | bus_busy | update_rd_out;
 assign		i_idx = wr_val[icache_idx_bits - 1:0];
 assign		d_idx = wr_val[dcache_idx_bits - 1:0];
 assign		i_inval = cache_instr && cache_op == 3'd0;
@@ -122,8 +123,13 @@ always @(posedge clk) begin
 		load_val <= mem_rd_val;
 	end
 
-	if (load || store)
+	if (load || store) begin
 		loading <= load;
+		bus_busy <= 1'b1;
+	end
+
+	if (complete)
+		bus_busy <= 1'b0;
 end
 
 always @(posedge clk) begin
