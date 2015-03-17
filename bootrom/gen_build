@@ -2,7 +2,7 @@
 set -e
 
 BUILD_ID=$(git rev-parse --verify --short HEAD)
-if git diff-index --name-only HEAD | read dummy; then
+if git diff-index --name-only HEAD | grep -v 'fpga/keynsham-soc.qsf' | read dummy; then
 	BUILD_ID="${BUILD_ID}+"
 fi
 DATE=$(date)
