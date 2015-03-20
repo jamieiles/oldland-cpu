@@ -54,7 +54,6 @@ set_global_assignment -name VERILOG_FILE keynsham_defines.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_bootrom.v
 set_global_assignment -name VERILOG_FILE ../rtl/sdram/rtl/sdram_controller.v
 set_global_assignment -name VERILOG_FILE ../rtl/sdram/rtl/counter.v
-set_global_assignment -name VERILOG_FILE ../rtl/sdram/rtl/bridge_32_16.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_sdram.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_uart.v
 set_global_assignment -name VERILOG_FILE ../rtl/keynsham/keynsham_spimaster.v
