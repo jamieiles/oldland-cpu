@@ -3,6 +3,12 @@ module cpu_tb();
 `define NUM_SPI_CS	2
 
 reg		clk = 1'b0;
+reg		clk180 = 1'b0;
+
+initial begin
+  #8 clk180 = ~clk180;
+  forever #10 clk180 = ~clk180;
+end
 reg		dbg_clk = 1'b1;
 
 wire		rx;
@@ -19,6 +25,7 @@ wire		uart_tx_busy;
 reg [8:0]	uart_buf = 9'b0;
 `endif
 
+wire		s_clk = ~clk;
 wire		s_ras_n;
 wire		s_cas_n;
 wire		s_wr_en;
@@ -45,7 +52,7 @@ wire [`NUM_SPI_CS - 1:0] spi_ncs;
 mt48lc16m16a2 ram_model(.Dq(s_data),
 			.Addr(s_addr),
 			.Ba(s_banksel),
-			.Clk(clk),
+			.Clk(clk180),
 			.Cke(s_clken),
 			.Cs_n(s_cs_n),
 			.Ras_n(s_ras_n),

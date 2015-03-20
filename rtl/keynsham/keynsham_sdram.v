@@ -40,13 +40,6 @@ parameter	bus_size = 32'h0;
 parameter	ctrl_bus_address = 32'h0;
 parameter	ctrl_bus_size = 32'h0;
 
-wire [30:0]	bridge_addr;
-wire [15:0]	bridge_wdata;
-wire [15:0]	bridge_rdata;
-wire		bridge_wr_en;
-wire [1:0]	bridge_bytesel;
-wire		bridge_compl;
-
 wire		config_done;
 reg		ctrl_ack = 1'b0;
 reg [31:0]	ctrl_data = 32'b0;
@@ -78,29 +71,15 @@ cs_gen		#(.address(bus_address), .size(bus_size))
 cs_gen		#(.address(ctrl_bus_address), .size(ctrl_bus_size))
 		ctrl_cs_gen(.bus_addr(d_addr), .cs(ctrl_cs));
 
-bridge_32_16		br(.clk(clk),
-			   .h_cs(q_cs),
-			   .h_addr(q_addr),
-			   .h_wdata(q_wr_val),
-			   .h_rdata(q_data),
-			   .h_wr_en(q_wr_en),
-			   .h_bytesel(q_bytesel),
-			   .h_compl(q_ack),
-			   .b_addr(bridge_addr),
-			   .b_wdata(bridge_wdata),
-			   .b_rdata(bridge_rdata),
-			   .b_wr_en(bridge_wr_en),
-			   .b_bytesel(bridge_bytesel),
-			   .b_compl(bridge_compl));
-
 `CONFIG_CONTROLLER	#(.clkf(clkf))
 			sdram(.clk(clk),
-			      .h_addr(bridge_addr),
-			      .h_wr_en(bridge_wr_en),
-			      .h_bytesel(bridge_bytesel),
-			      .h_compl(bridge_compl),
-			      .h_wdata(bridge_wdata),
-			      .h_rdata(bridge_rdata),
+			      .cs(q_cs),
+			      .h_addr(q_addr),
+			      .h_wr_en(q_wr_en),
+			      .h_bytesel(q_bytesel),
+			      .h_compl(q_ack),
+			      .h_wdata(q_wr_val),
+			      .h_rdata(q_data),
 			      .h_config_done(config_done),
 			      .s_ras_n(s_ras_n),
 			      .s_cas_n(s_cas_n),
