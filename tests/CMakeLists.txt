@@ -36,6 +36,7 @@ add_subdirectory(privileged_instructions)
 add_subdirectory(tlb_user)
 add_subdirectory(psr)
 add_subdirectory(stack_save)
+add_subdirectory(cflush)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/oldland-test
 		   COMMAND sed -e "s#%TEST_PATH%#${CMAKE_INSTALL_PREFIX}/lib/oldland/tests#g"
