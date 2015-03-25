@@ -3,14 +3,12 @@
 import yaml
 import math
 import os
-import sys
+import argparse
 
 HERE = os.path.dirname(__file__)
 CONFIG_PATH = os.path.join(HERE, '..', '..', 'config')
 
-with open(os.path.join(CONFIG_PATH, 'keynsham.yaml'),
-          'r') as config:
-    keynsham_config = yaml.load(config.read())
+keynsham_config = None
 
 class HeaderWriter(object):
     prefix = []
@@ -129,11 +127,19 @@ def generate_config(writer):
                    int((math.log((cpu['dcache']['size'] / cpu['dcache']['num_ways']) / cpu['dcache']['line_size'], 2))))
 
 if __name__ == '__main__':
-    if '--verilog' in sys.argv:
+    parser = argparse.ArgumentParser(prog='config')
+    parser.add_argument('--verilog', action='store_true')
+    parser.add_argument('--c', action='store_true')
+    parser.add_argument('config_file', type=str)
+    args = parser.parse_args()
+
+    if args.verilog:
         writer = VerilogWriter('keynsham_defines')
-    elif '--c' in sys.argv:
+    elif args.c:
         writer = CWriter('config')
     else:
         raise NotImplementedError
+    with open(os.path.join(CONFIG_PATH, args.config_file), 'r') as config:
+        keynsham_config = yaml.load(config.read())
     generate_config(writer)
     writer.dump()

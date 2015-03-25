@@ -11,7 +11,7 @@ BUILD_DIR=$(mktemp -d /tmp/oldland-bootrom.XXXXXX)
 
 pushd $SCRIPT_PATH >/dev/null
 $BOOTROM_DIR/gen_build > $BUILD_DIR/build.s
-$BOOTROM_DIR/../../tools/keynsham/gendts > $BUILD_DIR/keynsham.dts
+$BOOTROM_DIR/../tools/keynsham/gendts de0-nano.yaml > $BUILD_DIR/keynsham.dts
 dtc -I dts -O dtb -o $BUILD_DIR/keynsham.dtb $BUILD_DIR/keynsham.dts
 popd >/dev/null
 
@@ -30,6 +30,6 @@ $TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
 $TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
 $TOOL_DIR/gendecode/gendecode > $SCRIPT_PATH/decode.hex
 popd >/dev/null
-$TOOL_DIR/keynsham/config --verilog
+$TOOL_DIR/keynsham/config --verilog de0-nano.yaml
 
 rm $BUILD_DIR -rf

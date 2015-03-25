@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 2.6)
-project(OldlandBootROM ASM C)
 
 set(CMAKE_SYSTEM_NAME none)
 set(CMAKE_SYSTEM_PROCESSOR oldland)
@@ -12,8 +11,8 @@ set(CMAKE_ASM_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}")
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-nostdlib -T ${CMAKE_CURRENT_SOURCE_DIR}/bootrom.x -Wl,-EL -lgcc")
 
 add_custom_command(OUTPUT keynsham.dts
-		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/gendts > ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts
-		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/keynsham.yaml)
+		   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/keynsham/gendts ${KEYNSHAM_SOC_CONFIG} > ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts
+		   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../config/${KEYNSHAM_SOC_CONFIG})
 add_custom_command(OUTPUT keynsham.dtb
 		   COMMAND dtc -I dts -O dtb -o ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dtb ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts
 		   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/keynsham.dts)

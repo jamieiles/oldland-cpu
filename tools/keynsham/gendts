@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import yaml
-import math
 import os
 import sys
 
 HERE = os.path.dirname(__file__)
 CONFIG_PATH = os.path.join(HERE, '..', '..', 'config')
 
-with open(os.path.join(CONFIG_PATH, 'keynsham.yaml'),
+with open(os.path.join(CONFIG_PATH, sys.argv[1]),
           'r') as config:
     keynsham_config = yaml.load(config.read())
 
