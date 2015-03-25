@@ -89,46 +89,26 @@ running at ~75MHz on slow silicon @85°C.</p>
 
 <h2 id="testing">Testing</h2>
 
-<p>All builds should be carried out from outside of the source directories e.g.
-BUILD/binutils, BUILD/gcc, BUILD/newlib etc.</p>
-
 <ul>
-  <li>Download <a href="https://github.com/jamieiles/binutils-gdb-oldland">binutils-gdb-oldland</a> and build with:  </li>
+  <li>Clone <a href="https://github.com/jamieiles/oldland-toolchain">oldland-toolchain</a>
+   and build with:</li>
 </ul>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">../binutils-gdb-oldland/configure --target<span class="o">=</span>oldland-elf
-make all
-make install</code></pre></div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/jamieiles/oldland-toolchain.git
+<span class="nb">cd </span>oldland-toolchain
+git submodule init
+git submodule update
+./build-oldland-elf
+. oldland-toolchain-env</code></pre></div>
 
 <ul>
-  <li>Download <a href="https://github.com/jamieiles/gcc-oldland">gcc-oldland</a> and build with:</li>
+  <li>Clone <a href="https://github.com/jamieiles/oldland-cpu.git">oldland-cpu</a> and
+   build with:</li>
 </ul>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">../gcc-oldland/configure --target<span class="o">=</span>oldland-elf --disable-libquadmath --disable-libssp --enable-languages<span class="o">=</span>c --disable-shared --with-headers --enable-multilib --with-newlib
-make all-gcc
-make install-gcc</code></pre></div>
-
-<ul>
-  <li>Download <a href="https://github.com/jamieiles/newlib-oldland">newlib-oldland</a> and build with:</li>
-</ul>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">../newlib-oldland/configure --target<span class="o">=</span>oldland-elf --with-newlib
-make all
-make install</code></pre></div>
-
-<ul>
-  <li>Build the final compiler with:</li>
-</ul>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">cd </span>gcc
-make all
-make install</code></pre></div>
-
-<ul>
-  <li>Make sure that the <code>oldland-elf-*</code> tools are in your path and build the CPU + tools with:  </li>
-</ul>
-
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">mkdir BUILD
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/jamieiles/oldland-cpu.git
+<span class="nb">cd </span>oldland-cpu
+mkdir BUILD
 <span class="nb">cd </span>BUILD
 cmake -DCMAKE_ISNTALL_PREFIX:PATH<span class="o">=</span>INSTALL_PREFIX ..
 make all install</code></pre></div>
