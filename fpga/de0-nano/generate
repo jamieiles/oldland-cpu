@@ -1,0 +1,35 @@
+#!/bin/bash
+
+touch /tmp/genbootrom
+set -ex
+
+SCRIPT_PATH=$(cd $(dirname $0); pwd)
+BOOTROM_DIR="$SCRIPT_PATH/../../bootrom"
+TOOL_DIR="$SCRIPT_PATH/../../tools"
+
+BUILD_DIR=$(mktemp -d /tmp/oldland-bootrom.XXXXXX)
+
+pushd $SCRIPT_PATH >/dev/null
+$BOOTROM_DIR/gen_build > $BUILD_DIR/build.s
+$BOOTROM_DIR/../../tools/keynsham/gendts > $BUILD_DIR/keynsham.dts
+dtc -I dts -O dtb -o $BUILD_DIR/keynsham.dtb $BUILD_DIR/keynsham.dts
+popd >/dev/null
+
+pushd $BUILD_DIR >/dev/null
+oldland-elf-as -c build.s -o build.o
+oldland-elf-as -c $SCRIPT_PATH/../../bootrom/entry.s -o entry.o -I$SCRIPT_PATH/../../bootrom
+oldland-elf-as -c $SCRIPT_PATH/../../bootrom/sdram.s -o sdram.o -I$SCRIPT_PATH/../../bootrom
+oldland-elf-gcc -c $SCRIPT_PATH/../../bootrom/kernel.c -o kernel.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../../bootrom
+oldland-elf-gcc -c $SCRIPT_PATH/../../bootrom/uart.c -o uart.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../../bootrom
+oldland-elf-gcc -c $SCRIPT_PATH/../../bootrom/string.c -o string.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../../bootrom
+oldland-elf-gcc -c $SCRIPT_PATH/../../bootrom/sdcard.c -o sdcard.o -Wall -Werror -ffreestanding -O2 -ggdb3 -std=gnu99 -nostdinc -I$SCRIPT_PATH/../../bootrom
+
+oldland-elf-gcc -nostdlib build.o entry.o sdram.o kernel.o uart.o string.o sdcard.o -o bootrom -T $BOOTROM_DIR/bootrom.x -Wl,-EL -lgcc
+oldland-elf-objcopy bootrom bootrom.bin -O binary --pad-to=0x4000
+$TOOL_DIR/makeramfile/makeramfile bootrom.bin $SCRIPT_PATH/bootrom.hex
+$TOOL_DIR/instructions/vdefines $SCRIPT_PATH/oldland_defines.v
+$TOOL_DIR/gendecode/gendecode > $SCRIPT_PATH/decode.hex
+popd >/dev/null
+$TOOL_DIR/keynsham/config --verilog
+
+rm $BUILD_DIR -rf
