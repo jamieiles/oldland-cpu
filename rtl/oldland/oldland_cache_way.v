@@ -326,7 +326,7 @@ always @(*) begin
 	end
 	STATE_FLUSH, STATE_EVICT: begin
 		data_ram_read_addr = {dbg_flush ? c_index : latched_index,
-				      words_done + {2'b00, m_ack}};
+				      words_done + {{CACHE_OFFSET_BITS - 1{1'b0}}, m_ack}};
 		valid_index = dbg_flush ? c_index : latched_index;
 		if (way_sel && valid && dirty)
 			mem_write_word({cache_tag, dbg_flush ? c_index : latched_index,
