@@ -56,13 +56,13 @@ assign		i_ack = i_ram_ack;
 ram		mem(.clock(clk),
 		    .address_a(i_addr[9:0]), /* Word addressed with byte enables. */
 		    .data_a(32'b0),
-		    .byteena_a(d_bytesel),
+		    .byteena_a(4'b1111),
 		    .wren_a(1'b0),
 		    .q_a(_i_data),
 		    .address_b(d_addr[9:0]), /* Word addressed with byte enables. */
 		    .data_b(d_wr_val),
 		    .byteena_b(d_bytesel),
-		    .wren_b(d_wr_en & d_cs),
+		    .wren_b(d_wr_en & d_access & d_cs),
 		    .q_b(_d_data));
 
 always @(posedge clk)

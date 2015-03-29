@@ -1,0 +1,71 @@
+{
+    cpu: {
+        icache: {
+            size: 16384,
+            line_size: 32,
+            num_ways: 4
+        },
+        dcache: {
+            size: 16384,
+            line_size: 32,
+            num_ways: 4
+        },
+        itlb: {
+            num_entries: 8
+        },
+        dtlb: {
+            num_entries: 8
+        },
+        manufacturer: 0x4a49,
+        model: 0x0001,
+        clock_speed: 50000000
+    },
+    peripherals: [
+        {
+            name: ram,
+            address: "0x0000000",
+            size: "0x0001000"
+        },
+        {
+            name: bootrom,
+            address: "0x10000000",
+            size: "0x0004000"
+        },
+        {
+            name: sdram,
+            address: "0x20000000",
+            size: "0x04000000"
+        },
+        {
+            name: sdram_ctrl,
+            address: "0x80001000",
+            size: "0x00001000",
+            regmap: sdram_ctrl
+        },
+        {
+            name: uart,
+            address: "0x80000000",
+            size: "0x0001000",
+            regmap: uart
+        },
+        {
+            name: irq,
+            address: "0x80002000",
+            size: "0x00001000",
+            regmap: irq_ctrl,
+        },
+        {
+            name: timer,
+            address: "0x80003000",
+            size: "0x00001000",
+            regmap: timer,
+            interrupts: [0, 1, 2, 3]
+        },
+        {
+            name: spimaster,
+            address: "0x80004000",
+            size: "0x00004000",
+            regmap: spimaster
+        }
+    ]
+}

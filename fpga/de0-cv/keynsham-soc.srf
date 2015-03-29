@@ -1,0 +1,47 @@
+{ "" "" "" "Feature LogicLock is only available with a valid subscription license. You can purchase a software subscription to gain full access to this feature." {  } {  } 0 292013 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[0\] uses I/O standard 3.3-V LVCMOS at G2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[1\] uses I/O standard 3.3-V LVCMOS at G1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[2\] uses I/O standard 3.3-V LVCMOS at L8" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[3\] uses I/O standard 3.3-V LVCMOS at K5" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[4\] uses I/O standard 3.3-V LVCMOS at K2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[5\] uses I/O standard 3.3-V LVCMOS at J2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[6\] uses I/O standard 3.3-V LVCMOS at J1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[7\] uses I/O standard 3.3-V LVCMOS at R7" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[8\] uses I/O standard 3.3-V LVCMOS at T4" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[9\] uses I/O standard 3.3-V LVCMOS at T2" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[10\] uses I/O standard 3.3-V LVCMOS at T3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[11\] uses I/O standard 3.3-V LVCMOS at R3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[12\] uses I/O standard 3.3-V LVCMOS at R5" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[13\] uses I/O standard 3.3-V LVCMOS at P3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[14\] uses I/O standard 3.3-V LVCMOS at N3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin s_data\[15\] uses I/O standard 3.3-V LVCMOS at K1" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin clk uses I/O standard 3.3-V LVCMOS at R8" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin uart_rx uses I/O standard 3.3-V LVCMOS at A3" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin \"s_cs_n\" is stuck at GND" {  } {  } 0 13410 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin \"s_clken\" is stuck at VCC" {  } {  } 0 13410 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "PLL \"sys_pll:pll\|altpll:altpll_component\|sys_pll_altpll:auto_generated\|pll1\" output port clk\[1\] feeds output pin \"sdr_clk~output\" via non-dedicated routing -- jitter performance depends on switching rate of other design elements. Use PLL dedicated clock outputs to ensure jitter performance" {  } {  } 0 15064 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "18 pins must meet Altera requirements for 3.3-, 3.0-, and 2.5-V interfaces. For more information, refer to AN 447: Interfacing Cyclone IV E Devices with 3.3/3.0/2.5-V LVTTL/LVCMOS I/O Systems." {  } {  } 0 169177 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(35) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(41) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(46) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(46) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(46) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Synthesized away node \"keynsham_soc:soc\|oldland_cpu:cpu\|oldland_pipeline:pipeline\|oldland_exec:execute\|lpm_mult:Mult0\|mult_7dt:auto_generated\|mac_mult7\"" {  } {  } 0 14320 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Synthesized away node \"keynsham_soc:soc\|oldland_cpu:cpu\|oldland_pipeline:pipeline\|oldland_exec:execute\|lpm_mult:Mult0\|mult_7dt:auto_generated\|mac_out8\"" {  } {  } 0 14320 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Inferred dual-clock RAM node \"keynsham_soc:soc\|oldland_cpu:cpu\|oldland_debug:debug\|dc_ram:dbg_ram\|ram_rtl_0\" from synchronous design logic.  The read-during-write behavior of a dual-clock RAM is undefined and may not match the behavior of the original design." {  } {  } 0 276027 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(45) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(45) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(45) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Synthesized away the following DSP element node(s):" {  } {  } 0 14285 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Synthesized away the following node(s):" {  } {  } 0 14284 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "1 hierarchies have connectivity warnings - see the Connectivity Checks report folder" {  } {  } 0 12241 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Output pins are stuck at VCC or GND" {  } {  } 0 13024 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Pin spi_miso uses I/O standard 3.3-V LVCMOS at B12" {  } {  } 0 169178 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "19 pins must meet Altera requirements for 3.3-, 3.0-, and 2.5-V interfaces. For more information, refer to AN 447: Interfacing Cyclone IV E Devices with 3.3/3.0/2.5-V LVTTL/LVCMOS I/O Systems." {  } {  } 0 169177 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.data_a\" at oldland_decode.v(47) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.waddr_a\" at oldland_decode.v(47) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Net \"microcode.we_a\" at oldland_decode.v(47) has no driver or initial value, using a default initial value '0'" {  } {  } 0 10030 "" 0 0 "Quartus II" 0 -1 0 ""}
