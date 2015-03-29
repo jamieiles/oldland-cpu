@@ -17,7 +17,7 @@ parameter data_bits = 32;
 // verilator lint_save
 // verilator lint_off MULTIDRIVEN
 
-(* ramstyle = "M9K" *) reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0];
+reg [data_bits - 1:0] ram[2 ** addr_bits - 1:0] /*synthesis syn_ramstyle = "no_rw_check"*/;
 
 integer i;
 
