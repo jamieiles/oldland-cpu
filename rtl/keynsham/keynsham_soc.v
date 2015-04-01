@@ -31,6 +31,9 @@ module keynsham_soc(input wire		clk,
 		    input wire		dbg_wr_en,
 		    input wire		dbg_req,
 		    output wire		dbg_ack,
+`ifdef GPIO_ADDRESS
+		    inout wire [63:0]	gpio,
+`endif
 		    /* SPI bus. */
 		    input wire		miso,
 		    output wire		mosi,
@@ -87,6 +90,10 @@ wire [31:0]	i_sdram_data;
 wire		i_sdram_ack;
 wire		i_sdram_error;
 
+wire [31:0]     gpio_data;
+wire            gpio_ack;
+wire            gpio_error;
+
 wire [31:0]	cpu_d_out;
 
 /*
@@ -109,23 +116,26 @@ wire		uart_cs;
 wire		irq_cs;
 wire		timer_cs;
 wire		spimaster_cs;
+wire		gpio_cs;
 
 wire		d_default_cs	= ~(ram_cs | rom_cs | d_sdram_cs |
 				    d_sdram_ctrl_cs | uart_cs | irq_cs |
-				    timer_cs | spimaster_cs);
+				    timer_cs | spimaster_cs | gpio_cs);
 wire		i_default_cs	= ~(ram_i_cs | rom_i_cs | i_sdram_cs);
 
 wire		d_ack = uart_ack | ram_ack | d_sdram_ack | rom_ack | irq_ack |
-			timer_ack | d_default_ack | spimaster_ack;
+			timer_ack | d_default_ack | spimaster_ack | gpio_ack;
 wire		d_error = uart_error | d_sdram_error | irq_error |
-			  timer_error | d_default_error | spimaster_error;
+			  timer_error | d_default_error | spimaster_error |
+			  gpio_error;
 
 wire		i_access;
 wire		i_ack = i_ram_ack | i_rom_ack | i_default_ack | i_sdram_ack;
 wire		i_error = i_default_error | i_sdram_error;
 
 assign		d_data	= ram_data | uart_data | d_sdram_data | rom_data |
-			  irq_data | timer_data | d_wr_val | spimaster_data;
+			  irq_data | timer_data | d_wr_val | spimaster_data |
+			  gpio_data;
 assign		i_data = i_ram_data | i_rom_data | i_sdram_data;
 
 keynsham_ram	#(.bus_address(`RAM_ADDRESS),
@@ -256,6 +266,29 @@ keynsham_spimaster	#(.bus_address(`SPIMASTER_ADDRESS),
 			    .mosi(mosi),
 			    .sclk(sclk),
                             .ncs(spi_ncs));
+
+`ifdef GPIO_ADDRESS
+keynsham_gpio           #(.bus_address(`GPIO_ADDRESS),
+			  .bus_size(`GPIO_SIZE),
+			  .num_banks(2))
+			gpioinst(.clk(clk),
+				 .bus_access(d_access),
+				 .bus_cs(gpio_cs),
+				 .bus_addr(d_addr),
+				 .bus_wr_val(d_data),
+				 .bus_wr_en(d_wr_en),
+				 .bus_bytesel(d_bytesel),
+				 .bus_error(gpio_error),
+				 .bus_ack(gpio_ack),
+				 .bus_data(gpio_data),
+				 .gpio(gpio));
+
+`else
+assign          gpio_data = 32'b0;
+assign          gpio_ack = 1'b0;
+assign          gpio_error = 1'b0;
+assign		gpio_cs = 1'b0;
+`endif
 
 oldland_cpu	#(.icache_size(`ICACHE_SIZE),
 		  .icache_line_size(`ICACHE_LINE_SIZE),

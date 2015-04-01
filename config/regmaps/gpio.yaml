@@ -1,0 +1,14 @@
+{
+    gpio_value: {
+        offset: 0
+    },
+    gpio_output_enable: {
+        offset: 4
+    },
+    gpio_set: {
+        offset: 8
+    },
+    gpio_clear: {
+        offset: 12
+    },
+}

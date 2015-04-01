@@ -17,6 +17,7 @@ cpu_tb.v
 ../../rtl/keynsham/keynsham_soc.v
 ../../rtl/keynsham/keynsham_uart.v
 ../../rtl/keynsham/keynsham_spimaster.v
+../../rtl/keynsham/keynsham_gpio.v
 ../../rtl/keynsham/keynsham_irq.v
 ../../rtl/keynsham/keynsham_timer.v
 ../../rtl/keynsham/keynsham_timer_block.v

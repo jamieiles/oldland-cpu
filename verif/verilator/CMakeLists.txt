@@ -7,6 +7,7 @@ option(TRACE_VERILATOR "Enable tracing in verilator model" OFF)
 set(VERILATOR_FLAGS
     --cc -DSIMULATION=1 -DUSE_DEBUG_UART=1
     -Wfuture-PINCONNECTEMPTY
+    -Wfuture-PINNOCONNECT
     -DOLDLAND_ROM_PATH=\\\"${CMAKE_INSTALL_PREFIX}/lib/\\\")
 
 if(TRACE_VERILATOR)

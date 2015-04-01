@@ -66,6 +66,26 @@
             address: "0x80004000",
             size: "0x00004000",
             regmap: spimaster
+        },
+        # Two banks of GPIO:
+        #   - bank 1 at offset 16
+        #     - [31:28]: push buttons
+        #     - [27:26]: no connection
+        #     - [25:16]: switches
+        #     - [15:15]: no connection
+        #     - [14:8]: 7-seg 5
+        #     - [7:7]: no connection
+        #     - [7:0]: 7-seg 4
+        #   - bank 0 at offset 0
+        #     - [30:24]: 7-seg 3
+        #     - [22:16]: 7-seg 2
+        #     - [14:8]: 7-seg 1
+        #     - [6:0]: 7-seg 0
+        {
+            name: gpio,
+            address: "0x80008000",
+            size: "0x00001000",
+            regmap: gpio
         }
     ]
 }

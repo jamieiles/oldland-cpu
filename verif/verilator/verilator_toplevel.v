@@ -1,3 +1,5 @@
+`include "keynsham_defines.v"
+
 module verilator_toplevel(input wire clk /*verilator public*/,
 			  input wire dbg_clk /*verilator public*/);
 
@@ -31,6 +33,12 @@ wire [`NUM_SPI_CS - 1:0] spi_ncs;
 
 wire		running;
 
+`ifdef GPIO_ADDRESS
+/* verilator lint_off UNUSED */
+wire [63:0]	gpio;
+/* verilator lint_on UNUSED */
+`endif
+
 keynsham_soc	#(.spi_num_cs(`NUM_SPI_CS))
 		soc(.clk(clk),
 		    .rst_req(1'b0),
@@ -56,6 +64,9 @@ keynsham_soc	#(.spi_num_cs(`NUM_SPI_CS))
 		    .mosi(mosi),
 		    .sclk(sclk),
 		    .spi_ncs(spi_ncs),
+`ifdef GPIO_ADDRESS
+		    .gpio(gpio),
+`endif
 		    .running(running));
 
 debug_controller	dbg(.clk(dbg_clk),

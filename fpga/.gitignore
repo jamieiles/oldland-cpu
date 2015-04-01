@@ -7,3 +7,4 @@
 */spimaster_defines.v
 */timer_defines.v
 */uart_defines.v
+*/gpio_defines.v

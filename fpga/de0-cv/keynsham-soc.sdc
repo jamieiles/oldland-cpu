@@ -80,6 +80,10 @@ set_multicycle_path -setup -end -from sdram_clk -to $sys_clk 2
 set_false_path -from [get_ports uart_rx]
 set_false_path -to [get_ports uart_tx]
 
+# GPI
+set_false_path -from [get_ports gpio[*]]
+set_false_path -to [get_ports gpio[*]]
+
 # Status LEDs
 set_false_path -to [get_ports running]
 set_false_path -to [get_ports spi_cs0_active]

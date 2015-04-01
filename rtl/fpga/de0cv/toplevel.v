@@ -29,7 +29,8 @@ module toplevel(input wire clk,
 		output wire spi_mosi2,
 		input wire spi_miso2,
 		/* Ethernet control */
-		output reg ethernet_reset_n);
+		output reg ethernet_reset_n,
+		inout wire [63:0] gpio);
 
 wire		sys_clk;
 wire		dbg_clk;
@@ -102,7 +103,8 @@ keynsham_soc	#(.spi_num_cs(2))
 		    .miso(spi_miso),
 		    .mosi(spi_mosi),
 		    .sclk(spi_clk),
-                    .spi_ncs(spi_ncs));
+                    .spi_ncs(spi_ncs),
+		    .gpio(gpio));
 
 /*
  * Make the effects of running a little more visible - if we run for at least

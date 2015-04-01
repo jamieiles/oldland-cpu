@@ -26,9 +26,10 @@ Keynsham is a SoC using Oldland as the core and has a number of peripherals:
  - Interrupt controller.
  - UART.
  - SPI master.
+ - GPIO.
 
 There is a C model along with Icarus and Verilator RTL simulations.  The
-Keynsham SoC can be synthesized to run on a Terasic DE0 Nano.  There are ports
-of binutils, gcc and u-boot available.
+Keynsham SoC can be synthesized to run on a Terasic DE0 Nano or DE0-CV.  There
+are ports of binutils, gcc and u-boot available.
 
 For documentation see the [Oldland CPU site](http://jamieiles.github.io/oldland-cpu/)
