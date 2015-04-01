@@ -43,13 +43,13 @@
 <p><strong>Clock Speed:</strong> 50000000</p>
 
 <h2>Instruction Cache</h2>
-<p><strong>Ways:</strong> 2</p>
-<p><strong>Size:</strong> 8192</p>
+<p><strong>Ways:</strong> 4</p>
+<p><strong>Size:</strong> 16384</p>
 <p><strong>Line size:</strong> 32</p>
 
 <h2>Data Cache</h2>
-<p><strong>Ways:</strong> 2</p>
-<p><strong>Size:</strong> 8192</p>
+<p><strong>Ways:</strong> 4</p>
+<p><strong>Size:</strong> 16384</p>
 <p><strong>Line size:</strong> 32</p>
 
 <h2>Memory Map</h2>
@@ -60,7 +60,7 @@
 
   <tr><td>0x10000000</td><td>0x0004000</td><td>bootrom</td></tr>
 
-  <tr><td>0x20000000</td><td>0x02000000</td><td>sdram</td></tr>
+  <tr><td>0x20000000</td><td>0x04000000</td><td>sdram</td></tr>
 
   <tr><td>0x80001000</td><td>0x00001000</td><td>sdram_ctrl</td></tr>
 
@@ -71,6 +71,8 @@
   <tr><td>0x80003000</td><td>0x00001000</td><td>timer</td></tr>
 
   <tr><td>0x80004000</td><td>0x00004000</td><td>spimaster</td></tr>
+
+  <tr><td>0x80008000</td><td>0x00001000</td><td>gpio</td></tr>
 
 </table>
 
@@ -239,6 +241,44 @@
 		<li>[16:16] xfer_go </li>
 		
 		<li>[17:17] xfer_busy </li>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+</table>
+
+<h3>gpio</h3>
+<table>
+<tr><th>Offset</th><th>Name</th><th>Fields</th></tr>
+	
+	  <tr><td>0</td><td>gpio_value</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>4</td><td>gpio_output_enable</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>8</td><td>gpio_set</td>
+	  <td>
+		<ul>
+		
+		</ul>
+	  </td>
+	  </tr>
+	
+	  <tr><td>12</td><td>gpio_clear</td>
+	  <td>
+		<ul>
 		
 		</ul>
 	  </td>
