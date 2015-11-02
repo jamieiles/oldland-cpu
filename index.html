@@ -91,14 +91,10 @@ Altera Cyclone IV are the supported boards running at ~75MHz on slow silicon
 <h2 id="testing">Testing</h2>
 
 <ul>
-  <li>Clone <a href="https://github.com/jamieiles/oldland-toolchain">oldland-toolchain</a>
-   and build with:</li>
+  <li>Get the Docker images for the build environments:</li>
 </ul>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/jamieiles/oldland-toolchain.git
-<span class="nb">cd </span>oldland-toolchain
-./build-oldland-elf
-. oldland-toolchain-env</code></pre></div>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">docker pull jamieiles/oldland-buildenv</code></pre></div>
 
 <ul>
   <li>Clone <a href="https://github.com/jamieiles/oldland-cpu.git">oldland-cpu</a> and
@@ -106,20 +102,24 @@ Altera Cyclone IV are the supported boards running at ~75MHz on slow silicon
 </ul>
 
 <div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/jamieiles/oldland-cpu.git
-<span class="nb">cd </span>oldland-cpu
-mkdir BUILD
-<span class="nb">cd </span>BUILD
-cmake -DCMAKE_ISNTALL_PREFIX:PATH<span class="o">=</span>INSTALL_PREFIX ..
-make all install</code></pre></div>
+git submodule init
+git submodule update</code></pre></div>
 
 <ul>
-  <li>
-    <p>Add <code>${INSTALL_PREFIX}/bin</code> to your path.</p>
-  </li>
-  <li>
-    <p>Run <code>oldland-test</code> to run the self-tests.</p>
-  </li>
+  <li>Enter the build environment:</li>
 </ul>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">docker run -it -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/data/oldland jamieiles/oldland-buildenv /bin/bash</code></pre></div>
+
+<ul>
+  <li>Build, install and test inside the build environment:</li>
+</ul>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">mkdir BUILD
+<span class="nb">cd </span>BUILD
+cmake /data/oldland/oldland-cpu
+make all install -j16
+oldland-test</code></pre></div>
 
 <h2 id="running-on-hardware">Running On Hardware</h2>
 
