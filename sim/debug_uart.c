@@ -41,19 +41,39 @@ static int uart_read(unsigned int offs, uint32_t *val, size_t nr_bits,
 		struct pollfd pfd = {
 			.fd = u->fd,
 			.events = POLLIN | POLLOUT,
+			.revents = 0
 		};
 
 		if (poll(&pfd, 1, 0)) {
+#ifndef EMSCRIPTEN
 			if (pfd.revents & POLLIN)
 				regval |= RX_READY_MASK;
+#else
+			char c;
+			if (!u->next_rx_valid && read(STDIN_FILENO, &c, 1) == 1) {
+				u->next_rx = c;
+				u->next_rx_valid = true;
+			}
+
+			if (u->next_rx_valid)
+				regval |= RX_READY_MASK;
+#endif
 			if (pfd.revents & POLLOUT)
 				regval |= TX_EMPTY_MASK;
 		}
 	} else if (offs == UART_DATA_REG_OFFS) {
 		char c = 0;
 
+#ifdef EMSCRIPTEN
+		if (u->next_rx_valid) {
+			regval = u->next_rx;
+			u->next_rx_valid = false;
+		} else if (read(STDIN_FILENO, &c, 1) == 1)
+			regval = c;
+#else
 		if (read(u->fd, &c, 1) == 1)
 			regval = c;
+#endif
 	}
 
 	*val = regval;

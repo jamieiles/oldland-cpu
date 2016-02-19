@@ -7,6 +7,10 @@ extern "C" {
 
 struct uart_data {
 	int fd;
+#ifdef EMSCRIPTEN
+	char next_rx;
+	int next_rx_valid;
+#endif
 };
 
 int create_pts(void);
