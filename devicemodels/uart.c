@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
-#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -12,6 +11,7 @@
 #include <unistd.h>
 
 #include "uart.h"
+#include "../common/die.h"
 
 int create_pts(void)
 {
@@ -19,19 +19,19 @@ int create_pts(void)
 	struct termios termios;
 
 	if (pts < 0)
-		err(1, "failed to create pseudo terminal");
+		die("failed to create pseudo terminal");
 
 	if (grantpt(pts))
-		err(1, "failed to grant psuedo terminal access");
+		die("failed to grant psuedo terminal access");
 
 	if (unlockpt(pts))
-		err(1, "failed to unlock pseudo terminal");
+		die("failed to unlock pseudo terminal");
 
 	if (tcgetattr(pts, &termios))
-		err(1, "failed to get termios");
+		die("failed to get termios");
 	cfmakeraw(&termios);
 	if (tcsetattr(pts, TCSANOW, &termios))
-		err(1, "failed to set termios");
+		die("failed to set termios");
 
 	if (sim_is_interactive())
 		printf("pts: %s\n", ptsname(pts));

@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #include <assert.h>
-#include <err.h>
 #include <libgen.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -21,6 +20,8 @@
 #include "periodic.h"
 #include "sdcard.h"
 #include "spimaster.h"
+
+#include "../common/die.h"
 
 #ifndef ROM_FILE
 #define ROM_FILE NULL
@@ -389,7 +390,7 @@ static int load_microcode(struct cpu *c, const char *path)
 			continue;
 
 		if (m == MICROCODE_NR_WORDS)
-			errx(1, "malformed microcode file, too many words");
+			die("malformed microcode file, too many words");
 
 		c->ucode[m++] = v;
 	}
@@ -530,7 +531,7 @@ static uint32_t fetch_op2(struct cpu *c, uint32_t instr, uint32_t ucode)
 	case IMSEL_LO16:
 		return instr_imm16(instr);
 	default:
-		errx(1, "invalid immediate select");
+		die("invalid immediate select");
 	}
 }
 
@@ -785,7 +786,7 @@ static unsigned maw_to_bits(enum maw maw)
 	case MAW_32:
 		return 32;
 	default:
-		errx(1, "invalid memory access width");
+		die("invalid memory access width");
 	}
 }
 

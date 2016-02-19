@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -14,6 +13,7 @@
 #include <sys/types.h>
 
 #include "../debugger/protocol.h"
+#include "../common/die.h"
 #include "jtag.h"
 
 int get_request(struct jtag_debug_data *d, struct dbg_request *req)
@@ -67,7 +67,7 @@ static void enable_reuseaddr(int fd)
 	int val = 1;
 
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)))
-		err(1, "failed to enable SO_REUSEADDR");
+		die("failed to enable SO_REUSEADDR");
 }
 
 static int spawn_server(void)
@@ -81,7 +81,7 @@ static int spawn_server(void)
 
 	s = getaddrinfo(NULL, "36000", &hints, &result);
 	if (s)
-		err(1, "getaddrinfo failed");
+		die("getaddrinfo failed");
 
 	for (rp = result; rp; rp = rp->ai_next) {
 		fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -97,12 +97,12 @@ static int spawn_server(void)
 	}
 
 	if (!rp)
-		err(1, "failed to bind server");
+		die("failed to bind server");
 
 	freeaddrinfo(result);
 
 	if (listen(fd, 1))
-		err(1, "failed to listen on socket");
+		die("failed to listen on socket");
 
 	return fd;
 }
@@ -155,7 +155,7 @@ static void *server_thread(void *d)
 
 			nevents = epoll_wait(data->epoll_fd, &revent, 1, -1);
 			if (nevents < 0)
-				err(1, "epoll_wait() failed");
+				die("epoll_wait() failed");
 
 			if (nevents) {
 				if (revent.events & (EPOLLRDHUP | EPOLLHUP))
@@ -179,17 +179,17 @@ struct jtag_debug_data *start_server(void)
 
 	data = calloc(1, sizeof(*data));
 	if (!data)
-		err(1, "failed to allocate data");
+		die("failed to allocate data");
 
 	data->sock_fd = spawn_server();
 	data->epoll_fd = epoll_create(1);
 	data->client_fd = -1;
 	if (data->epoll_fd < 0)
-		err(1, "failed to create epoll fd");
+		die("failed to create epoll fd");
 	pthread_mutex_init(&data->lock, NULL);
 
 	if (pthread_create(&thread, NULL, server_thread, data))
-		err(1, "failed to spawn server thread");
+		die("failed to spawn server thread");
 
 	return data;
 }
@@ -204,10 +204,10 @@ void notify_runner(void)
 
 	fd = open(fifo_name, O_WRONLY);
 	if (fd < 0)
-		err(1, "failed to open notifcation fifo");
+		die("failed to open notifcation fifo");
 
 	if (write(fd, "O", 1) != 1)
-		err(1, "failed to write notification byte");
+		die("failed to write notification byte");
 
 	close(fd);
 }
