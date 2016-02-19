@@ -89,7 +89,9 @@ struct cpu {
 	struct event_list events;
 	struct irq_ctrl *irq_ctrl;
 	struct timer_base *timers;
+#ifndef EMSCRIPTEN
         struct spimaster *spimaster;
+#endif /* EMSCRIPTEN */
 	struct cache *icache;
 	struct cache *dcache;
         struct tlb *dtlb;
@@ -421,7 +423,9 @@ struct cpu *new_cpu(const char *binary, int flags,
 	int err;
 	struct cpu *c;
 	struct timer_init_data timer_data;
+#ifndef EMSCRIPTEN
 	struct spislave **spislaves;
+#endif /* EMSCRIPTEN */
 
 	c = calloc(1, sizeof(*c));
 	assert(c);
@@ -460,6 +464,7 @@ struct cpu *new_cpu(const char *binary, int flags,
 	c->timers = timers_init(c->mem, TIMER_ADDRESS, &c->events, &timer_data);
 	assert(c->timers);
 
+#ifndef EMSCRIPTEN
 	spislaves = calloc(1, sizeof(*spislaves));
 	assert(spislaves != NULL);
 	if (sdcard_image)
@@ -467,6 +472,7 @@ struct cpu *new_cpu(const char *binary, int flags,
 	c->spimaster = spimaster_init(c->mem, SPIMASTER_ADDRESS, spislaves,
 				      ARRAY_SIZE(spislaves));
         assert(c->spimaster);
+#endif /* EMSCRIPTEN */
 
 	c->icache = cache_new(c->mem);
 	assert(c->icache);
