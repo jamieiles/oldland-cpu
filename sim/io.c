@@ -160,7 +160,7 @@ int mem_map_write(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 
 	r = mem_map_lookup(map, addr);
 
-	val &= (uint32_t)((1LU << (unsigned long)nr_bits) - 1LU);
+	val &= (uint32_t)((1LLU << (unsigned long)nr_bits) - 1LLU);
 	return r->write(addr - r->base, val, nr_bits, r->priv);
 }
 
@@ -176,7 +176,7 @@ int mem_map_read(struct mem_map *map, physaddr_t addr, unsigned int nr_bits,
 	r = mem_map_lookup(map, addr);
 
 	rc = r->read(addr - r->base, val, nr_bits, r->priv);
-	*val &= (uint32_t)((1LU << (unsigned long)nr_bits) - 1LU);
+	*val &= (uint32_t)((1LLU << (unsigned long)nr_bits) - 1LLU);
 
 	return rc;
 }
